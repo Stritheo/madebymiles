@@ -204,55 +204,90 @@ Migrate from static HTML to **Astro** — a content-focused static site generato
 ---
 
 ### Epic 3 — Skill Matrix & Experience Page (AICD-Aligned)
-> Give boards and search firms a structured way to evaluate leadership fit, using the industry-standard AICD framework that nomination committees already work with.
+> Give boards, nomination committees, and search firms a structured way to evaluate leadership fit — using the same AICD/ASX framework they already work with.
 
 **Why AICD alignment matters:**
-The Australian Institute of Company Directors (AICD) publishes the standard framework for board skills matrices, used by ASX-listed companies, nomination committees, and search firms across Australia. The ASX Corporate Governance Council recommends companies disclose a board skills matrix. By structuring Miles's skills against this framework, the site speaks the same language as the people making appointment decisions — and the data maps directly into how Korn Ferry, Heidrick & Struggles, Egon Zehnder, and Spencer Stuart present candidates to clients.
+The Australian Institute of Company Directors (AICD) publishes the standard framework for board skills matrices. ASX Corporate Governance Council Recommendation 2.2 (4th Edition) requires listed entities to "have and disclose a board skills matrix." Every nomination committee in Australia uses this format. Spencer Stuart, Korn Ferry, Heidrick & Struggles, Egon Zehnder, and Russell Reynolds all present candidates against it. By structuring Miles's profile in this exact format, the site:
+- Speaks the language nomination committees already use
+- Maps directly into how the SHREK firms (Spencer Stuart, Heidrick, Russell Reynolds, Egon Zehnder, Korn Ferry) present shortlisted candidates
+- Can be overlaid directly onto a board's existing skills matrix to identify gap-fill potential
+- Eliminates the translation step search consultants normally have to do between a CV and a matrix
+
+**References:** [AICD Board Skills Matrix Guidance (PDF)](https://www.aicd.com.au/content/dam/aicd/pdf/tools-resources/director-tools/board/guidance-preparing-board-skills-matrix-director-tool.pdf) · [ASX CGC Principles, 4th Edition (PDF)](https://www.asx.com.au/content/dam/asx/about/corporate-governance-council/cgc-principles-and-recommendations-fourth-edn.pdf) · [AICD Board Composition Matrix, Sept 2024 (PDF)](https://www.aicd.com.au/content/dam/aicd/pdf/about/about-our-governance/board-composition-skills-matrix-web.pdf)
 
 **Scope:**
 
-**Skill matrix (AICD-aligned):**
+**Skill matrix (AICD four-domain model):**
 - Design and build `/experience` page
-- Grid of skill domains (rows) × rating levels (columns), each cell with an evidence statement
-- **Rating scale** (AICD three-level model):
-  - **Expert** — Deep expertise, has led at scale, can advise others
-  - **Substantial** — Significant practised experience, direct accountability
-  - **Awareness** — Working knowledge, has operated adjacent to this domain
-- **Skill domains** (mapped to AICD standard categories + Miles's strategic priorities):
-  - Strategic Leadership & Vision
-  - Insurance Operations & Underwriting
-  - Pricing, Actuarial & Claims
-  - Technology, Digital & AI Transformation
-  - Data, Analytics & Decision Science
-  - People, Culture & Team Development
-  - Risk Management & Governance
-  - Stakeholder Management & Alliances
-  - Commercial Acumen & P&L
-  - Customer Experience & Distribution
-  - Change Management & Execution
-- Each cell: 1-2 sentence evidence snippet + link to relevant case study
-- The matrix also serves as the structured data source for the Fit Finder (Epic 8)
+- Grid of skill domains (rows) grouped by AICD's four competency domains × rating (columns) with evidence
+
+**Rating scale** (three-level, matching CBA and ASX 200 practice):
+
+| Level | Definition | AICD equivalent |
+|---|---|---|
+| **Expert** | Substantial career experience in senior executive or director roles; has led at scale; can advise others | "Expert" — substantial career experience with tertiary qualifications |
+| **Practised** | Significant direct experience and accountability; has operated with decision-making authority | "Substantial" — considerable experience at director/management level |
+| **Awareness** | Working knowledge; has operated adjacent to this domain or has relevant training | Awareness level |
+
+**Skill domains** (organised by AICD's four competency domains, tailored to Miles's strategic priorities):
+
+*Domain 1 — Industry:*
+| # | Skill Area | Notes |
+|---|---|---|
+| 1 | Insurance Operations & Underwriting | General insurance, strata, personal lines, commercial |
+| 2 | Financial Services (Banking & Wealth) | CBA, Westpac, cross-sector experience |
+| 3 | Pricing, Actuarial & Claims | Technical insurance disciplines |
+
+*Domain 2 — Technical/Professional:*
+| # | Skill Area | Notes |
+|---|---|---|
+| 4 | Technology, Digital & AI Transformation | Core positioning — digital and AI executive |
+| 5 | Data, Analytics & Decision Science | Data strategy, ML, analytics capability build |
+| 6 | Financial Acumen & P&L | Budget accountability, commercial performance |
+| 7 | Risk Management | Enterprise risk, operational risk, cyber risk |
+| 8 | Customer Experience & Distribution | Channel strategy, NPS, customer-led design |
+
+*Domain 3 — Governance:*
+| # | Skill Area | Notes |
+|---|---|---|
+| 9 | Corporate Governance & Regulatory | Board duties, APRA/ASIC, compliance frameworks |
+| 10 | ESG & Sustainability | Climate risk, social impact (if applicable) |
+
+*Domain 4 — Behavioural:*
+| # | Skill Area | Notes |
+|---|---|---|
+| 11 | Strategic Leadership & Vision | Setting direction, strategic planning, M&A |
+| 12 | People, Culture & Team Development | Building high-performance teams, inclusion, talent |
+| 13 | Stakeholder Management & Alliances | Partnerships, alliances, exec stakeholder management |
+| 14 | Change Management & Execution | Transformation delivery, program leadership |
+
+- Each cell: rating level + 1-2 sentence evidence snippet + link to relevant case study
+- Following AICD guidance: exclude basic competencies universally expected of directors (e.g. understanding of director duties)
+- The matrix data is also the structured input for the Fit Finder (Epic 8)
 
 **Career timeline:**
 - Reverse-chronological summary of roles
 - Each role: title, company, reporting line, team size, tenure, one-line scope
+- Include term/tenure dates to support succession planning (per AICD recommendation)
 - Schema markup (`Person` schema with `hasOccupationExperience`)
 
 **SHREK team compatibility:**
 - The skill matrix data is stored as structured JSON (Astro Content Collection), making it consumable by:
-  - Executive search firm CRM/ATS platforms (Invenias, Bullhorn, FileFinder/Talentis) that index candidate profiles
-  - Talent intelligence platforms (Eightfold, SeekOut) that crawl structured web data
-  - LinkedIn Recruiter, which indexes Schema.org Person markup
-  - BoardEx and RelSci, which map executive competencies and relationships
-  - Board management software (Diligent, OnBoard) used by nomination committees
+  - **Invenias / Bullhorn / FileFinder (Talentis)** — exec search CRM/ATS platforms that index candidate profiles
+  - **Eightfold / SeekOut** — AI talent intelligence platforms that crawl structured web data and match on demonstrated capabilities
+  - **LinkedIn Recruiter** — indexes Schema.org Person markup and `hasOccupationExperience`
+  - **BoardEx / RelSci** — executive relationship intelligence platforms used by nomination committees
+  - **Diligent / OnBoard** — board management software where nomination committees maintain their skills matrices
+  - **Korn Ferry / Spencer Stuart** — both use proprietary assessment frameworks (KF's Executive Snapshot, SS's Board Intrinsics) that map to the same underlying skill domains
 - The HTML matrix is also machine-readable via JSON-LD, aligning with HR Open Standards and Schema.org `Occupation`/`Role` schemas
+- A search consultant can take the skill matrix data and directly overlay it onto their client board's existing AICD matrix to demonstrate gap-fill
 
 **Responsive design:**
-- Desktop: full grid with hover evidence tooltips
-- Tablet: horizontally scrollable matrix
-- Mobile: stacked cards per domain, each showing rating + evidence
+- Desktop: full grid with hover evidence tooltips, grouped by domain
+- Tablet: horizontally scrollable matrix with sticky first column
+- Mobile: stacked cards per domain, each showing rating badge + evidence text
 
-**Exit criteria:** A nomination committee member can scan the skill matrix in the same format they use for board composition reviews and within 2 minutes understand Miles's strengths, depth, and evidence across AICD-standard leadership dimensions.
+**Exit criteria:** A nomination committee member can scan the skill matrix in the exact same format they use for board composition reviews under ASX Recommendation 2.2 — and within 2 minutes understand Miles's strengths, depth, and evidence across all four AICD competency domains.
 
 ---
 
@@ -380,8 +415,9 @@ Browser renders fit report (top 2 visible, rest blurred, CTA)
 - Build `/fit` page with file upload (PDF, DOCX) and text paste input
 - Build Cloudflare Worker serverless function:
   - Document parsing (extract text from uploaded files)
-  - Structured prompt to Claude Haiku: compare role requirements against Miles's skill matrix, case study outcomes, and leadership philosophy
-  - Return JSON: array of matches ranked by strength, each with category (skillset/mindset), evidence snippet, and confidence
+  - Structured prompt to Claude Haiku: compare role requirements against Miles's AICD-aligned skill matrix (14 domains across 4 competency areas), case study outcomes, and leadership philosophy
+  - The prompt includes Miles's structured profile as a cached system prompt (JSON derived from the same Content Collection that powers the `/experience` page) — single source of truth
+  - Return JSON: array of matches ranked by strength, each with category (skillset/mindset), AICD domain, evidence snippet, and confidence
 - Build match result UI:
   - Top skillset match: fully visible with evidence
   - Top mindset match: fully visible with evidence
@@ -638,6 +674,37 @@ Each phase delivers a working, deployable site. No phase depends on a later phas
 7. **Fit Finder — results sharing** — Should each analysis generate a unique shareable URL so a search consultant can share the fit report with their client? (Requires minimal state — e.g. a short-lived signed URL with the result embedded, no server storage.)
 8. **AICD membership** — Is Miles an AICD member or graduate of the Company Directors Course? This would strengthen the credibility of the AICD-aligned skill matrix.
 9. **Privacy policy review** — Should the privacy policy be reviewed by a legal professional, or is a clear, self-authored plain-language policy sufficient for a personal site?
+
+---
+
+## 11. References
+
+### Governance & Board Skills Frameworks
+- [AICD Guidance for Preparing a Board Skills Matrix (PDF)](https://www.aicd.com.au/content/dam/aicd/pdf/tools-resources/director-tools/board/guidance-preparing-board-skills-matrix-director-tool.pdf)
+- [AICD Board Composition and Skills Matrix, September 2024 (PDF)](https://www.aicd.com.au/content/dam/aicd/pdf/about/about-our-governance/board-composition-skills-matrix-web.pdf)
+- [ASX Corporate Governance Principles and Recommendations, 4th Edition (PDF)](https://www.asx.com.au/content/dam/asx/about/corporate-governance-council/cgc-principles-and-recommendations-fourth-edn.pdf)
+- [ASX Good Governance Guide: Creating and Disclosing a Board Skills Matrix (PDF)](https://www.asx.com.au/content/dam/asx/about/corporate-governance-council/creating-disclosing-board-skills-matrix.pdf)
+- [AICD Director Tools Hub](https://www.aicd.com.au/tools-and-resources/director-tools.html)
+- [AICD Key Competencies for Directors](https://www.aicd.com.au/board-of-directors/performance/skills-matrix/key-competencies-for-directors.html)
+- [APRA: How a Skills Matrix Can Help Transform Board Capability](https://www.apra.gov.au/superannuation-how-a-skills-matrix-can-help-transform-board-capability)
+
+### Executive Search & Talent Intelligence
+- [Spencer Stuart Board Indexes](https://www.spencerstuart.com/research-and-insight/board-indexes)
+- [Schema.org JobPosting](https://schema.org/JobPosting)
+- [HR Open Standards — Recruiting](https://www.hropenstandards.org)
+- [LinkedIn Recruiter System Connect](https://learn.microsoft.com/en-us/linkedin/talent/recruiter-system-connect)
+
+### LLM Readability
+- [llms.txt specification](https://llmstxt.org/)
+- [Mintlify: What is llms.txt?](https://www.mintlify.com/blog/what-is-llms-txt)
+
+### Technology & Services
+- [Astro](https://astro.build/)
+- [Cloudflare Workers](https://workers.cloudflare.com/)
+- [Anthropic Claude API](https://docs.anthropic.com/en/docs/about-claude/models)
+- [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/)
+- [UptimeRobot](https://uptimerobot.com/)
+- [Sentry](https://sentry.io/)
 
 ---
 
