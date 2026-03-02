@@ -149,8 +149,8 @@ Migrate from static HTML to **Astro** — a content-focused static site generato
 ┌──────────────────────────────────────────────────────────────────┐
 │                  OBSERVABILITY → DISCORD (Free)                   │
 │                                                                  │
-│  Browser beacon ──→ Worker ──→ Workers KV ──→ Cron ──→ Discord   │
-│  (sendBeacon)       (/api/beacon)  (counters)   (daily)          │
+│  Browser beacon ──→ Worker ──→ Supabase ──→ Cron ──→ Discord     │
+│  (sendBeacon)       (/api/beacon) (Postgres)  (daily)            │
 │                                                                  │
 │  UptimeRobot ─────────────────────────────────→ #uptime-alerts   │
 │  GitHub Actions ──────────────────────────────→ #build-deploys   │
@@ -179,13 +179,50 @@ Migrate from static HTML to **Astro** — a content-focused static site generato
 - **Analytics:** Cloudflare Web Analytics (free, cookie-free, privacy-respecting)
 - **Monitoring:** UptimeRobot free tier + Lighthouse CI in GitHub Actions + custom analytics beacon (Workers KV)
 - **Ops dashboard:** Discord server with webhook integrations — all alerts, reports, and metrics push to Discord channels
-- **Funnel tracking:** Lightweight `sendBeacon` → Cloudflare Worker → Workers KV → scheduled Discord reports
+- **Funnel tracking:** Lightweight `sendBeacon` → Cloudflare Worker → Supabase Postgres → scheduled Discord reports
+- **Analytics database:** Supabase free tier (500MB Postgres) — proper SQL for funnel queries, historical retention, no write limits
 - **Contact:** LinkedIn deep-link messaging + WhatsApp `wa.me` link (no email forms)
 - **Security:** CSP headers, SRI, no cookies, no PII, HSTS
 
 ---
 
-## 7. Epics & Roadmap
+## 7. Available Services & Accounts
+
+Miles has access to the following services. The PRD uses only the subset needed — the rest are documented here for future reference.
+
+**In use by this project:**
+
+| Service | Role in project | Tier | Notes |
+|---|---|---|---|
+| **GitHub** | Repo, CI/CD, Pages hosting | Free (with Copilot Pro) | 2,000 Actions mins/month (public repos), 500 (private) |
+| **Cloudflare** | DNS, CDN, Workers, Web Analytics | Free | Domain will point from Squarespace to Cloudflare nameservers |
+| **Supabase** | Analytics database (Postgres) | Free (500MB, 50k MAU) | Replaces Workers KV for funnel tracking — proper SQL, no write limits |
+| **Claude API** | Fit Finder LLM (Haiku) | Pay-per-use | ~$0.002/analysis. Also available: Claude Max subscription for Claude Code |
+| **Discord** | Ops dashboard (webhooks) | Free | Server already created. 7 channels for observability |
+| **UptimeRobot** | Uptime monitoring | Free (5 monitors) | Native Discord webhook integration |
+| **Sentry** | JS error tracking | Free (5k events/month) | Native Discord integration |
+| **Squarespace** | Domain registration | Paid (pre-paid) | DNS only — nameservers point to Cloudflare |
+
+**Available but not currently needed:**
+
+| Service | What it could do | Why not using (yet) |
+|---|---|---|
+| **Langflow** | Visual LLM prompt chain builder | Could simplify Fit Finder prompt iteration — evaluate during Epic 8 |
+| **Firebase** | Realtime DB, auth, hosting | Supabase covers the DB need; GitHub Pages covers hosting |
+| **Google Cloud** | Cloud Functions, storage, AI APIs | Cloudflare Workers covers serverless; would add complexity |
+| **Vercel / Netlify** | Hosting with serverless + analytics | GitHub Pages is simpler and already working; Vercel is a viable alternative if Pages hits limits |
+| **Gemini (free)** | Fallback LLM | If Claude API costs spike, Gemini could serve as Fit Finder fallback |
+| **Mistral (free)** | Fallback LLM | Smaller models, good for cost-sensitive fallback |
+| **Notion** | Content CMS | Markdown in Git is simpler for a single-author site |
+| **Meta AI / Llama** | Open-source LLM | Self-hosted option — unnecessary given Claude API costs (~$0.10/month) |
+
+**MCPs and integrations:** Will be identified and configured as needed during implementation. Miles has the infrastructure to make additional MCPs available.
+
+**GitHub plan note:** Free tier with Copilot Pro. If the repo is public, GitHub Pages and 2,000 Actions minutes/month are available at no cost. If private, 500 minutes/month — still sufficient for this project's build frequency.
+
+---
+
+## 8. Epics & Roadmap
 
 ### Epic 1 — Foundation & Migration
 > Set up the Astro project, design system, and deploy pipeline. The existing site continues to work throughout.
@@ -560,6 +597,7 @@ A lightweight PIA for the Fit Finder feature (the only data-processing component
 | Cloudflare (free plan) | DNS, CDN, security headers, Web Analytics | Free | $0 |
 | Cloudflare Workers | Fit Finder serverless function | Free (100k req/day) | $0 |
 | Claude API (Haiku) | Role description analysis | Pay-per-use | ~$0.10 (est. 50 analyses) |
+| Supabase | Analytics database (Postgres) | Free (500MB, 50k MAU) | $0 |
 | Google Fonts | Typography (DM Serif Display, IBM Plex Sans) | Free | $0 |
 | Domain (madebymiles.ai) | `.ai` TLD — already paid (Squarespace) | Paid | $0 (pre-paid) |
 | **Total** | | | **< $1/month** |
@@ -617,11 +655,11 @@ Discord webhooks are free, unlimited, and support rich embeds (colour-coded, str
 | Uptime/downtime | UptimeRobot | `#uptime-alerts` | UptimeRobot native Discord webhook | $0 |
 | Build pass/fail | GitHub Actions | `#build-deploys` | GitHub webhook or Actions step (`curl`) | $0 |
 | Lighthouse scores | GitHub Actions | `#build-deploys` | CI step posts embed after each deploy | $0 |
-| Visitor summary | Custom analytics beacon → Workers KV | `#site-visitors` | Scheduled Worker (cron) → Discord webhook | $0 |
-| Top pages + referrers | Custom analytics beacon → Workers KV | `#site-visitors` | Scheduled Worker (cron) → Discord webhook | $0 |
-| Funnel conversion | Custom beacon events → Workers KV | `#funnel-tracking` | Scheduled Worker (cron) → Discord webhook | $0 |
-| Drop-off points | Custom beacon events → Workers KV | `#funnel-tracking` | Scheduled Worker (cron) → Discord webhook | $0 |
-| CTA clicks | Custom beacon events → Workers KV | `#funnel-tracking` | Scheduled Worker (cron) → Discord webhook | $0 |
+| Visitor summary | Custom analytics beacon → Supabase | `#site-visitors` | Scheduled Worker (cron) → Discord webhook | $0 |
+| Top pages + referrers | Custom analytics beacon → Supabase | `#site-visitors` | Scheduled Worker (cron) → Discord webhook | $0 |
+| Funnel conversion | Custom beacon events → Supabase | `#funnel-tracking` | Scheduled Worker (cron) → Discord webhook | $0 |
+| Drop-off points | Custom beacon events → Supabase | `#funnel-tracking` | Scheduled Worker (cron) → Discord webhook | $0 |
+| CTA clicks | Custom beacon events → Supabase | `#funnel-tracking` | Scheduled Worker (cron) → Discord webhook | $0 |
 | Threats blocked | Cloudflare Security Events API | `#security-threats` | Scheduled Worker → Cloudflare API → Discord | $0 |
 | Rate limit hits | Cloudflare Worker (Fit Finder) | `#security-threats` | Worker posts to Discord on rate limit trigger | $0 |
 | Fit Finder usage | Cloudflare Worker counter | `#fit-finder` | Scheduled Worker (cron) → Discord webhook | $0 |
@@ -647,16 +685,56 @@ Browser (every page)
 Cloudflare Worker (/api/beacon)
     │
     ├── Validate & sanitise input
-    ├── Increment counters in Workers KV:
-    │   ├── daily:pageviews:{date}         → total count
-    │   ├── daily:pages:{date}:{path}      → per-page count
-    │   ├── daily:referrers:{date}:{ref}   → referrer count
-    │   ├── daily:events:{date}:{event}    → event count
-    │   └── daily:funnel:{date}:{step}     → funnel step count
-    ├── No PII stored. No IP logging. No user IDs.
+    ├── INSERT into Supabase Postgres (via REST API):
+    │   ├── events table: { page, referrer, event_type, created_at }
+    │   └── No PII stored. No IP logging. No user IDs.
     │
     ▼
-Workers KV (free tier: 1k writes/day, 100k reads/day)
+Supabase (free tier: 500MB Postgres, 50k MAU, unlimited API requests)
+    │
+    ├── SQL views for reporting:
+    │   ├── daily_pageviews    → COUNT(*) GROUP BY date
+    │   ├── top_pages          → COUNT(*) GROUP BY page, date
+    │   ├── top_referrers      → COUNT(*) GROUP BY referrer, date
+    │   ├── funnel_steps       → COUNT(*) GROUP BY event_type, date
+    │   └── conversion_rate    → funnel step comparisons
+    │
+    ▼
+Scheduled Cloudflare Worker (cron) → queries Supabase → posts to Discord
+```
+
+**Why Supabase over Workers KV:**
+- **No write limits** — Workers KV free tier caps at 1,000 writes/day (~125 page views). Supabase has no meaningful write limit on the free tier.
+- **Real SQL** — Funnel queries, date ranges, GROUP BY, conversion calculations — all native SQL instead of counter arithmetic
+- **Historical data** — Keep months of analytics data (500MB is years of event rows for a personal site). Workers KV would require daily counter resets.
+- **Supabase REST API** — The Worker calls Supabase's auto-generated REST API (PostgREST) with the `anon` key. No direct Postgres connection needed.
+- **Row Level Security** — Supabase RLS ensures the `anon` key can only INSERT events, not read or delete. The cron Worker uses the `service_role` key to read for reports.
+
+**Supabase schema (minimal):**
+```sql
+CREATE TABLE events (
+  id         bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  page       text NOT NULL,
+  referrer   text,
+  event_type text NOT NULL,
+  created_at timestamptz DEFAULT now()
+);
+
+-- RLS: anon can only insert
+ALTER TABLE events ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "anon_insert" ON events FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY "service_read" ON events FOR SELECT TO service_role USING (true);
+
+-- Reporting views
+CREATE VIEW daily_summary AS
+SELECT
+  created_at::date AS day,
+  COUNT(*) FILTER (WHERE event_type = 'page_view') AS pageviews,
+  COUNT(DISTINCT page) AS unique_pages,
+  COUNT(*) FILTER (WHERE event_type LIKE 'cta_%') AS cta_clicks
+FROM events
+GROUP BY created_at::date
+ORDER BY day DESC;
 ```
 
 **Tracked events (for funnel):**
@@ -673,11 +751,6 @@ Workers KV (free tier: 1k writes/day, 100k reads/day)
 | `cta_click_whatsapp` | 7. Conversion | WhatsApp CTA clicked |
 
 **Drop-off analysis:** The scheduled report compares funnel step counts to calculate drop-off rates between each step (e.g. "35 visitors landed → 22 scrolled → 12 viewed skills → 5 clicked CTA → 2 used Fit Finder → 1 converted").
-
-**Workers KV free tier budget:**
-- 1,000 writes/day = supports ~125 unique page views/day (each view generates ~8 KV increments)
-- 100,000 reads/day = supports daily/weekly report generation easily
-- For a personal executive site, this is more than sufficient
 
 **2. Scheduled Discord reports (Cloudflare Workers cron triggers):**
 
@@ -770,14 +843,14 @@ Discord embed format example (daily summary):
 
 **Implementation order:**
 1. **Phase 1 (with Foundation):** UptimeRobot → Discord, GitHub Actions → Discord (build/deploy notifications)
-2. **Phase 2 (with Skill Matrix):** Custom analytics beacon + Workers KV + daily/weekly Discord reports
+2. **Phase 2 (with Skill Matrix):** Custom analytics beacon + Supabase + daily/weekly Discord reports
 3. **Phase 4 (with Fit Finder):** Fit Finder usage tracking, Sentry, rate limit alerts, API spend tracking, security event reporting
 
 **Exit criteria:** Every signal in the table above routes to the correct Discord channel. A daily summary posts at 08:00 AEST. A weekly funnel report shows conversion rates and drop-off points. Build failures, downtime, and security threats trigger immediate alerts. Miles checks one Discord server and knows exactly how the site is performing.
 
 ---
 
-## 8. Phasing
+## 9. Phasing
 
 ```
 Phase 0 — Cross-Cutting              Epics 9 + 10 + 11    Security, Cost, Observability & Discord (woven into every phase)
@@ -794,7 +867,7 @@ Each phase delivers a working, deployable site. No phase depends on a later phas
 
 ---
 
-## 9. Out of Scope (for now)
+## 10. Out of Scope (for now)
 
 - Blog with comments or social sharing (reflections are one-way publishing)
 - Email newsletter or mailing list
@@ -803,12 +876,12 @@ Each phase delivers a working, deployable site. No phase depends on a later phas
 - E-commerce, paid advisory booking, or invoicing
 - CMS or admin interface (content authored in Markdown via Git)
 - Custom domain email (contact flows through LinkedIn/WhatsApp)
-- Server-side data storage or databases (everything is stateless or static)
+- Server-side data storage beyond analytics (Supabase stores anonymous event counts only — no PII, no user data)
 - Paid services beyond Claude API micro-usage (total budget ≤ $5/month variable cost)
 
 ---
 
-## 10. Open Questions
+## 11. Open Questions
 
 1. **WhatsApp number** — Which number should be used for the `wa.me` link? Is a dedicated number preferred?
 2. **Skill matrix rating approach** — The AICD recommends a three-level scale (Expert / Substantial / Awareness). Should Miles self-rate, or should each cell also include a qualitative evidence statement linking to a case study?
@@ -822,7 +895,7 @@ Each phase delivers a working, deployable site. No phase depends on a later phas
 
 ---
 
-## 11. References
+## 12. References
 
 ### Governance & Board Skills Frameworks
 - [AICD Guidance for Preparing a Board Skills Matrix (PDF)](https://www.aicd.com.au/content/dam/aicd/pdf/tools-resources/director-tools/board/guidance-preparing-board-skills-matrix-director-tool.pdf)
@@ -851,6 +924,9 @@ Each phase delivers a working, deployable site. No phase depends on a later phas
 - [Cloudflare GraphQL Analytics API](https://developers.cloudflare.com/analytics/graphql-api/)
 - [Anthropic Claude API](https://docs.anthropic.com/en/docs/about-claude/models)
 - [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/)
+- [Supabase](https://supabase.com/)
+- [Supabase REST API (PostgREST)](https://supabase.com/docs/guides/api)
+- [Supabase Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security)
 - [Discord Webhooks](https://discord.com/developers/docs/resources/webhook)
 - [UptimeRobot](https://uptimerobot.com/)
 - [UptimeRobot Discord Integration](https://blog.uptimerobot.com/how-to-set-up-discord-notifications-for-uptimerobot/)
