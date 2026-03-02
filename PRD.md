@@ -57,8 +57,10 @@ The site should embody the same philosophy Miles brings to his work: **pragmatic
 2. **Evidence over adjectives** — Every claim is backed by a metric, a scope, or a specific outcome. No superlatives without substance.
 3. **Scannable then deep** — The homepage answers "Who is this person and why should I care?" in 10 seconds. Case studies and the skill matrix reward deeper evaluation.
 4. **Human-first, machine-accessible** — The primary interface is designed for humans. LLMs and AI agents access the same content through a parallel machine-readable layer (Markdown files, JSON-LD, `llms.txt`) — not by parsing a UI that wasn't built for them.
-5. **Warm authority** — Professional but not corporate. The design and voice should feel like a confident, approachable leader — not a law firm.
-6. **Fast and frictionless** — Sub-second loads. No cookie banners, no popups, no login walls. Every interaction earns the next click.
+5. **Secure by default** — No cookies, no PII collection, no persistent storage. Uploaded documents are processed in memory and discarded. Security headers, SRI, and least-privilege architecture protect both Miles and every visitor.
+6. **Warm authority** — Professional but not corporate. The design and voice should feel like a confident, approachable leader — not a law firm.
+7. **Fast and frictionless** — Sub-second loads. No cookie banners, no popups, no login walls. Every interaction earns the next click.
+8. **Maximum impact, minimum cost** — The architecture deliberately uses free tiers and static-first design. Variable running costs stay under $5/month. No service is adopted unless it earns its place.
 
 ---
 
@@ -68,18 +70,23 @@ The site should embody the same philosophy Miles brings to his work: **pragmatic
 madebymiles.ai
 ├── / ............................ Homepage (hero, capabilities, impact summary, CTA)
 ├── /experience .................. Skill matrix + career timeline
-│   └── Skill matrix grid (domains × competencies, self-rated)
+│   └── Skill matrix grid (AICD-aligned domains × competencies)
 │   └── Career timeline with role scope and tenure
 ├── /work
 │   ├── /work/sci ................ Case study: Strata Community Insurance
 │   ├── /work/cba ................ Case study: Commonwealth Bank
 │   ├── /work/hollard ............ Case study: Hollard Insurance
 │   └── /work/westpac ............ Case study: Westpac
+├── /fit ......................... AI Role Matcher — upload a role description, see alignment
 ├── /reflections ................. Short-form writing on leadership, AI, insurance
 │   └── Individual reflection posts
 ├── /projects .................... Agentic engineering & side projects
 │   └── Individual project write-ups
-└── /contact ..................... Contact hub (LinkedIn message, WhatsApp, links)
+├── /contact ..................... Contact hub (LinkedIn message, WhatsApp, links)
+├── /privacy ..................... Privacy policy (plain language, no legalese)
+├── /llms.txt .................... Machine-readable summary for LLMs
+├── /llms-full.txt ............... Comprehensive Markdown for LLMs
+└── /api/fit ..................... Cloudflare Worker endpoint (Fit Finder API)
 ```
 
 ---
@@ -98,13 +105,70 @@ Migrate from static HTML to **Astro** — a content-focused static site generato
 - Incremental adoption — can add interactive islands (React/Svelte) only where needed
 - Deploys to GitHub Pages with a single GitHub Action
 
+### Solution Architecture
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                         VISITORS                                 │
+│      Board Chairs · Search Firms · LLMs · AI Agents              │
+└──────────────┬───────────────────────────┬───────────────────────┘
+               │ HTTPS                     │ HTTPS
+               ▼                           ▼
+┌──────────────────────────┐  ┌────────────────────────────────────┐
+│   Cloudflare (Free)      │  │   Cloudflare Workers (Free)        │
+│                          │  │                                    │
+│  · DNS + CDN             │  │  · /api/fit endpoint               │
+│  · Security headers      │  │  · Parse PDF/DOCX (in-memory)     │
+│  · DDoS protection       │  │  · Call Claude Haiku API           │
+│  · Web Analytics (RUM)   │  │  · Return match JSON               │
+│  · Edge caching          │  │  · Rate limit (10/IP/day)          │
+│  · HSTS + CSP            │  │  · No storage, no logging          │
+│                          │  │                                    │
+└──────────┬───────────────┘  └──────────┬─────────────────────────┘
+           │                             │
+           ▼                             ▼
+┌──────────────────────────┐  ┌────────────────────────────────────┐
+│   GitHub Pages (Free)    │  │   Anthropic API (Pay-per-use)      │
+│                          │  │                                    │
+│  · Static HTML/CSS/JS    │  │  · Claude Haiku 4.5                │
+│  · Pre-rendered pages    │  │  · Prompt-cached candidate profile │
+│  · /llms.txt             │  │  · ~$0.002 per analysis            │
+│  · /llms-full.txt        │  │  · No data retention               │
+│  · JSON-LD structured    │  │                                    │
+│    data on every page    │  │                                    │
+│  · Sitemap + RSS         │  │                                    │
+└──────────────────────────┘  └────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────┐
+│                      BUILD PIPELINE (Free)                       │
+│                                                                  │
+│  GitHub Actions: lint → npm audit → build → Lighthouse CI        │
+│                  → deploy to GitHub Pages                        │
+│                                                                  │
+│  Monitoring: UptimeRobot (uptime) · Cloudflare (RUM/analytics)   │
+│              Sentry free tier (JS errors) · Lighthouse CI (perf) │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+**Design decisions:**
+- **Static-first:** Every page is pre-rendered at build time. No server, no database, no container, no runtime to patch or scale.
+- **Serverless-only for dynamic features:** The Fit Finder is the only dynamic component, running on Cloudflare Workers (V8 isolates, auto-scaling, free tier).
+- **Build-time over runtime:** Structured data, sitemaps, RSS, `llms.txt`, and the machine-readable content layer are all generated during the Astro build — not computed on each request.
+- **Zero persistent state:** Nothing is stored between requests. The site is stateless by design. This eliminates entire categories of risk (data breaches, backup failures, GDPR data subject requests).
+- **Edge-native:** Cloudflare serves and protects everything from the edge. No origin server to expose.
+
 **Key technical choices:**
 - **Content:** Astro Content Collections (type-safe Markdown/MDX)
 - **Styling:** Tailwind CSS (utility-first, design-token friendly)
 - **Structured data:** JSON-LD on every page (Person, Article, Organization schemas)
 - **Hosting:** GitHub Pages (existing setup, free, fast CDN)
-- **Analytics:** Plausible or Fathom (privacy-respecting, no cookie banner needed)
+- **Edge compute:** Cloudflare Workers (free tier — Fit Finder serverless function)
+- **AI API:** Claude Haiku via Anthropic API (role matching in Fit Finder)
+- **DNS & CDN:** Cloudflare free plan (security headers, Web Analytics, edge caching)
+- **Analytics:** Cloudflare Web Analytics (free, cookie-free, privacy-respecting)
+- **Monitoring:** UptimeRobot free tier + Lighthouse CI in GitHub Actions
 - **Contact:** LinkedIn deep-link messaging + WhatsApp `wa.me` link (no email forms)
+- **Security:** CSP headers, SRI, no cookies, no PII, HSTS
 
 ---
 
@@ -139,20 +203,56 @@ Migrate from static HTML to **Astro** — a content-focused static site generato
 
 ---
 
-### Epic 3 — Skill Matrix & Experience Page
-> Give boards and search firms a structured way to evaluate leadership fit across domains and competencies.
+### Epic 3 — Skill Matrix & Experience Page (AICD-Aligned)
+> Give boards and search firms a structured way to evaluate leadership fit, using the industry-standard AICD framework that nomination committees already work with.
+
+**Why AICD alignment matters:**
+The Australian Institute of Company Directors (AICD) publishes the standard framework for board skills matrices, used by ASX-listed companies, nomination committees, and search firms across Australia. The ASX Corporate Governance Council recommends companies disclose a board skills matrix. By structuring Miles's skills against this framework, the site speaks the same language as the people making appointment decisions — and the data maps directly into how Korn Ferry, Heidrick & Struggles, Egon Zehnder, and Spencer Stuart present candidates to clients.
 
 **Scope:**
-- Design and build `/experience` page
-- **Skill matrix:** Grid of domains (rows) × competencies (columns), each cell with a brief evidence statement
-  - Domains: e.g. Insurance Operations, Pricing & Actuarial, Digital & AI, People & Culture, Strategy & Alliances, Risk & Governance
-  - Competencies: e.g. Strategic Leadership, Execution & Delivery, Stakeholder Management, Commercial Acumen, Innovation & Technology, Team Development
-  - Each cell: 1-2 sentence evidence snippet + link to relevant case study
-- **Career timeline:** Chronological or reverse-chronological summary of roles with title, company, tenure, and one-line scope
-- Responsive design — matrix works on mobile (horizontal scroll or stacked cards)
-- Schema markup for the career timeline (Person schema with `hasOccupationExperience`)
 
-**Exit criteria:** A board member can scan the skill matrix and within 2 minutes understand Miles's strengths, gaps, and evidence across key leadership dimensions.
+**Skill matrix (AICD-aligned):**
+- Design and build `/experience` page
+- Grid of skill domains (rows) × rating levels (columns), each cell with an evidence statement
+- **Rating scale** (AICD three-level model):
+  - **Expert** — Deep expertise, has led at scale, can advise others
+  - **Substantial** — Significant practised experience, direct accountability
+  - **Awareness** — Working knowledge, has operated adjacent to this domain
+- **Skill domains** (mapped to AICD standard categories + Miles's strategic priorities):
+  - Strategic Leadership & Vision
+  - Insurance Operations & Underwriting
+  - Pricing, Actuarial & Claims
+  - Technology, Digital & AI Transformation
+  - Data, Analytics & Decision Science
+  - People, Culture & Team Development
+  - Risk Management & Governance
+  - Stakeholder Management & Alliances
+  - Commercial Acumen & P&L
+  - Customer Experience & Distribution
+  - Change Management & Execution
+- Each cell: 1-2 sentence evidence snippet + link to relevant case study
+- The matrix also serves as the structured data source for the Fit Finder (Epic 8)
+
+**Career timeline:**
+- Reverse-chronological summary of roles
+- Each role: title, company, reporting line, team size, tenure, one-line scope
+- Schema markup (`Person` schema with `hasOccupationExperience`)
+
+**SHREK team compatibility:**
+- The skill matrix data is stored as structured JSON (Astro Content Collection), making it consumable by:
+  - Executive search firm CRM/ATS platforms (Invenias, Bullhorn, FileFinder/Talentis) that index candidate profiles
+  - Talent intelligence platforms (Eightfold, SeekOut) that crawl structured web data
+  - LinkedIn Recruiter, which indexes Schema.org Person markup
+  - BoardEx and RelSci, which map executive competencies and relationships
+  - Board management software (Diligent, OnBoard) used by nomination committees
+- The HTML matrix is also machine-readable via JSON-LD, aligning with HR Open Standards and Schema.org `Occupation`/`Role` schemas
+
+**Responsive design:**
+- Desktop: full grid with hover evidence tooltips
+- Tablet: horizontally scrollable matrix
+- Mobile: stacked cards per domain, each showing rating + evidence
+
+**Exit criteria:** A nomination committee member can scan the skill matrix in the same format they use for board composition reviews and within 2 minutes understand Miles's strengths, depth, and evidence across AICD-standard leadership dimensions.
 
 ---
 
@@ -245,16 +345,271 @@ Migrate from static HTML to **Astro** — a content-focused static site generato
 
 ---
 
+### Epic 8 — AI Role Matcher ("Fit Finder")
+> Let a potential hirer upload a role description or SOW and instantly see how Miles's skillset and mindset align — then invite them to start a conversation.
+
+**Concept:**
+A hiring manager, board chair, or search consultant visits `/fit` and uploads a role description (PDF, DOCX, or pasted text). A serverless function sends the document to Claude Haiku alongside Miles's structured skill and experience data. The system returns a personalised fit report:
+
+- **Top skillset match** — The strongest alignment between the role's requirements and Miles's demonstrated capabilities, with evidence from case studies
+- **Top mindset match** — The strongest alignment between the role's leadership culture/values and Miles's leadership philosophy, with evidence from reflections
+- **Remaining matches** — Shown blurred/redacted with a clear CTA: *"Want to see the full picture? Let's talk."* → routes to LinkedIn message or WhatsApp
+
+This is both a conversion mechanism and a demonstration of AI fluency — Miles walking the talk.
+
+**Architecture:**
+
+```
+Browser (static Astro page)
+    │
+    ├── Upload / paste role description
+    │
+    ▼
+Cloudflare Worker (serverless function)
+    │
+    ├── Parse document (PDF.js / mammoth.js for DOCX, or plain text)
+    ├── Load Miles's structured profile (JSON, stored in Worker KV or bundled)
+    ├── Call Claude Haiku API with role description + profile
+    ├── Return structured match response
+    │
+    ▼
+Browser renders fit report (top 2 visible, rest blurred, CTA)
+```
+
+**Scope:**
+- Build `/fit` page with file upload (PDF, DOCX) and text paste input
+- Build Cloudflare Worker serverless function:
+  - Document parsing (extract text from uploaded files)
+  - Structured prompt to Claude Haiku: compare role requirements against Miles's skill matrix, case study outcomes, and leadership philosophy
+  - Return JSON: array of matches ranked by strength, each with category (skillset/mindset), evidence snippet, and confidence
+- Build match result UI:
+  - Top skillset match: fully visible with evidence
+  - Top mindset match: fully visible with evidence
+  - Remaining matches: blurred with CSS blur filter, revealed only after contact
+  - CTA buttons: "Message me on LinkedIn" / "WhatsApp me"
+- Miles's structured profile data as a JSON file (single source of truth, derived from content collections)
+- Rate limiting: max 10 analyses per IP per day (prevent abuse, control cost)
+
+**SHREK Team Integration:**
+Search firms and hiring teams use platforms like Invenias, Bullhorn, FileFinder (CRM/ATS), LinkedIn Recruiter, BoardEx, RelSci (sourcing), and increasingly AI-powered talent intelligence tools like Eightfold and SeekOut. The Fit Finder positions madebymiles.ai as compatible with these workflows:
+- Search consultants can paste a role brief directly from their ATS
+- The structured JSON-LD on the site (Person schema, `hasOccupationExperience`) is consumable by talent intelligence crawlers
+- The skill matrix and case studies mirror the structured data these platforms index
+- The match report can be shared via a unique results URL (optional) — giving the search consultant something to attach to a candidate profile in their CRM
+
+**Privacy & data handling:**
+- Uploaded documents are processed in-memory by the Cloudflare Worker — **never persisted to disk, database, or logs**
+- No PII is collected from the uploader (no login, no email capture)
+- The Worker processes the document, calls the API, returns the result, and the document is garbage-collected
+- Clear privacy notice on the upload page: *"Your document is processed in memory and immediately discarded. Nothing is stored."*
+- No analytics on document content — only aggregate usage counts (number of analyses per day)
+
+**Cost estimate:**
+- Cloudflare Workers free tier: 100k requests/day (vastly more than needed)
+- Claude Haiku: ~$0.25/1M input tokens, ~$1.25/1M output tokens
+- A typical role description: ~2-3k tokens input + ~1k tokens output = ~$0.002 per analysis
+- At 50 analyses/month: ~$0.10/month
+- Well within $5/month budget
+
+**Exit criteria:** A search consultant can paste a CEO role description and within 10 seconds see Miles's top skillset and mindset alignment with evidence, with a clear path to start a conversation.
+
+---
+
+### Epic 9 — Security, Privacy & Data Protection (By Design)
+> Build privacy and security into every layer — and make it visible. The way this site handles data is itself a demonstration of how Miles approaches digital and AI leadership.
+
+**Why this matters beyond compliance:**
+Miles is a digital and AI executive. Every potential employer and board will evaluate not just what he says about privacy and security, but what they can *see and feel* in how his own site operates. The site should be a living example of privacy-by-design and security-by-default — the same principles Miles applies at work. No cookie banners because there are no cookies. No privacy policy full of exceptions because there's nothing to except.
+
+**Privacy Impact Assessment (PIA):**
+
+A lightweight PIA for the Fit Finder feature (the only data-processing component):
+
+| PIA Element | Assessment |
+|---|---|
+| **Data collected** | Uploaded document (role description/SOW) — text only, no metadata extraction |
+| **Data subject** | The hiring organisation, not the uploader (role descriptions describe the company's needs, not personal data) |
+| **Sensitive data** | Possible — role descriptions may contain confidential remuneration, reporting lines, or strategic context |
+| **Processing purpose** | One-time comparison against Miles's public skill profile; result returned to uploader |
+| **Data storage** | None. Document processed in-memory in Cloudflare Worker isolate, then garbage-collected. Not written to disk, database, log, or any persistent medium |
+| **Data sharing** | Document text sent to Anthropic API (Claude Haiku) for processing. Subject to Anthropic's API data policy: API inputs are not used for training and are not retained beyond the request lifecycle |
+| **Data retention** | Zero. No document content, no uploader identity, no results are retained |
+| **Cross-border transfer** | Document text transits to Anthropic API (US-hosted). No PII is involved. Anthropic's API terms apply |
+| **Lawful basis (GDPR)** | Legitimate interest — the uploader initiates the analysis voluntarily. No PII is processed |
+| **APPs compliance (Australian Privacy Principles)** | No personal information is collected, used, or disclosed. APPs do not apply to non-personal data |
+| **Risk rating** | Low. No PII, no storage, no profiling, no automated decision-making affecting individuals |
+| **Mitigations** | In-memory processing, rate limiting, file type/size validation, clear user-facing privacy notice, no logging of content |
+
+**Threat model:**
+- The site is mostly static (low attack surface), but the Fit Finder introduces a serverless function that accepts file uploads and calls an external API
+- Uploaded role descriptions may contain confidential information about the hiring organisation
+- Miles's personal positioning data is intentionally public but should not be manipulable (no XSS, no content injection)
+- Potential risks: document exfiltration (mitigated by no-storage architecture), API key exposure (mitigated by server-side only), abuse/scraping (mitigated by rate limiting)
+
+**Scope:**
+
+**Privacy policy & disclosures (visible on-site):**
+- Create a `/privacy` page with a clear, plain-language privacy policy
+- Structure: What we collect (nothing), what happens when you use Fit Finder (in-memory processing, no storage), what analytics we use (Cloudflare Web Analytics — no cookies, no PII), your rights, contact
+- No legalese — the policy itself should demonstrate Miles's approach to clear, respectful communication
+- Link to privacy policy in the site footer on every page
+- Inline privacy notice on the Fit Finder upload page: *"Your document is processed in memory and immediately discarded. Nothing is stored. The document text is sent to Anthropic's Claude API for analysis — Anthropic does not retain API inputs."*
+- Display a "Privacy by design" or "No cookies. No tracking. No storage." signal in the footer — subtle but visible
+
+**Transport & headers:**
+- HTTPS everywhere (enforced by GitHub Pages / Cloudflare)
+- Strict Content Security Policy (CSP) headers — no inline scripts, no external script sources except trusted CDNs
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY` (prevent clickjacking)
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `Permissions-Policy: camera=(), microphone=(), geolocation=()`
+- HSTS with `includeSubDomains` and `preload`
+
+**Fit Finder security:**
+- File upload validation: accept only PDF and DOCX, max 5MB, validate MIME type AND file header bytes (magic numbers) on both client and server
+- Document processing in Cloudflare Worker isolate — sandboxed V8 runtime, no filesystem access, no persistent state
+- Input sanitisation: strip any embedded scripts/macros from uploaded documents before text extraction
+- Rate limiting: 10 requests per IP per day (prevents abuse and controls API costs)
+- API key for Claude never exposed to the client — stored as Cloudflare Worker secret (encrypted at rest)
+- No logging of document content — only aggregate operational metadata (request count, response time, error rate)
+- Timeout: Worker terminates after 30 seconds to prevent resource exhaustion
+- Uploaded file names are never read or stored — only the extracted text content is processed
+
+**Data protection:**
+- No cookies (no cookie banner needed — and that absence is itself a signal)
+- No PII collection — no forms capture email, name, or any personal data
+- No third-party tracking scripts (Google Analytics, Facebook Pixel, HubSpot, etc.)
+- Privacy-respecting analytics only (Cloudflare Web Analytics — no cookies, no PII, free, first-party)
+- GDPR/APPs compliance by design — there is genuinely nothing to comply with because nothing personal is collected or stored
+
+**Supply chain:**
+- Minimal dependencies — Astro builds to static HTML/CSS/JS, no runtime dependencies in production
+- Dependabot or Renovate for automated dependency updates
+- `npm audit` in CI pipeline — fail on critical/high vulnerabilities
+- Subresource Integrity (SRI) hashes on any external resources (fonts, CDN scripts)
+- Lock files committed to git (`package-lock.json`)
+
+**Secrets management:**
+- Claude API key stored as GitHub Actions secret (for build-time) and Cloudflare Worker secret (for runtime)
+- No secrets in client-side code, environment files committed to git, or build output
+- `.env` in `.gitignore` with `.env.example` documenting required variables (without values)
+
+**Exit criteria:** The site scores A+ on securityheaders.com. The privacy policy is live at `/privacy`. No cookies, no PII, no persistent storage. A visitor — especially one evaluating Miles's approach to digital leadership — can see and feel that privacy and security are built in, not bolted on.
+
+---
+
+### Epic 10 — Cost Governance & Infrastructure
+> Deliver the highest-impact executive site for under $5/month through deliberate architecture choices.
+
+**Budget target:** ≤ $5 AUD/month total running cost
+
+**Cost architecture:**
+
+| Service | Purpose | Tier | Monthly cost |
+|---|---|---|---|
+| GitHub Pages | Static site hosting + CDN | Free | $0 |
+| Cloudflare (free plan) | DNS, CDN, security headers, Web Analytics | Free | $0 |
+| Cloudflare Workers | Fit Finder serverless function | Free (100k req/day) | $0 |
+| Claude API (Haiku) | Role description analysis | Pay-per-use | ~$0.10 (est. 50 analyses) |
+| Google Fonts | Typography (DM Serif Display, IBM Plex Sans) | Free | $0 |
+| Domain (madebymiles.ai) | `.ai` TLD renewal | Annual (~$80-100/yr) | ~$7-8 amortised |
+| **Total** | | | **~$7-8/month** (domain-dominated) |
+
+**Note:** If the domain is already paid for, recurring costs are effectively **< $1/month**.
+
+**Cost controls:**
+- **Rate limiting** on Fit Finder: 10/IP/day hard cap, 200/month soft cap with alerting
+- **Claude API spend cap**: Set a $5/month hard limit via Anthropic console billing alerts
+- **No paid analytics** — Cloudflare Web Analytics is free and cookie-free
+- **No paid monitoring** — free tiers of UptimeRobot + Sentry (see Epic 11)
+- **No paid CI/CD** — GitHub Actions free tier (2,000 minutes/month for public repos, 500 for private)
+- **No paid CDN** — Cloudflare free plan includes global CDN
+- **Self-hosted fonts fallback** — If Google Fonts latency is an issue, self-host the two font files (~100KB total) to eliminate the external dependency entirely
+
+**Architecture principles for cost:**
+- Static-first: every page is pre-rendered HTML — no server, no database, no container
+- Serverless-only: the one dynamic feature (Fit Finder) runs on Cloudflare Workers free tier
+- Build-time over runtime: structured data, sitemaps, RSS, and LLM content files are all generated at build time
+- Zero infrastructure to maintain: no servers to patch, no databases to back up, no containers to orchestrate
+
+**Exit criteria:** The site runs for a full month with all features active and total variable costs (excluding domain) are under $1.
+
+---
+
+### Epic 11 — Monitoring, Pipeline & Performance
+> Know when the site is down, slow, broken, or failing — before a board chair encounters the problem.
+
+**Scope:**
+
+**Build pipeline (CI/CD):**
+- GitHub Actions workflow: lint → build → test → deploy
+- Astro build with `--strict` flag (fail on broken links, missing images, TypeScript errors)
+- `npm audit` check in CI (fail on critical/high vulnerabilities)
+- Lighthouse CI in GitHub Actions:
+  - Performance ≥ 95
+  - Accessibility ≥ 100
+  - Best Practices ≥ 95
+  - SEO ≥ 95
+  - Fail the build if scores drop below thresholds
+- Build status badge in README
+- Deploy preview for PRs (GitHub Pages preview or Cloudflare Pages preview)
+
+**Uptime monitoring:**
+- UptimeRobot (free tier): 5 monitors, 5-minute check intervals
+  - Monitor 1: `https://madebymiles.ai` (homepage HTTP 200)
+  - Monitor 2: `https://madebymiles.ai/llms.txt` (LLM content layer)
+  - Monitor 3: Fit Finder health endpoint (`/api/health`)
+  - Alert via: email or webhook to a free notification service
+- Public status page via UptimeRobot (optional, free)
+
+**Performance monitoring:**
+- Cloudflare Web Analytics (free): page views, top pages, countries, devices, Web Vitals (LCP, FID, CLS)
+- Real User Monitoring (RUM) via Cloudflare — no additional script needed
+- Lighthouse CI scores tracked over time in GitHub Actions artifacts
+- Core Web Vitals targets:
+  - LCP (Largest Contentful Paint): < 1.5s
+  - FID (First Input Delay): < 50ms
+  - CLS (Cumulative Layout Shift): < 0.05
+
+**Error tracking:**
+- Sentry free tier (5k events/month): capture any client-side JavaScript errors (primarily from the Fit Finder interactive page)
+- Cloudflare Worker error logging: Worker exceptions are automatically logged in Cloudflare dashboard (free)
+- GitHub Actions failure notifications: email on build failure
+
+**Alerting:**
+- UptimeRobot: alert on downtime (email)
+- Anthropic API billing: alert at $3 and $5 spend thresholds
+- GitHub Dependabot: automated PRs for vulnerable dependencies
+- Weekly automated Lighthouse audit via scheduled GitHub Action (track performance drift)
+
+**Monitoring options comparison:**
+
+| Approach | Uptime | Performance | Errors | Cost |
+|---|---|---|---|---|
+| **Option A: Minimal (recommended)** | UptimeRobot free | Cloudflare Web Analytics | Cloudflare Worker logs | $0 |
+| Option B: Moderate | UptimeRobot free | Cloudflare + Lighthouse CI | Sentry free tier | $0 |
+| Option C: Comprehensive | Better Stack free | Cloudflare + Lighthouse CI + SpeedCurve | Sentry free tier | $0-5 |
+
+**Recommendation:** Start with **Option A** (zero cost, covers the essentials). Add Sentry and Lighthouse CI (Option B) once the Fit Finder is live and there's client-side JS to monitor. Option C is overkill for a personal site.
+
+**Exit criteria:** Build failures are caught before deploy, downtime triggers an alert within 5 minutes, and Lighthouse scores are tracked across releases.
+
+---
+
 ## 8. Phasing
 
 ```
-Phase 1 — Replatform & Core        Epics 1 + 2          Foundation + Contact
-Phase 2 — Credibility Engine        Epics 3 + 4          Skill Matrix + Case Studies
-Phase 3 — Discoverability           Epic 5               LLM Readability + Structured Data
-Phase 4 — Voice & Depth             Epics 6 + 7          Reflections + Projects
+Phase 0 — Cross-Cutting              Epics 9 + 10 + 11    Security, Cost, Monitoring (woven into every phase)
+Phase 1 — Replatform & Core          Epics 1 + 2           Foundation + Contact
+Phase 2 — Credibility Engine         Epics 3 + 4           Skill Matrix + Case Studies
+Phase 3 — Discoverability            Epic 5                LLM Readability + Structured Data
+Phase 4 — AI Differentiator          Epic 8                Fit Finder (Role Matching)
+Phase 5 — Voice & Depth              Epics 6 + 7           Reflections + Projects
 ```
 
-Each phase delivers a working, deployable site. No phase depends on a later phase.
+**Phase 0** is not a sequential phase — it is embedded into every other phase. Security headers ship in Phase 1. Cost controls ship with the Fit Finder in Phase 4. Monitoring is configured in Phase 1 and extended as features are added.
+
+Each phase delivers a working, deployable site. No phase depends on a later phase (except Phase 4 depends on Phase 2 for the skill matrix data that powers matching).
 
 ---
 
@@ -262,22 +617,27 @@ Each phase delivers a working, deployable site. No phase depends on a later phas
 
 - Blog with comments or social sharing (reflections are one-way publishing)
 - Email newsletter or mailing list
-- Login or gated content
+- User accounts or login (the Fit Finder uses progressive disclosure without authentication)
 - Video or multimedia content
 - E-commerce, paid advisory booking, or invoicing
 - CMS or admin interface (content authored in Markdown via Git)
 - Custom domain email (contact flows through LinkedIn/WhatsApp)
+- Server-side data storage or databases (everything is stateless or static)
+- Paid services beyond Claude API micro-usage (total budget ≤ $5/month variable cost)
 
 ---
 
 ## 10. Open Questions
 
 1. **WhatsApp number** — Which number should be used for the `wa.me` link? Is a dedicated number preferred?
-2. **Skill matrix content** — Does Miles want to self-rate skills (e.g. 1-5) or prefer qualitative evidence statements only?
+2. **Skill matrix rating approach** — The AICD recommends a three-level scale (Expert / Substantial / Awareness). Should Miles self-rate, or should each cell also include a qualitative evidence statement linking to a case study?
 3. **Suncorp/Promina** — The README mentions this as past employment but it's not on the current site. Should it be a fifth case study?
 4. **Photography** — Is there a professional headshot available for the site? Would add significant credibility for human visitors and image search.
-5. **Analytics** — Does Miles want privacy-respecting analytics (Plausible/Fathom) or is GitHub Pages traffic sufficient?
-6. **Domain** — Is `madebymiles.ai` the permanent domain? The `.ai` TLD aligns well with the positioning.
+5. **Domain** — Is `madebymiles.ai` the permanent domain? The `.ai` TLD aligns well with the positioning.
+6. **Fit Finder — blurred results unlock** — Should the blurred matches unlock after contacting Miles (honour system), or should they remain permanently blurred as the conversion incentive?
+7. **Fit Finder — results sharing** — Should each analysis generate a unique shareable URL so a search consultant can share the fit report with their client? (Requires minimal state — e.g. a short-lived signed URL with the result embedded, no server storage.)
+8. **AICD membership** — Is Miles an AICD member or graduate of the Company Directors Course? This would strengthen the credibility of the AICD-aligned skill matrix.
+9. **Privacy policy review** — Should the privacy policy be reviewed by a legal professional, or is a clear, self-authored plain-language policy sufficient for a personal site?
 
 ---
 
