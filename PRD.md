@@ -143,10 +143,21 @@ Migrate from static HTML to **Astro** — a content-focused static site generato
 │                      BUILD PIPELINE (Free)                       │
 │                                                                  │
 │  GitHub Actions: lint → npm audit → build → Lighthouse CI        │
-│                  → deploy to GitHub Pages                        │
+│                  → deploy to GitHub Pages → post to Discord      │
+└──────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────┐
+│                  OBSERVABILITY → DISCORD (Free)                   │
 │                                                                  │
-│  Monitoring: UptimeRobot (uptime) · Cloudflare (RUM/analytics)   │
-│              Sentry free tier (JS errors) · Lighthouse CI (perf) │
+│  Browser beacon ──→ Worker ──→ Workers KV ──→ Cron ──→ Discord   │
+│  (sendBeacon)       (/api/beacon)  (counters)   (daily)          │
+│                                                                  │
+│  UptimeRobot ─────────────────────────────────→ #uptime-alerts   │
+│  GitHub Actions ──────────────────────────────→ #build-deploys   │
+│  Cloudflare Security API ──→ Cron Worker ────→ #security-threats │
+│  Sentry ──────────────────────────────────────→ #build-deploys   │
+│  Fit Finder Worker ──────────────────────────→ #fit-finder       │
+│  Dependabot ──────────────────────────────────→ #dependency-alerts│
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -166,7 +177,9 @@ Migrate from static HTML to **Astro** — a content-focused static site generato
 - **AI API:** Claude Haiku via Anthropic API (role matching in Fit Finder)
 - **DNS & CDN:** Cloudflare free plan (security headers, Web Analytics, edge caching)
 - **Analytics:** Cloudflare Web Analytics (free, cookie-free, privacy-respecting)
-- **Monitoring:** UptimeRobot free tier + Lighthouse CI in GitHub Actions
+- **Monitoring:** UptimeRobot free tier + Lighthouse CI in GitHub Actions + custom analytics beacon (Workers KV)
+- **Ops dashboard:** Discord server with webhook integrations — all alerts, reports, and metrics push to Discord channels
+- **Funnel tracking:** Lightweight `sendBeacon` → Cloudflare Worker → Workers KV → scheduled Discord reports
 - **Contact:** LinkedIn deep-link messaging + WhatsApp `wa.me` link (no email forms)
 - **Security:** CSP headers, SRI, no cookies, no PII, HSTS
 
@@ -548,10 +561,17 @@ A lightweight PIA for the Fit Finder feature (the only data-processing component
 | Cloudflare Workers | Fit Finder serverless function | Free (100k req/day) | $0 |
 | Claude API (Haiku) | Role description analysis | Pay-per-use | ~$0.10 (est. 50 analyses) |
 | Google Fonts | Typography (DM Serif Display, IBM Plex Sans) | Free | $0 |
-| Domain (madebymiles.ai) | `.ai` TLD renewal | Annual (~$80-100/yr) | ~$7-8 amortised |
-| **Total** | | | **~$7-8/month** (domain-dominated) |
+| Domain (madebymiles.ai) | `.ai` TLD — already paid (Squarespace) | Paid | $0 (pre-paid) |
+| **Total** | | | **< $1/month** |
 
-**Note:** If the domain is already paid for, recurring costs are effectively **< $1/month**.
+**Domain setup (Squarespace → Cloudflare):**
+The domain is registered and paid for at Squarespace. To use Cloudflare's free CDN, security, and Web Analytics without transferring the domain:
+1. Add `madebymiles.ai` to Cloudflare (free plan) — Cloudflare will assign two nameservers
+2. In Squarespace → Domains → `madebymiles.ai` → DNS Settings → Custom nameservers → enter the two Cloudflare nameservers
+3. In Cloudflare DNS, add records pointing to GitHub Pages (`A` records for `185.199.108-111.153` + `CNAME` for `www`)
+4. Enable Cloudflare proxy (orange cloud) for CDN, DDoS protection, and Web Analytics
+5. Propagation: typically 24-48 hours
+6. Alternative: transfer the domain to Cloudflare Registrar later (at-cost pricing, often cheaper than Squarespace renewal) — but not required
 
 **Cost controls:**
 - **Rate limiting** on Fit Finder: 10/IP/day hard cap, 200/month soft cap with alerting
@@ -572,12 +592,122 @@ A lightweight PIA for the Fit Finder feature (the only data-processing component
 
 ---
 
-### Epic 11 — Monitoring, Pipeline & Performance
-> Know when the site is down, slow, broken, or failing — before a board chair encounters the problem.
+### Epic 11 — Observability & Discord Ops Dashboard
+> Know exactly who's visiting, where they drop off, when the site is down, what threats are blocked, and how fast it loads — all reported to a Discord channel for free.
+
+**Why Discord as the ops dashboard:**
+Discord webhooks are free, unlimited, and support rich embeds (colour-coded, structured, with fields). Instead of paying for Datadog, PagerDuty, or checking five different dashboards, every signal routes to a single Discord server with channels for each concern. Miles checks one place. Everything is push-based — no dashboards to log into.
+
+**Discord server structure:**
+
+```
+#site-visitors      ← Daily/weekly visitor reports, top pages, referrers
+#funnel-tracking    ← Conversion funnel: landing → engagement → CTA click
+#uptime-alerts      ← Downtime/recovery notifications (UptimeRobot)
+#build-deploys      ← CI/CD pass/fail, Lighthouse scores per deploy
+#security-threats   ← Threats blocked, rate limit hits, WAF events
+#fit-finder         ← Usage counts, error rates, API spend
+#dependency-alerts  ← Dependabot PRs, npm audit findings
+```
+
+**Signal routing — what posts where, and how:**
+
+| Signal | Source | Discord channel | Delivery method | Cost |
+|---|---|---|---|---|
+| Uptime/downtime | UptimeRobot | `#uptime-alerts` | UptimeRobot native Discord webhook | $0 |
+| Build pass/fail | GitHub Actions | `#build-deploys` | GitHub webhook or Actions step (`curl`) | $0 |
+| Lighthouse scores | GitHub Actions | `#build-deploys` | CI step posts embed after each deploy | $0 |
+| Visitor summary | Custom analytics beacon → Workers KV | `#site-visitors` | Scheduled Worker (cron) → Discord webhook | $0 |
+| Top pages + referrers | Custom analytics beacon → Workers KV | `#site-visitors` | Scheduled Worker (cron) → Discord webhook | $0 |
+| Funnel conversion | Custom beacon events → Workers KV | `#funnel-tracking` | Scheduled Worker (cron) → Discord webhook | $0 |
+| Drop-off points | Custom beacon events → Workers KV | `#funnel-tracking` | Scheduled Worker (cron) → Discord webhook | $0 |
+| CTA clicks | Custom beacon events → Workers KV | `#funnel-tracking` | Scheduled Worker (cron) → Discord webhook | $0 |
+| Threats blocked | Cloudflare Security Events API | `#security-threats` | Scheduled Worker → Cloudflare API → Discord | $0 |
+| Rate limit hits | Cloudflare Worker (Fit Finder) | `#security-threats` | Worker posts to Discord on rate limit trigger | $0 |
+| Fit Finder usage | Cloudflare Worker counter | `#fit-finder` | Scheduled Worker (cron) → Discord webhook | $0 |
+| Fit Finder errors | Cloudflare Worker exceptions | `#fit-finder` | Worker `catch` block → Discord webhook | $0 |
+| API spend estimate | Worker tracks token usage | `#fit-finder` | Scheduled Worker (cron) → Discord webhook | $0 |
+| JS errors | Sentry free tier | `#build-deploys` | Sentry native Discord integration | $0 |
+| Vulnerable deps | GitHub Dependabot | `#dependency-alerts` | GitHub webhook → Discord | $0 |
 
 **Scope:**
 
-**Build pipeline (CI/CD):**
+**1. Custom analytics beacon (privacy-respecting, cookie-free):**
+
+The site needs funnel and conversion tracking that Cloudflare Web Analytics alone can't provide. Build a lightweight, first-party analytics beacon:
+
+```
+Browser (every page)
+    │
+    ├── navigator.sendBeacon('/api/beacon', payload)
+    │   Payload: { page, referrer, event, timestamp }
+    │   No cookies. No fingerprinting. No PII.
+    │
+    ▼
+Cloudflare Worker (/api/beacon)
+    │
+    ├── Validate & sanitise input
+    ├── Increment counters in Workers KV:
+    │   ├── daily:pageviews:{date}         → total count
+    │   ├── daily:pages:{date}:{path}      → per-page count
+    │   ├── daily:referrers:{date}:{ref}   → referrer count
+    │   ├── daily:events:{date}:{event}    → event count
+    │   └── daily:funnel:{date}:{step}     → funnel step count
+    ├── No PII stored. No IP logging. No user IDs.
+    │
+    ▼
+Workers KV (free tier: 1k writes/day, 100k reads/day)
+```
+
+**Tracked events (for funnel):**
+
+| Event | Funnel step | Trigger |
+|---|---|---|
+| `page_view` | 1. Landing | Any page load |
+| `scroll_50` | 2. Engagement | User scrolls past 50% of page |
+| `skill_matrix_view` | 3. Evaluation | `/experience` page viewed |
+| `case_study_click` | 4. Deep-dive | Any case study link clicked |
+| `fit_finder_start` | 5. Intent | Fit Finder page reached |
+| `fit_finder_complete` | 6. Analysis | Fit Finder result returned |
+| `cta_click_linkedin` | 7. Conversion | LinkedIn CTA clicked |
+| `cta_click_whatsapp` | 7. Conversion | WhatsApp CTA clicked |
+
+**Drop-off analysis:** The scheduled report compares funnel step counts to calculate drop-off rates between each step (e.g. "35 visitors landed → 22 scrolled → 12 viewed skills → 5 clicked CTA → 2 used Fit Finder → 1 converted").
+
+**Workers KV free tier budget:**
+- 1,000 writes/day = supports ~125 unique page views/day (each view generates ~8 KV increments)
+- 100,000 reads/day = supports daily/weekly report generation easily
+- For a personal executive site, this is more than sufficient
+
+**2. Scheduled Discord reports (Cloudflare Workers cron triggers):**
+
+| Report | Frequency | Channel | Content |
+|---|---|---|---|
+| **Daily summary** | 08:00 AEST | `#site-visitors` | Yesterday's visitors, top 5 pages, top 3 referrers, device split |
+| **Weekly funnel** | Monday 08:00 | `#funnel-tracking` | Full 7-step funnel with conversion rates and drop-off percentages |
+| **Weekly security** | Monday 08:00 | `#security-threats` | Threats blocked, countries, rate limit hits, WAF events |
+| **Weekly performance** | Monday 08:00 | `#build-deploys` | Latest Lighthouse scores, Core Web Vitals averages |
+| **Monthly Fit Finder** | 1st of month | `#fit-finder` | Analyses run, error rate, estimated API spend |
+
+Discord embed format example (daily summary):
+```json
+{
+  "embeds": [{
+    "title": "📊 Daily Site Report — 1 Mar 2026",
+    "color": 3447003,
+    "fields": [
+      { "name": "Visitors", "value": "47", "inline": true },
+      { "name": "Page Views", "value": "89", "inline": true },
+      { "name": "CTA Clicks", "value": "3", "inline": true },
+      { "name": "Top Pages", "value": "1. /experience (31)\n2. / (24)\n3. /fit (12)" },
+      { "name": "Top Referrers", "value": "1. linkedin.com (18)\n2. direct (15)\n3. google.com (9)" },
+      { "name": "Funnel", "value": "Landing: 47 → Engaged: 28 → CTA: 3 (6.4%)" }
+    ]
+  }]
+}
+```
+
+**3. Build pipeline (CI/CD):**
 - GitHub Actions workflow: lint → build → test → deploy
 - Astro build with `--strict` flag (fail on broken links, missing images, TypeScript errors)
 - `npm audit` check in CI (fail on critical/high vulnerabilities)
@@ -587,55 +717,70 @@ A lightweight PIA for the Fit Finder feature (the only data-processing component
   - Best Practices ≥ 95
   - SEO ≥ 95
   - Fail the build if scores drop below thresholds
+  - **Post Lighthouse scores to `#build-deploys` Discord channel** after each deploy
 - Build status badge in README
 - Deploy preview for PRs (GitHub Pages preview or Cloudflare Pages preview)
+- **Build failure → Discord alert** via `curl` step in GitHub Actions
 
-**Uptime monitoring:**
+**4. Uptime monitoring:**
 - UptimeRobot (free tier): 5 monitors, 5-minute check intervals
   - Monitor 1: `https://madebymiles.ai` (homepage HTTP 200)
   - Monitor 2: `https://madebymiles.ai/llms.txt` (LLM content layer)
   - Monitor 3: Fit Finder health endpoint (`/api/health`)
-  - Alert via: email or webhook to a free notification service
+  - **Alert channel: `#uptime-alerts` via UptimeRobot's native Discord webhook integration**
 - Public status page via UptimeRobot (optional, free)
 
-**Performance monitoring:**
-- Cloudflare Web Analytics (free): page views, top pages, countries, devices, Web Vitals (LCP, FID, CLS)
-- Real User Monitoring (RUM) via Cloudflare — no additional script needed
-- Lighthouse CI scores tracked over time in GitHub Actions artifacts
+**5. Performance monitoring:**
+- Cloudflare Web Analytics (free): page views, top pages, countries, devices, Web Vitals — this runs in parallel with the custom beacon as a second source of truth
+- Lighthouse CI scores tracked over time in GitHub Actions artifacts + posted to Discord
 - Core Web Vitals targets:
   - LCP (Largest Contentful Paint): < 1.5s
   - FID (First Input Delay): < 50ms
   - CLS (Cumulative Layout Shift): < 0.05
 
-**Error tracking:**
-- Sentry free tier (5k events/month): capture any client-side JavaScript errors (primarily from the Fit Finder interactive page)
-- Cloudflare Worker error logging: Worker exceptions are automatically logged in Cloudflare dashboard (free)
-- GitHub Actions failure notifications: email on build failure
+**6. Security & threat monitoring:**
+- **Cloudflare Security Events:** A scheduled Worker queries the Cloudflare GraphQL Analytics API (free) for:
+  - Firewall events (blocked requests, challenged requests)
+  - Bot score distribution
+  - Top threat countries/IPs
+  - WAF rule triggers
+  - DDoS mitigation events
+- Posts weekly summary to `#security-threats`
+- **Real-time rate limit alerts:** The Fit Finder Worker posts to `#security-threats` whenever an IP hits the rate limit
+- **Cloudflare Notifications (free):** Configure Cloudflare's built-in notifications for DDoS alerts, SSL expiry, etc. — these can email, but the scheduled Worker catches the rest for Discord
 
-**Alerting:**
-- UptimeRobot: alert on downtime (email)
-- Anthropic API billing: alert at $3 and $5 spend thresholds
-- GitHub Dependabot: automated PRs for vulnerable dependencies
-- Weekly automated Lighthouse audit via scheduled GitHub Action (track performance drift)
+**7. Error tracking:**
+- Sentry free tier (5k events/month): client-side JS errors (primarily Fit Finder)
+  - **Sentry → Discord integration** (native, free) posts to `#build-deploys`
+- Cloudflare Worker exceptions: logged in Cloudflare dashboard (free) + Worker `catch` block posts to `#fit-finder`
+- GitHub Actions failure notifications: post to `#build-deploys`
 
-**Monitoring options comparison:**
+**8. Alerting thresholds:**
 
-| Approach | Uptime | Performance | Errors | Cost |
-|---|---|---|---|---|
-| **Option A: Minimal (recommended)** | UptimeRobot free | Cloudflare Web Analytics | Cloudflare Worker logs | $0 |
-| Option B: Moderate | UptimeRobot free | Cloudflare + Lighthouse CI | Sentry free tier | $0 |
-| Option C: Comprehensive | Better Stack free | Cloudflare + Lighthouse CI + SpeedCurve | Sentry free tier | $0-5 |
+| Alert | Threshold | Channel | Urgency |
+|---|---|---|---|
+| Site down | 5-minute check fails | `#uptime-alerts` | Immediate |
+| Build failure | Any CI step fails | `#build-deploys` | Immediate |
+| Lighthouse regression | Any score drops > 5 points | `#build-deploys` | Immediate |
+| Rate limit hit | Any IP exceeds 10 req/day on Fit Finder | `#security-threats` | Informational |
+| High threat volume | > 50 blocked requests/day | `#security-threats` | Daily digest |
+| Fit Finder error | Any Worker exception | `#fit-finder` | Immediate |
+| API spend approaching limit | Estimated spend > $3/month | `#fit-finder` | Monthly |
+| Vulnerable dependency | Dependabot PR created | `#dependency-alerts` | Informational |
 
-**Recommendation:** Start with **Option A** (zero cost, covers the essentials). Add Sentry and Lighthouse CI (Option B) once the Fit Finder is live and there's client-side JS to monitor. Option C is overkill for a personal site.
+**Implementation order:**
+1. **Phase 1 (with Foundation):** UptimeRobot → Discord, GitHub Actions → Discord (build/deploy notifications)
+2. **Phase 2 (with Skill Matrix):** Custom analytics beacon + Workers KV + daily/weekly Discord reports
+3. **Phase 4 (with Fit Finder):** Fit Finder usage tracking, Sentry, rate limit alerts, API spend tracking, security event reporting
 
-**Exit criteria:** Build failures are caught before deploy, downtime triggers an alert within 5 minutes, and Lighthouse scores are tracked across releases.
+**Exit criteria:** Every signal in the table above routes to the correct Discord channel. A daily summary posts at 08:00 AEST. A weekly funnel report shows conversion rates and drop-off points. Build failures, downtime, and security threats trigger immediate alerts. Miles checks one Discord server and knows exactly how the site is performing.
 
 ---
 
 ## 8. Phasing
 
 ```
-Phase 0 — Cross-Cutting              Epics 9 + 10 + 11    Security, Cost, Monitoring (woven into every phase)
+Phase 0 — Cross-Cutting              Epics 9 + 10 + 11    Security, Cost, Observability & Discord (woven into every phase)
 Phase 1 — Replatform & Core          Epics 1 + 2           Foundation + Contact
 Phase 2 — Credibility Engine         Epics 3 + 4           Skill Matrix + Case Studies
 Phase 3 — Discoverability            Epic 5                LLM Readability + Structured Data
@@ -669,7 +814,7 @@ Each phase delivers a working, deployable site. No phase depends on a later phas
 2. **Skill matrix rating approach** — The AICD recommends a three-level scale (Expert / Substantial / Awareness). Should Miles self-rate, or should each cell also include a qualitative evidence statement linking to a case study?
 3. **Suncorp/Promina** — The README mentions this as past employment but it's not on the current site. Should it be a fifth case study?
 4. **Photography** — Is there a professional headshot available for the site? Would add significant credibility for human visitors and image search.
-5. **Domain** — Is `madebymiles.ai` the permanent domain? The `.ai` TLD aligns well with the positioning.
+5. ~~**Domain**~~ — Resolved: `madebymiles.ai` is registered and paid at Squarespace. DNS will point to Cloudflare nameservers (see Epic 10).
 6. **Fit Finder — blurred results unlock** — Should the blurred matches unlock after contacting Miles (honour system), or should they remain permanently blurred as the conversion incentive?
 7. **Fit Finder — results sharing** — Should each analysis generate a unique shareable URL so a search consultant can share the fit report with their client? (Requires minimal state — e.g. a short-lived signed URL with the result embedded, no server storage.)
 8. **AICD membership** — Is Miles an AICD member or graduate of the Company Directors Course? This would strengthen the credibility of the AICD-aligned skill matrix.
@@ -701,10 +846,16 @@ Each phase delivers a working, deployable site. No phase depends on a later phas
 ### Technology & Services
 - [Astro](https://astro.build/)
 - [Cloudflare Workers](https://workers.cloudflare.com/)
+- [Cloudflare Workers KV](https://developers.cloudflare.com/kv/)
+- [Cloudflare Workers Cron Triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/)
+- [Cloudflare GraphQL Analytics API](https://developers.cloudflare.com/analytics/graphql-api/)
 - [Anthropic Claude API](https://docs.anthropic.com/en/docs/about-claude/models)
 - [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/)
+- [Discord Webhooks](https://discord.com/developers/docs/resources/webhook)
 - [UptimeRobot](https://uptimerobot.com/)
-- [Sentry](https://sentry.io/)
+- [UptimeRobot Discord Integration](https://blog.uptimerobot.com/how-to-set-up-discord-notifications-for-uptimerobot/)
+- [Sentry Discord Integration](https://docs.sentry.io/organization/integrations/notification-incidents/discord/)
+- [GitHub Actions Discord Webhook](https://github.com/marketplace/actions/discord-webhook-action)
 
 ---
 
