@@ -244,7 +244,7 @@ Miles has access to the following services. The PRD uses only the subset needed 
 
 **Scope:**
 - Replace all `mailto:` links with LinkedIn message deep-link (`https://www.linkedin.com/messaging/compose/?to=milessowden`)
-- Add WhatsApp CTA using `https://wa.me/<number>?text=...` with a pre-filled professional greeting
+- Add WhatsApp CTA using `https://wa.me/61414185721?text=Hi%20Miles%2C%20I%20came%20across%20your%20site%20and%20would%20like%20to%20connect.` with a pre-filled professional greeting
 - Create a dedicated `/contact` page with both channels, a brief "how I prefer to connect" note, and links to LinkedIn profile
 - Update CTA copy: "Message me on LinkedIn" / "WhatsApp me"
 - Ensure CTAs are prominent on every page (header + footer)
@@ -883,10 +883,10 @@ Each phase delivers a working, deployable site. No phase depends on a later phas
 
 ## 11. Open Questions
 
-1. **WhatsApp number** — Which number should be used for the `wa.me` link? Is a dedicated number preferred?
+1. ~~**WhatsApp number**~~ — Resolved: `+61414185721`. CTA link: `https://wa.me/61414185721?text=Hi%20Miles%2C%20...`
 2. **Skill matrix rating approach** — The AICD recommends a three-level scale (Expert / Substantial / Awareness). Should Miles self-rate, or should each cell also include a qualitative evidence statement linking to a case study?
 3. **Suncorp/Promina** — The README mentions this as past employment but it's not on the current site. Should it be a fifth case study?
-4. **Photography** — Is there a professional headshot available for the site? Would add significant credibility for human visitors and image search.
+4. ~~**Photography**~~ — Resolved: Professional headshot available (navy blazer, white shirt, glasses). Image saved to `assets/images/miles-sowden-headshot.jpg`. Will be used on homepage, `/contact`, and in Person schema `image` property for search/social previews.
 5. ~~**Domain**~~ — Resolved: `madebymiles.ai` is registered and paid at Squarespace. DNS will point to Cloudflare nameservers (see Epic 10).
 6. **Fit Finder — blurred results unlock** — Should the blurred matches unlock after contacting Miles (honour system), or should they remain permanently blurred as the conversion incentive?
 7. **Fit Finder — results sharing** — Should each analysis generate a unique shareable URL so a search consultant can share the fit report with their client? (Requires minimal state — e.g. a short-lived signed URL with the result embedded, no server storage.)

@@ -5,6 +5,30 @@
 
 ---
 
+## Pre-Build: Archive the Current Site
+
+The original hand-coded HTML site is preserved in two ways:
+
+- **Git tag `v0-pre-rebuild`** — marks the last commit of the original site. To view or compare:
+  ```
+  git diff v0-pre-rebuild..HEAD           # see all changes since original
+  git show v0-pre-rebuild:index.html      # view the original homepage
+  git checkout v0-pre-rebuild -- .        # restore original files (careful!)
+  ```
+- **Wayback Machine** — submit `https://web.archive.org/save/https://madebymiles.ai` manually to create an external snapshot before DNS/content changes
+
+The `master` branch also preserves the original site state.
+
+---
+
+## Pre-Build: Assets Ready
+
+- [x] WhatsApp number confirmed: `+61414185721`
+- [ ] Save headshot to `assets/images/miles-sowden-headshot.jpg` (directory created, image needed from chat attachment)
+- [x] Domain confirmed: `madebymiles.ai` at Squarespace
+
+---
+
 ## Build Order
 
 Five phases, each shipping a working site. Phase 0 is woven into every phase, not built separately.
@@ -43,10 +67,12 @@ Phase 5 ─── Voice & Depth ────────── Reflections, proj
 - [ ] Wait for DNS propagation (24-48 hours — start this first so it's ready when the site ships)
 
 #### 1.2 — Astro project setup
+- [ ] Save headshot to `assets/images/miles-sowden-headshot.jpg` (from chat attachment)
 - [ ] Initialise Astro project with TypeScript (`npm create astro@latest`)
 - [ ] Configure Tailwind CSS with existing design tokens from `index.html` (colours, fonts, spacing)
 - [ ] Install and configure `@astrojs/tailwind`
 - [ ] Set up base layout (`src/layouts/Base.astro`) with `<head>`, meta tags, fonts
+- [ ] Include headshot in Person schema (`image` property) and Open Graph `og:image` tag
 - [ ] Create component library:
   - `Header.astro` — nav with CTA
   - `Footer.astro` — links, privacy signal, "No cookies. No tracking. No storage."
@@ -402,15 +428,15 @@ By the end of Phase 1, the site is live, looking the same as today, with CI/CD a
 
 These need answers before or during the relevant phase:
 
-| # | Question | Needed by | PRD ref |
-|---|---|---|---|
-| 1 | WhatsApp number for `wa.me` link | Phase 1 | Q1 |
-| 2 | Suncorp/Promina — include as 5th case study? | Phase 2 | Q3 |
-| 3 | Professional headshot available? | Phase 1 | Q4 |
-| 4 | AICD member or Company Directors Course graduate? | Phase 2 | Q8 |
-| 5 | Fit Finder blurred results — unlock after contact or stay blurred? | Phase 4 | Q6 |
-| 6 | Fit Finder results — shareable URL for search consultants? | Phase 4 | Q7 |
-| 7 | Self-rate skill matrix, or have evidence statements reviewed? | Phase 2 | Q2 |
+| # | Question | Needed by | PRD ref | Status |
+|---|---|---|---|---|
+| ~~1~~ | ~~WhatsApp number~~ | ~~Phase 1~~ | ~~Q1~~ | Resolved: `+61414185721` |
+| 2 | Suncorp/Promina — include as 5th case study? | Phase 2 | Q3 | Open |
+| ~~3~~ | ~~Professional headshot~~ | ~~Phase 1~~ | ~~Q4~~ | Resolved: headshot provided |
+| 4 | AICD member or Company Directors Course graduate? | Phase 2 | Q8 | Open |
+| 5 | Fit Finder blurred results — unlock after contact or stay blurred? | Phase 4 | Q6 | Open |
+| 6 | Fit Finder results — shareable URL for search consultants? | Phase 4 | Q7 | Open |
+| 7 | Self-rate skill matrix, or have evidence statements reviewed? | Phase 2 | Q2 | Open |
 
 ---
 
