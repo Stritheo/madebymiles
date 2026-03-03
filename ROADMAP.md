@@ -169,11 +169,12 @@ Phase 5 ─── Voice & Depth ────────── Reflections, proj
 - [ ] Create Content Collection `src/content/work/` (Markdown/MDX)
 - [ ] Build case study page template (`src/pages/work/[slug].astro`):
   - Role & context → Challenge → Approach → Outcomes → Reflection
-- [ ] Write 4 case studies:
+- [ ] Write 5 case studies:
   - [ ] SCI (Strata Community Insurance)
   - [ ] CBA (Commonwealth Bank)
   - [ ] Hollard Insurance
   - [ ] Westpac
+  - [ ] Suncorp/Promina
 - [ ] Update homepage cards to link to full case study pages
 - [ ] Add prev/next navigation between case studies
 
@@ -431,12 +432,14 @@ These need answers before or during the relevant phase:
 | # | Question | Needed by | PRD ref | Status |
 |---|---|---|---|---|
 | ~~1~~ | ~~WhatsApp number~~ | ~~Phase 1~~ | ~~Q1~~ | Resolved: `+61414185721` |
-| 2 | Suncorp/Promina — include as 5th case study? | Phase 2 | Q3 | Open |
+| ~~2~~ | ~~Suncorp/Promina~~ | ~~Phase 2~~ | ~~Q3~~ | Resolved: Yes, 5th case study |
 | ~~3~~ | ~~Professional headshot~~ | ~~Phase 1~~ | ~~Q4~~ | Resolved: headshot provided |
-| 4 | AICD member or Company Directors Course graduate? | Phase 2 | Q8 | Open |
-| 5 | Fit Finder blurred results — unlock after contact or stay blurred? | Phase 4 | Q6 | Open |
-| 6 | Fit Finder results — shareable URL for search consultants? | Phase 4 | Q7 | Open |
-| 7 | Self-rate skill matrix, or have evidence statements reviewed? | Phase 2 | Q2 | Open |
+| ~~4~~ | ~~AICD membership~~ | ~~Phase 2~~ | ~~Q8~~ | Resolved: Yes, AICD member/graduate |
+| ~~5~~ | ~~Fit Finder blur unlock~~ | ~~Phase 4~~ | ~~Q6~~ | Resolved: Honour system unlock |
+| ~~6~~ | ~~Fit Finder shareable URL~~ | ~~Phase 4~~ | ~~Q7~~ | Resolved: Yes, signed URL |
+| ~~7~~ | ~~Skill matrix rating~~ | ~~Phase 2~~ | ~~Q2~~ | Resolved: Self-rate + evidence |
+
+All questions resolved. Only Q9 (privacy policy legal review) remains open — not blocking any phase.
 
 ---
 

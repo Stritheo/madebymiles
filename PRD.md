@@ -76,7 +76,8 @@ madebymiles.ai
 │   ├── /work/sci ................ Case study: Strata Community Insurance
 │   ├── /work/cba ................ Case study: Commonwealth Bank
 │   ├── /work/hollard ............ Case study: Hollard Insurance
-│   └── /work/westpac ............ Case study: Westpac
+│   ├── /work/westpac ............ Case study: Westpac
+│   └── /work/suncorp ............ Case study: Suncorp/Promina
 ├── /fit ......................... AI Role Matcher — upload a role description, see alignment
 ├── /reflections ................. Short-form writing on leadership, AI, insurance
 │   └── Individual reflection posts
@@ -352,7 +353,7 @@ The Australian Institute of Company Directors (AICD) publishes the standard fram
   - **Approach** — What strategic and operational choices were made?
   - **Outcomes** — Quantified results with specific metrics
   - **Reflection** — What was learned or what would be done differently?
-- Write four case studies: SCI, CBA, Hollard, Westpac
+- Write five case studies: SCI, CBA, Hollard, Westpac, Suncorp/Promina
 - Update homepage project cards to link to their full case study
 - Add prev/next navigation between case studies
 - JSON-LD Article schema on each case study page
@@ -471,8 +472,10 @@ Browser renders fit report (top 2 visible, rest blurred, CTA)
 - Build match result UI:
   - Top skillset match: fully visible with evidence
   - Top mindset match: fully visible with evidence
-  - Remaining matches: blurred with CSS blur filter, revealed only after contact
+  - Remaining matches: blurred with CSS blur filter
+  - "I've contacted Miles" button (honour system) — clicking reveals the remaining matches. Trust-based, feels generous, and still drives the initial CTA interaction
   - CTA buttons: "Message me on LinkedIn" / "WhatsApp me"
+- **Shareable results URL:** Each analysis generates a short-lived signed URL (e.g. `/fit/results?token=<signed-jwt>`) with the match result embedded in the token. A search consultant can share this link with their client board. No server-side storage — the result is encoded in the URL itself (signed to prevent tampering, expires after 30 days).
 - Miles's structured profile data as a JSON file (single source of truth, derived from content collections)
 - Rate limiting: max 10 analyses per IP per day (prevent abuse, control cost)
 
@@ -884,13 +887,13 @@ Each phase delivers a working, deployable site. No phase depends on a later phas
 ## 11. Open Questions
 
 1. ~~**WhatsApp number**~~ — Resolved: `+61414185721`. CTA link: `https://wa.me/61414185721?text=Hi%20Miles%2C%20...`
-2. **Skill matrix rating approach** — The AICD recommends a three-level scale (Expert / Substantial / Awareness). Should Miles self-rate, or should each cell also include a qualitative evidence statement linking to a case study?
-3. **Suncorp/Promina** — The README mentions this as past employment but it's not on the current site. Should it be a fifth case study?
+2. ~~**Skill matrix rating approach**~~ — Resolved: Self-rate using Expert / Practised / Awareness scale, with 1-2 sentence evidence statements linking to case studies for each cell.
+3. ~~**Suncorp/Promina**~~ — Resolved: Yes, include as 5th case study alongside SCI, CBA, Hollard, and Westpac.
 4. ~~**Photography**~~ — Resolved: Professional headshot available (navy blazer, white shirt, glasses). Image saved to `assets/images/miles-sowden-headshot.jpg`. Will be used on homepage, `/contact`, and in Person schema `image` property for search/social previews.
 5. ~~**Domain**~~ — Resolved: `madebymiles.ai` is registered and paid at Squarespace. DNS will point to Cloudflare nameservers (see Epic 10).
-6. **Fit Finder — blurred results unlock** — Should the blurred matches unlock after contacting Miles (honour system), or should they remain permanently blurred as the conversion incentive?
-7. **Fit Finder — results sharing** — Should each analysis generate a unique shareable URL so a search consultant can share the fit report with their client? (Requires minimal state — e.g. a short-lived signed URL with the result embedded, no server storage.)
-8. **AICD membership** — Is Miles an AICD member or graduate of the Company Directors Course? This would strengthen the credibility of the AICD-aligned skill matrix.
+6. ~~**Fit Finder — blurred results unlock**~~ — Resolved: Honour system. Show a "I've contacted Miles" button that reveals the remaining matches. Trust-based, feels generous.
+7. ~~**Fit Finder — results sharing**~~ — Resolved: Yes, generate a shareable results URL. Short-lived signed URL with the result embedded — a search consultant can send the fit report link to their client board. No server-side storage needed.
+8. ~~**AICD membership**~~ — Resolved: Yes, Miles is an AICD member/graduate. Add this credential prominently on the `/experience` page and in structured data — it directly strengthens the credibility of the AICD-aligned skill matrix.
 9. **Privacy policy review** — Should the privacy policy be reviewed by a legal professional, or is a clear, self-authored plain-language policy sufficient for a personal site?
 
 ---
