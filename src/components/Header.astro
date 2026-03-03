@@ -1,0 +1,20 @@
+---
+import CTA from './CTA.astro';
+---
+
+<header class="fixed top-0 left-0 right-0 z-50 bg-bg-primary/90 backdrop-blur-sm">
+  <div class="max-w-[1200px] mx-auto px-12 max-lg:px-8 max-md:px-6">
+    <nav class="flex items-center justify-between h-20">
+      <a href="/" class="font-display text-2xl text-text-primary no-underline">
+        Miles Sowden
+      </a>
+      <div class="hidden md:flex items-center gap-8">
+        <a href="/experience" class="text-base text-text-secondary hover:text-text-primary transition-colors no-underline">Experience</a>
+        <a href="/contact" class="text-base text-text-secondary hover:text-text-primary transition-colors no-underline">Contact</a>
+        <CTA href="https://www.linkedin.com/messaging/compose/?to=milessowden" variant="primary" size="sm">
+          Message me
+        </CTA>
+      </div>
+    </nav>
+  </div>
+</header>
