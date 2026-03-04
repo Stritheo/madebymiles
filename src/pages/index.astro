@@ -11,14 +11,25 @@ import CTA from '@/components/CTA.astro';
   <!-- Hero -->
   <section class="pt-48 pb-32 max-md:pt-32 max-md:pb-20">
     <div class="max-w-[1200px] mx-auto px-12 max-lg:px-8 max-md:px-6">
-      <div class="flex items-start gap-16 max-md:flex-col max-md:gap-10">
+      <div class="md:flex md:items-start md:gap-16">
         <div class="flex-1">
           <h1 class="font-display text-[3.5rem] max-lg:text-5xl max-md:text-[2.5rem] leading-[1.1] tracking-[-0.02em] text-text-primary mb-10">
             Twenty years leading Australian insurers through growth and transformation
           </h1>
-          <p class="text-xl max-md:text-lg leading-relaxed text-text-secondary mb-12">
+          <p class="text-xl max-md:text-lg leading-relaxed text-text-secondary mb-10">
             I have led businesses with more than $1 billion in premium and teams of 700 people across five major financial institutions. From navigating the Royal Commission to deploying artificial intelligence at scale, I build the strategy, teams and culture that deliver lasting performance.
           </p>
+          <!-- Headshot: mobile only, between paragraph and buttons -->
+          <div class="md:hidden mb-10 w-[200px]">
+            <img
+              src="/images/miles-sowden-headshot.jpeg"
+              alt="Miles Sowden"
+              width="200"
+              height="230"
+              class="w-full rounded-lg"
+              loading="eager"
+            />
+          </div>
           <div class="flex gap-4 flex-wrap max-md:flex-col">
             <CTA href="/contact" external={false}>
               Contact
@@ -28,7 +39,8 @@ import CTA from '@/components/CTA.astro';
             </CTA>
           </div>
         </div>
-        <div class="w-[280px] max-md:w-[200px] flex-shrink-0">
+        <!-- Headshot: desktop only, right column -->
+        <div class="hidden md:block w-[280px] flex-shrink-0">
           <img
             src="/images/miles-sowden-headshot.jpeg"
             alt="Miles Sowden"
