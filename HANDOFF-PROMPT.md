@@ -94,9 +94,33 @@ Read this file first, then read `PRD.md` and `ROADMAP.md` for full context.
 
 ---
 
-### Next: Phase 4 — Fit Finder (AI Role Matcher)
+### Phase 4 progress (Fit Finder) — DEPLOYED
 
-See PRD Epic 8. `/fit` page with file upload, Claude Haiku matching, blurred results with honour-system unlock. Requires Cloudflare Worker + Claude API key.
+**Done:**
+- `/fit` page: drag-and-drop PDF upload, text paste, loading state, results with blur/honour-system unlock, shareable signed URLs
+- Cloudflare Worker (`fit-finder`): PDF extraction (unpdf), Claude Haiku analysis, HMAC-signed JWT tokens, KV rate limiting (10/IP/day), Discord notifications
+- Profile JSON generator (`scripts/generate-profile.ts`): reads content collections, builds structured profile for Claude prompt
+- Worker route: `madebymiles.ai/api/*` → fit-finder Worker
+- Worker secrets: ANTHROPIC_API_KEY, JWT_SECRET, DISCORD_WEBHOOK_REPORTS, DISCORD_WEBHOOK_ALERTS
+- KV namespace: RATE_LIMIT_KV (238b5712c7fe45dcb0c020aa7850036d)
+- Privacy page updated with Fit Finder data handling section
+- Header nav updated with Fit Finder link (desktop + mobile)
+- Lighthouse CI tests /fit page
+- Worker deploy in GitHub Actions gated behind `vars.WORKER_ENABLED` variable
+- `CLAUDE.md` created with CI/CD quality gate protocol
+
+**To enable CI Worker deploy:**
+1. Add `CLOUDFLARE_API_TOKEN` to GitHub repo secrets
+2. Set repo variable `WORKER_ENABLED` = `true`
+
+**Remaining Phase 4:**
+- Sentry SDK integration (optional)
+- SRI hashes on external resources
+- Cloudflare AI Crawl Control (manual dashboard step)
+
+### Next: Phase 5 — Voice and Depth
+
+See ROADMAP.md. Reflections (short-form writing), projects section, RSS expansion.
 
 ---
 

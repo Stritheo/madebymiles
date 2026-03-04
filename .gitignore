@@ -4,3 +4,5 @@ dist/
 .env
 .env.*
 !.env.example
+workers/fit-finder/.wrangler/
+workers/fit-finder/node_modules/

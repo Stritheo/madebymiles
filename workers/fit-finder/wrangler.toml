@@ -4,7 +4,11 @@ compatibility_date = "2024-11-01"
 compatibility_flags = ["nodejs_compat"]
 
 kv_namespaces = [
-  { binding = "RATE_LIMIT_KV", id = "PLACEHOLDER_REPLACE_AFTER_KV_CREATION" }
+  { binding = "RATE_LIMIT_KV", id = "238b5712c7fe45dcb0c020aa7850036d" }
+]
+
+routes = [
+  { pattern = "madebymiles.ai/api/*", zone_name = "madebymiles.ai" }
 ]
 
 [vars]
