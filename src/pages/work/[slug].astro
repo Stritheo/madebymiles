@@ -5,13 +5,18 @@ import { getCollection, render } from 'astro:content';
 
 export async function getStaticPaths() {
   const entries = await getCollection('work');
-  return entries.map(entry => ({
+  const sorted = entries.sort((a, b) => a.data.order - b.data.order);
+  return sorted.map((entry, i) => ({
     params: { slug: entry.id.replace(/\.md$/, '') },
-    props: { entry },
+    props: {
+      entry,
+      prev: i > 0 ? sorted[i - 1] : null,
+      next: i < sorted.length - 1 ? sorted[i + 1] : null,
+    },
   }));
 }
 
-const { entry } = Astro.props;
+const { entry, prev, next } = Astro.props;
 const { Content } = await render(entry);
 ---
 
@@ -43,7 +48,24 @@ const { Content } = await render(entry);
         <Content />
       </div>
 
-      <div class="mt-16 pt-8 border-t border-border-light flex gap-4 flex-wrap">
+      {(prev || next) && (
+        <nav class="mt-16 pt-8 border-t border-border-light grid grid-cols-2 gap-8">
+          {prev ? (
+            <a href={`/work/${prev.id.replace(/\.md$/, '')}`} class="no-underline group">
+              <p class="text-sm text-text-secondary/70 mb-1">&larr; Previous</p>
+              <p class="text-base text-text-primary group-hover:text-text-accent transition-colors">{prev.data.company}</p>
+            </a>
+          ) : <div />}
+          {next ? (
+            <a href={`/work/${next.id.replace(/\.md$/, '')}`} class="no-underline group text-right">
+              <p class="text-sm text-text-secondary/70 mb-1">Next &rarr;</p>
+              <p class="text-base text-text-primary group-hover:text-text-accent transition-colors">{next.data.company}</p>
+            </a>
+          ) : <div />}
+        </nav>
+      )}
+
+      <div class="mt-8 pt-8 border-t border-border-light flex gap-4 flex-wrap">
         <CTA href="/experience" external={false}>View all experience</CTA>
         <CTA href="/contact" variant="secondary" external={false}>Contact</CTA>
       </div>
