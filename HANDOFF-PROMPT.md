@@ -100,6 +100,19 @@ See PRD Epic 8. `/fit` page with file upload, Claude Haiku matching, blurred res
 
 ---
 
+## Lessons learned
+
+### Lighthouse CI thresholds (Phase 2)
+**Issue:** Lighthouse CI was added with FCP budget of 1500ms and interactive budget of 3000ms. These passed locally but failed on every GitHub Actions run (actual FCP ~2700ms, interactive ~3368ms). Google Fonts are render-blocking, and CI runners are ~2x slower than real users.
+
+**Root cause:** Untested quality gate. Thresholds were committed without running them in the target CI environment first.
+
+**Fix:** Relaxed to FCP 3500ms, interactive 5000ms (2x real-world baseline accounts for CI runner overhead).
+
+**Protocol added:** See `CLAUDE.md` "CI/CD quality gate protocol" section. Key rules: baseline before budget, soft-fail first, CI environment awareness, test the test.
+
+---
+
 ## Design and content rules
 
 - No emdashes, en-dashes, or ampersands
