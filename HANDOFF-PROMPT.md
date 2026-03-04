@@ -8,7 +8,8 @@ Read this file first, then read `PRD.md` and `ROADMAP.md` for full context.
 
 **Branch:** `claude/review-website-roadmap-rst4k`
 **Phase 1:** Complete and live at madebymiles.ai.
-**Phase 2 (Credibility Engine):** In progress. Skill matrix, experience page, case study pages and content all built. Ready to commit and push.
+**Phase 2 (Credibility Engine):** Complete (core). Skill matrix, experience page, case study pages, prev/next nav, Lighthouse CI all shipped.
+**Phase 3 (Discoverability):** Complete (core). llms.txt, llms-full.txt, RSS feed, Article JSON-LD, robots.txt LLM refs all shipped.
 **PVT:** All checks passed. Site live, HTTPS, DNS, sitemap, Discord notifications all working.
 **Security headers:** A+ on securityheaders.com. Cloudflare Transform Rules configured.
 
@@ -33,6 +34,15 @@ Read this file first, then read `PRD.md` and `ROADMAP.md` for full context.
 ### Footer
 - "Growth and Transformation. GAICD. GDipAppFin."
 - LinkedIn, WhatsApp, Privacy links
+- "Built for humans. Readable by AI." → links to /llms.txt
+
+### Discoverability (Phase 3)
+- `/llms.txt` — concise LLM-readable profile (auto-generated from content collections)
+- `/llms-full.txt` — comprehensive LLM-readable profile with full case study bodies
+- `/rss.xml` — RSS feed for case studies
+- Article JSON-LD on each case study page
+- `link rel="alternate"` for llms.txt and RSS in `<head>`
+- robots.txt references LLM content files
 
 ### Technical
 - CSP includes `script-src 'self' 'unsafe-inline'` (needed for Astro inline module scripts)
@@ -49,22 +59,44 @@ Read this file first, then read `PRD.md` and `ROADMAP.md` for full context.
 
 ---
 
-### Phase 2 progress (Credibility Engine)
+### Phase 2 progress (Credibility Engine) — COMPLETE (core)
 
 **Done:**
 - AICD-aligned skill matrix: 13 skill JSON files across 4 domains in `src/content/skills/`
 - Experience page (`/experience`): skill matrix grid with rating badges, career timeline, credentials
 - 5 case study pages (`/work/[slug]`): SCI, CBA, Hollard, Suncorp, Westpac with Context/What I did/Results
+- Prev/next navigation between case studies
 - Homepage cards linked to case study pages (first 5 are clickable)
 - Skill cards with `caseStudySlug` link through to case studies
 - Header nav updated: Experience link points to `/experience`
 - @tailwindcss/typography installed for prose styling on case study pages
 - Credentials: GAICD, GDipAppFin, BBus on experience page and JSON-LD
+- Lighthouse CI added to GitHub Actions (`.github/lighthouse-budget.json`)
+- Skill ratings: 8 Expert, 5 Practised
 
-**Remaining Phase 2:**
+**Deferred (requires infrastructure setup):**
 1. **Supabase analytics beacon** — Cloudflare Worker `/api/beacon`, sendBeacon on page_view, scroll_50, CTA clicks.
 2. **Discord reporting cron Worker** — Daily visitor summary to #reports, weekly funnel to #reports.
-3. **Lighthouse CI** — Add to GitHub Actions, thresholds: Perf 95, A11y 100, BP 95, SEO 95.
+
+### Phase 3 progress (Discoverability) — COMPLETE (core)
+
+**Done:**
+- `/llms.txt` and `/llms-full.txt` — Astro API routes auto-generated from content collections
+- Article JSON-LD on each case study page (schema.org Article)
+- RSS feed at `/rss.xml` via @astrojs/rss
+- `link rel="alternate"` for llms.txt and RSS in Base.astro `<head>`
+- robots.txt updated with LLM content references
+- Footer: "Built for humans. Readable by AI." linked to /llms.txt
+- LLM validation: fetched /llms.txt, produced accurate 200-word summary
+
+**Deferred (manual Cloudflare step):**
+- **Cloudflare AI Crawl Control** — Allow Google, Anthropic, OpenAI; block unwanted scrapers. Configure in Cloudflare dashboard.
+
+---
+
+### Next: Phase 4 — Fit Finder (AI Role Matcher)
+
+See PRD Epic 8. `/fit` page with file upload, Claude Haiku matching, blurred results with honour-system unlock. Requires Cloudflare Worker + Claude API key.
 
 ---
 
