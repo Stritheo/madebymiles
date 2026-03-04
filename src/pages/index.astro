@@ -3,23 +3,41 @@ import Base from '@/layouts/Base.astro';
 import CTA from '@/components/CTA.astro';
 ---
 
-<Base title="Miles Sowden | Insurance Executive">
+<Base
+  title="Miles Sowden | Insurance Executive, Growth and Transformation"
+  description="Twenty years leading Australian insurers through growth and transformation. $1 billion in premium, 700 people, five major financial institutions."
+  ogImage="/images/miles-sowden-headshot.jpeg"
+>
   <!-- Hero -->
   <section class="pt-48 pb-32 max-md:pt-32 max-md:pb-20">
     <div class="max-w-[1200px] mx-auto px-12 max-lg:px-8 max-md:px-6">
-      <h1 class="font-display text-[3.5rem] max-lg:text-5xl max-md:text-[2.5rem] leading-[1.1] tracking-[-0.02em] text-text-primary mb-10">
-        Twenty years leading Australian insurers through growth and transformation
-      </h1>
-      <p class="text-xl max-md:text-lg leading-relaxed text-text-secondary mb-12">
-        I have led businesses with more than $1 billion in premium and teams of 700 people across five major financial institutions. From navigating the Royal Commission to deploying artificial intelligence at scale, I build the strategy, teams and culture that deliver lasting performance.
-      </p>
-      <div class="flex gap-4 flex-wrap max-md:flex-col">
-        <CTA href="/contact" external={false}>
-          Contact
-        </CTA>
-        <CTA href="#work-and-impact" variant="secondary" external={false}>
-          Work and impact
-        </CTA>
+      <div class="flex items-start gap-16 max-md:flex-col max-md:gap-10">
+        <div class="flex-1">
+          <h1 class="font-display text-[3.5rem] max-lg:text-5xl max-md:text-[2.5rem] leading-[1.1] tracking-[-0.02em] text-text-primary mb-10">
+            Twenty years leading Australian insurers through growth and transformation
+          </h1>
+          <p class="text-xl max-md:text-lg leading-relaxed text-text-secondary mb-12">
+            I have led businesses with more than $1 billion in premium and teams of 700 people across five major financial institutions. From navigating the Royal Commission to deploying artificial intelligence at scale, I build the strategy, teams and culture that deliver lasting performance.
+          </p>
+          <div class="flex gap-4 flex-wrap max-md:flex-col">
+            <CTA href="/contact" external={false}>
+              Contact
+            </CTA>
+            <CTA href="#work-and-impact" variant="secondary" external={false}>
+              Work and impact
+            </CTA>
+          </div>
+        </div>
+        <div class="w-[280px] max-md:w-[200px] flex-shrink-0">
+          <img
+            src="/images/miles-sowden-headshot.jpeg"
+            alt="Miles Sowden"
+            width="280"
+            height="322"
+            class="w-full rounded-lg"
+            loading="eager"
+          />
+        </div>
       </div>
     </div>
   </section>
@@ -65,20 +83,34 @@ import CTA from '@/components/CTA.astro';
       </p>
       <div class="grid grid-cols-2 max-md:grid-cols-1 gap-8 mt-16">
         <div class="p-10 max-md:p-8 bg-bg-card">
-          <h3 class="font-display text-2xl leading-[1.3] text-text-primary mb-4">Strata Community Insurance</h3>
-          <p class="text-base leading-relaxed text-text-secondary">General Manager, Data and Technology Solutions. Deployed digital channels, pricing sophistication and AI automation. Cleared a backlog of 30,000 tasks, reduced underwriting cycle time by 19% and achieved 76% staff engagement.</p>
+          <h3 class="font-display text-2xl leading-[1.3] text-text-primary mb-2">Strata Community Insurance</h3>
+          <p class="text-sm text-text-secondary/70 mb-4">General Manager, Data and Technology Solutions</p>
+          <p class="text-base leading-relaxed text-text-secondary">Deployed digital channels, pricing sophistication and AI automation. Cleared a backlog of 30,000 tasks, reduced underwriting cycle time by 19% and achieved 76% staff engagement.</p>
         </div>
         <div class="p-10 max-md:p-8 bg-bg-card">
-          <h3 class="font-display text-2xl leading-[1.3] text-text-primary mb-4">Commonwealth Bank</h3>
-          <p class="text-base leading-relaxed text-text-secondary">General Manager, General Insurance. Led a $1 billion insurer with 700 staff serving one million customers. Developed a rating factor that reduced premiums by 10% while improving the loss ratio by 1%. Grew digital sales from 20% to 70%.</p>
+          <h3 class="font-display text-2xl leading-[1.3] text-text-primary mb-2">Commonwealth Bank</h3>
+          <p class="text-sm text-text-secondary/70 mb-4">General Manager, General Insurance. 700 staff, one million customers.</p>
+          <p class="text-base leading-relaxed text-text-secondary">Led a $1 billion insurer through the Royal Commission, pandemic and regulatory reform. Developed a rating factor that reduced premiums by 10% while improving the loss ratio by 1%. Grew digital sales from 20% to 70%.</p>
         </div>
         <div class="p-10 max-md:p-8 bg-bg-card">
-          <h3 class="font-display text-2xl leading-[1.3] text-text-primary mb-4">Hollard Insurance</h3>
-          <p class="text-base leading-relaxed text-text-secondary">Chief Revenue Officer. Established a 15-year strategic alliance with Commonwealth Bank for one million customers. Led the transition and portfolio transformation to meet target returns and risk appetite.</p>
+          <h3 class="font-display text-2xl leading-[1.3] text-text-primary mb-2">Hollard Insurance</h3>
+          <p class="text-sm text-text-secondary/70 mb-4">Chief Revenue Officer</p>
+          <p class="text-base leading-relaxed text-text-secondary">Established a 15-year strategic alliance with Commonwealth Bank for one million customers. Led the transition and portfolio transformation to meet target returns and risk appetite.</p>
         </div>
         <div class="p-10 max-md:p-8 bg-bg-card">
-          <h3 class="font-display text-2xl leading-[1.3] text-text-primary mb-4">Westpac Banking Corporation</h3>
-          <p class="text-base leading-relaxed text-text-secondary">Senior Manager. Established distribution plan and operating model for the Westpac-Allianz alliance. Doubled written premiums and increased NPS from +25 to +44.</p>
+          <h3 class="font-display text-2xl leading-[1.3] text-text-primary mb-2">Suncorp Group</h3>
+          <p class="text-sm text-text-secondary/70 mb-4">Senior Manager, Personal Lines</p>
+          <p class="text-base leading-relaxed text-text-secondary">Delivered the first underwriting profit in personal lines after five consecutive loss years. Repriced the portfolio, improved claims management and rebuilt distributor relationships across the Promina network.</p>
+        </div>
+        <div class="p-10 max-md:p-8 bg-bg-card">
+          <h3 class="font-display text-2xl leading-[1.3] text-text-primary mb-2">Westpac Banking Corporation</h3>
+          <p class="text-sm text-text-secondary/70 mb-4">Senior Manager, General Insurance</p>
+          <p class="text-base leading-relaxed text-text-secondary">Established distribution plan and operating model for the Westpac-Allianz alliance. Doubled written premiums and increased NPS from +25 to +44.</p>
+        </div>
+        <div class="p-10 max-md:p-8 bg-bg-card">
+          <h3 class="font-display text-2xl leading-[1.3] text-text-primary mb-2">Agentic Engineering</h3>
+          <p class="text-sm text-text-secondary/70 mb-4">Independent projects</p>
+          <p class="text-base leading-relaxed text-text-secondary">Building AI-powered tools and automation outside of corporate roles. This site was designed and deployed using agentic workflows, Claude Code and modern web infrastructure as a practical demonstration of how AI changes the way work gets done.</p>
         </div>
       </div>
     </div>
@@ -97,4 +129,70 @@ import CTA from '@/components/CTA.astro';
       </div>
     </div>
   </section>
+
+  <!-- Person JSON-LD -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Miles Sowden",
+    "jobTitle": "Insurance Executive",
+    "description": "Twenty years leading Australian insurers through growth and transformation. Strategy, teams and culture that deliver lasting performance.",
+    "url": "https://madebymiles.ai",
+    "image": "https://madebymiles.ai/images/miles-sowden-headshot.jpeg",
+    "sameAs": [
+      "https://www.linkedin.com/in/milessowden"
+    ],
+    "knowsAbout": [
+      "General Insurance",
+      "Business Transformation",
+      "Strategic Leadership",
+      "Artificial Intelligence",
+      "Data Strategy",
+      "Corporate Governance"
+    ],
+    "hasCredential": [
+      {
+        "@type": "EducationalOccupationalCredential",
+        "credentialCategory": "Professional Certification",
+        "name": "Graduate, Australian Institute of Company Directors (GAICD)"
+      },
+      {
+        "@type": "EducationalOccupationalCredential",
+        "credentialCategory": "Executive Education",
+        "name": "Massachusetts Institute of Technology (MIT)"
+      }
+    ],
+    "hasOccupation": [
+      {
+        "@type": "Occupation",
+        "name": "General Manager, Data and Technology Solutions",
+        "occupationLocation": { "@type": "Country", "name": "Australia" },
+        "description": "Strata Community Insurance"
+      },
+      {
+        "@type": "Occupation",
+        "name": "General Manager, General Insurance",
+        "occupationLocation": { "@type": "Country", "name": "Australia" },
+        "description": "Commonwealth Bank"
+      },
+      {
+        "@type": "Occupation",
+        "name": "Chief Revenue Officer",
+        "occupationLocation": { "@type": "Country", "name": "Australia" },
+        "description": "Hollard Insurance"
+      },
+      {
+        "@type": "Occupation",
+        "name": "Senior Manager, Personal Lines",
+        "occupationLocation": { "@type": "Country", "name": "Australia" },
+        "description": "Suncorp Group"
+      },
+      {
+        "@type": "Occupation",
+        "name": "Senior Manager, General Insurance",
+        "occupationLocation": { "@type": "Country", "name": "Australia" },
+        "description": "Westpac Banking Corporation"
+      }
+    ]
+  })} />
 </Base>
