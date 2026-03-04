@@ -102,22 +102,18 @@ Phase 5 ─── Voice & Depth ────────── Reflections, proj
 - [ ] Add build status badge to README
 
 #### 1.6 — Discord ops (Phase 1 signals)
-- [ ] Create Discord server (or use existing) with channels:
-  - `#uptime-alerts`
-  - `#build-deploys`
-  - `#security-threats`
-  - `#site-visitors`
-  - `#funnel-tracking`
-  - `#fit-finder`
-  - `#dependency-alerts`
-- [ ] Create Discord webhooks for each channel
+- [ ] Create Discord server with 2 channels:
+  - `#alerts` — downtime, security threats, build failures, errors
+  - `#reports` — daily visitors, weekly funnel, deploy success, Fit Finder stats
+- [ ] Create Discord webhooks (one per channel)
 - [ ] Configure UptimeRobot:
   - Monitor `https://madebymiles.ai` (HTTP 200)
-  - Alert → Discord webhook to `#uptime-alerts`
+  - Alert → Discord webhook to `#alerts`
 - [ ] Add Discord notification step to GitHub Actions:
-  - Post to `#build-deploys` on deploy success/failure
+  - Build failures → `#alerts`
+  - Deploy success → `#reports`
   - Include commit message, author, and build status
-- [ ] Enable Dependabot on the repo → GitHub webhook to `#dependency-alerts`
+- [ ] Enable Dependabot on the repo → GitHub webhook to `#alerts`
 
 #### 1.7 — Security headers (Phase 0 embed)
 - [ ] Configure Cloudflare Transform Rules or `_headers` file:
@@ -214,8 +210,8 @@ Phase 5 ─── Voice & Depth ────────── Reflections, proj
 
 #### 2.6 — Discord reporting cron Worker
 - [ ] Create Cloudflare Worker with cron trigger:
-  - **Daily at 08:00 AEST (22:00 UTC):** Query `daily_summary` view from Supabase → post rich embed to `#site-visitors`
-  - **Weekly Monday 08:00 AEST:** Query funnel steps → calculate drop-off → post to `#funnel-tracking`
+  - **Daily at 08:00 AEST (22:00 UTC):** Query `daily_summary` view from Supabase → post rich embed to `#reports`
+  - **Weekly Monday 08:00 AEST:** Query funnel steps → calculate drop-off → post to `#reports`
 - [ ] Use `service_role` key to read from Supabase
 - [ ] Format as Discord embeds (colour-coded, with fields)
 - [ ] Store Discord webhook URLs as Worker secrets
@@ -226,7 +222,7 @@ Phase 5 ─── Voice & Depth ────────── Reflections, proj
   - Run after deploy
   - Thresholds: Performance ≥ 95, Accessibility ≥ 100, Best Practices ≥ 95, SEO ≥ 95
   - Fail build if scores drop below thresholds
-- [ ] Post Lighthouse scores to `#build-deploys` Discord channel after each deploy
+- [ ] Post Lighthouse scores to `#reports` Discord channel after each deploy
 
 **Phase 2 deliverable:** AICD-aligned skill matrix live on `/experience`, 4 case studies on `/work/*`, analytics beacon tracking 7 funnel steps into Supabase, daily visitor report and weekly funnel report posting to Discord.
 
@@ -260,7 +256,12 @@ Phase 5 ─── Voice & Depth ────────── Reflections, proj
 - [ ] Generate RSS feed for case studies (Astro `@astrojs/rss`)
 - [ ] Verify with Google Rich Results Test
 
-#### 3.4 — LLM validation
+#### 3.4 — AI crawl control & security scan
+- [ ] Cloudflare → **AI Crawl Control**: allow crawlers for Google, Anthropic, OpenAI, Microsoft; block unwanted scrapers
+- [ ] Cloudflare → **Observatory**: run a security/performance scan and address any findings
+- [ ] Verify security headers score A+ on securityheaders.com
+
+#### 3.5 — LLM validation
 - [ ] Test with Claude: "Who has led insurance AI transformation in Australia?"
 - [ ] Test with Perplexity: "Miles Sowden experience"
 - [ ] Verify `/llms-full.txt` produces accurate 200-word summary when fed to an LLM
@@ -328,21 +329,21 @@ Phase 5 ─── Voice & Depth ────────── Reflections, proj
 - [ ] Re-verify A+ on securityheaders.com
 
 #### 4.5 — Discord ops (Phase 4 signals)
-- [ ] Fit Finder Worker: post to `#fit-finder` on each analysis (count only, no content)
-- [ ] Fit Finder Worker: post to `#security-threats` on rate limit hits
-- [ ] Fit Finder Worker: post to `#fit-finder` on exceptions (error type, no document content)
-- [ ] Set up Sentry free tier → Discord `#build-deploys` integration
+- [ ] Fit Finder Worker: post to `#reports` on each analysis (count only, no content)
+- [ ] Fit Finder Worker: post to `#alerts` on rate limit hits
+- [ ] Fit Finder Worker: post to `#alerts` on exceptions (error type, no document content)
+- [ ] Set up Sentry free tier → Discord `#alerts` integration
 - [ ] Create cron Worker job for weekly security report:
   - Query Cloudflare GraphQL Analytics API for firewall events
-  - Post summary to `#security-threats`
+  - Post summary to `#alerts`
 - [ ] Create cron Worker job for monthly Fit Finder report:
   - Analyses run, error rate, estimated API spend
-  - Post to `#fit-finder`
+  - Post to `#reports`
 - [ ] Add UptimeRobot monitor for `/api/health` endpoint
 
 #### 4.6 — Anthropic API cost controls
 - [ ] Set $5/month billing alert in Anthropic console
-- [ ] Set $3/month warning alert → Discord `#fit-finder`
+- [ ] Set $3/month warning alert → Discord `#alerts`
 - [ ] Verify rate limiting works (10/IP/day)
 - [ ] Add 200/month soft cap with alerting
 
@@ -403,7 +404,7 @@ These are not separate steps — they're woven into each phase:
 | **Security** | Headers, HTTPS, CSP | SRI on fonts | — | Fit Finder hardening, PIA | — |
 | **Privacy** | No cookies, no PII | Beacon: no IP/PII | — | `/privacy` page, inline notices | — |
 | **Cost** | All free | Supabase free | — | API limits, rate limiting | — |
-| **Discord** | Uptime + builds | Analytics + funnel | — | Fit Finder + security + Sentry | New event types |
+| **Discord** | `#alerts` (uptime, build fails) + `#reports` (deploys) | `#reports` (analytics, funnel) | — | `#alerts` (security, errors) + `#reports` (Fit Finder stats) | New event types |
 | **Testing** | Visual parity check | Lighthouse CI | LLM retrieval tests | Fit Finder E2E | Content checks |
 
 ---

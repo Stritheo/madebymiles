@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://madebymiles.ai/sitemap.xml
+Sitemap: https://madebymiles.ai/sitemap-index.xml

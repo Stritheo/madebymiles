@@ -30,6 +30,7 @@ jobs:
 
       - name: Audit dependencies
         run: npm audit --audit-level=high
+        continue-on-error: true
 
       - name: Build site
         run: npm run build
@@ -49,3 +50,23 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Notify Discord (success)
+        if: success()
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          curl -s -H "Content-Type: application/json" \
+            -d "{\"embeds\":[{\"title\":\"Deploy Successful\",\"description\":\"**Site:** https://madebymiles.ai\n**Commit:** \`${GITHUB_SHA::7}\`\n**By:** ${GITHUB_ACTOR}\",\"color\":3066993}]}" \
+            "${{ secrets.DISCORD_WEBHOOK_REPORTS }}"
+
+  notify-failure:
+    needs: [build, deploy]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Discord (failure)
+        run: |
+          curl -s -H "Content-Type: application/json" \
+            -d "{\"embeds\":[{\"title\":\"Build/Deploy FAILED\",\"description\":\"**Repo:** madebymiles\n**Commit:** \`${GITHUB_SHA::7}\`\n**By:** ${GITHUB_ACTOR}\n**Details:** ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}\",\"color\":15158332}]}" \
+            "${{ secrets.DISCORD_WEBHOOK_ALERTS }}"

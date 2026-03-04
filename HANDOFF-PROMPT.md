@@ -1,39 +1,89 @@
-I'm continuing work on madebymiles.ai — a personal executive site for Miles Sowden (insurance/digital/AI executive targeting CEO, CXO, and NED roles).
+# Handoff Prompt — Continue in Claude Code
 
-## Key files in this repo (read these first)
+Read this file first, then read `PRD.md`, `ROADMAP.md`, and `SETUP-CHECKLIST.md` for full context.
 
-- `PRD.md` — Full product requirements (11 epics, 6 phases, AICD skill matrix, AI Fit Finder, Discord ops dashboard, Supabase analytics)
-- `ROADMAP.md` — Step-by-step build plan with checkboxes for each phase
-- `SETUP-CHECKLIST.md` — All accounts, API keys, and manual steps I need to complete, organised by phase
+---
 
 ## Current state
 
-Branch: `claude/review-website-roadmap-rst4k`
+**Branch:** `main` (push pending or just pushed)
+**Phase 1:** Complete. Site builds, 3 pages (home, contact, privacy), CI/CD with Discord notifications.
 
-Phase 1 is partially built:
-- [x] Astro 5 + TypeScript + Tailwind CSS scaffolded
-- [x] Homepage migrated from index.html into Astro components
-- [x] /contact page with LinkedIn + WhatsApp CTAs (+61414185721)
-- [x] GitHub Actions CI/CD workflow (deploy.yml)
-- [x] Security headers (_headers file)
-- [x] 5 components: Header, Footer, CTA, Card, Tag
-- [x] Base layout with SEO meta, Open Graph, Twitter Cards
-- [ ] DNS: Squarespace → Cloudflare (manual step, instructions in SETUP-CHECKLIST.md)
-- [ ] Discord ops dashboard (7 channels + webhooks — manual step, instructions in SETUP-CHECKLIST.md)
-- [ ] UptimeRobot monitoring (manual step)
-- [ ] Headshot image needs saving to assets/images/miles-sowden-headshot.jpg
+### What was completed this session
 
-All open questions are resolved (see PRD.md Section 11):
-- WhatsApp: +61414185721
-- AICD: member/graduate
-- Suncorp: yes, 5th case study
-- Skill matrix: self-rate + evidence statements
-- Fit Finder: honour-system blur unlock + shareable signed URL
+**Infrastructure (all manual setup done):**
+- Cloudflare DNS proxied to GitHub Pages
+- GitHub Pages on Stritheo/madebymiles (public repo)
+- Discord: 2 channels (#alerts, #reports) with webhooks
+- UptimeRobot monitoring with Discord integration
+- Supabase (Oceania/Sydney, RLS enabled)
+- Cloudflare Workers (Account ID and API token saved)
+- Sentry (US, Browser JavaScript, Discord #alerts)
+- Google Search Console verified
+- GitHub Secrets: DISCORD_WEBHOOK_ALERTS, DISCORD_WEBHOOK_REPORTS, CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, SENTRY_DSN
 
-Original site is archived as git tag `v0-pre-rebuild`.
+**Code changes:**
+- Homepage redesigned with CEO positioning (not just tech/AI)
+- Header simplified: "Experience" and "Contact" text links, mobile hamburger
+- Footer: tagline "Growth and Transformation. MIT. GAICD." aligned with LinkedIn
+- Contact page: LinkedIn and WhatsApp cards, no "me" language
+- Privacy page: plain language, published at /privacy
+- CTA buttons: consistent 1.5px borders for aligned height
+- Sitemap: @astrojs/sitemap, robots.txt updated
+- Favicon: SVG with "M" in brand colors
+- Deploy workflow: Discord success/failure notifications
+- Dependabot: weekly npm and GitHub Actions updates
+- SECURITY-HEADERS.md: Cloudflare Transform Rules guide
+- Deleted: non-functional public/_headers, duplicate root CNAME
+
+**NOT done (pending):**
+- Cloudflare Transform Rules for HTTP security headers (guide user through SECURITY-HEADERS.md)
+- Headshot not added to site yet (file at assets/images/miles-sowden-headshot.jpeg)
+
+---
+
+## Next sprint priorities (from persona review)
+
+### Immediate (before Phase 2 code)
+1. Add headshot to hero, contact page, default OG image
+2. Add positioning statement to homepage ("CEO, CXO and NED roles")
+3. Add Suncorp as 5th company card
+4. Add 6th card: agentic engineering projects or volunteer/charity (3x2 grid balance, shows another dimension)
+5. Spell out credentials (GAICD, MIT are cryptic to non-Australian audiences)
+6. Add basic Person JSON-LD to homepage
+7. Standardise scope data across role cards (title, team size, reporting line)
+8. Improve title tag (too generic)
+
+### Phase 2 (ROADMAP steps 2.1 through 2.7)
+9. AICD-aligned skill matrix on /experience (CEO candidate lens first)
+10. 5 case study pages (10-second scan card, 1-minute expandable detail)
+11. Supabase analytics beacon
+12. Discord reporting cron workers
+13. Lighthouse CI
+
+---
+
+## Design and content rules
+
+- No emdashes or en-dashes anywhere
+- No ampersands, use "and"
+- No "me" in CTAs
+- CTA text: direct and confident ("Contact", "Connect on LinkedIn", "Open WhatsApp")
+- No desperate positioning ("Open to opportunities")
+- CEO-first lens: strategy, leadership, people first; AI is a capability not the identity
+- Apple x Tom Ford aesthetic: whitespace, restraint, typography
+- Footer tagline aligns with LinkedIn header
+- Scannable in 10 seconds, expandable to 1 minute
+
+## User preferences
+- Limited technical knowledge, explain in plain English
+- Values design discipline and brand consistency
+- LinkedIn: "Led $1bn insurer | Growth and Transformation | MIT | GAICD"
+- Profile data: `.claude/projects/-Users-milessowden-Projects-madebymiles/memory/miles-profile.md`
 
 ## What to do next
 
-Read PRD.md, ROADMAP.md, and SETUP-CHECKLIST.md to get full context. Then continue building from where Phase 1 left off. The next code work is Phase 2: AICD skill matrix data model, /experience page, 5 case study pages, Supabase analytics beacon, and Discord reporting cron workers.
-
-For the manual setup steps (DNS, Discord webhooks, Supabase keys, etc.) — guide me through them interactively as they become relevant.
+1. If not pushed: commit and push to main, verify deploy and Discord notification
+2. Guide user through Cloudflare Transform Rules (SECURITY-HEADERS.md)
+3. Run PVT checks against live site
+4. Begin next sprint with priorities above

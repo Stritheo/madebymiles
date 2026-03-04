@@ -5,57 +5,46 @@ import CTA from '@/components/CTA.astro';
 
 <Base
   title="Contact | Miles Sowden"
-  description="Get in touch with Miles Sowden via LinkedIn or WhatsApp. Open to executive roles, board positions, and advisory work."
+  description="Contact with Miles Sowden via LinkedIn or WhatsApp. Open to executive roles, board positions and advisory work."
 >
   <section class="pt-48 pb-32 max-md:pt-32 max-md:pb-20">
     <div class="max-w-[1200px] mx-auto px-12 max-lg:px-8 max-md:px-6">
-      <h1 class="font-display text-[4rem] max-lg:text-5xl max-md:text-4xl leading-[1.1] tracking-[-0.02em] text-text-primary mb-10 max-w-[700px]">
-        Let's talk
+      <h1 class="font-display text-[3.5rem] max-lg:text-5xl max-md:text-[2.5rem] leading-[1.1] tracking-[-0.02em] text-text-primary mb-6">
+        Contact
       </h1>
-      <p class="text-xl leading-relaxed text-text-secondary mb-16 max-w-[600px]">
-        I prefer real conversations over contact forms. The fastest way to reach me is LinkedIn or WhatsApp — I typically respond within a day.
+      <p class="text-xl max-md:text-lg leading-relaxed text-text-secondary mb-16 max-w-[720px]">
+        I prefer direct conversations over contact forms. The two best ways to reach me are LinkedIn and WhatsApp.
       </p>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-[700px]">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-[720px]">
         <!-- LinkedIn -->
-        <a
-          href="https://www.linkedin.com/messaging/compose/?to=milessowden"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="block p-10 bg-bg-card border-l-[3px] border-text-accent no-underline transition-all duration-300 hover:translate-x-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)]"
-        >
+        <div class="p-10 max-md:p-8 bg-bg-card border-t-[3px] border-text-accent">
           <h2 class="font-display text-2xl text-text-primary mb-3">LinkedIn</h2>
-          <p class="text-base text-text-secondary mb-6">Send me a direct message. Best for professional introductions and role discussions.</p>
-          <span class="text-text-accent font-medium text-base">Message me on LinkedIn &rarr;</span>
-        </a>
+          <p class="text-base text-text-secondary mb-6">For professional introductions and conversations about roles, advisory or board opportunities.</p>
+          <CTA href="https://www.linkedin.com/in/milessowden" size="sm">
+            Connect on LinkedIn
+          </CTA>
+        </div>
 
         <!-- WhatsApp -->
-        <a
-          href="https://wa.me/61414185721?text=Hi%20Miles%2C%20I%20came%20across%20your%20site%20and%20would%20like%20to%20connect."
-          target="_blank"
-          rel="noopener noreferrer"
-          class="block p-10 bg-bg-card border-l-[3px] border-text-accent no-underline transition-all duration-300 hover:translate-x-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)]"
-        >
+        <div class="p-10 max-md:p-8 bg-bg-card border-t-[3px] border-text-accent">
           <h2 class="font-display text-2xl text-text-primary mb-3">WhatsApp</h2>
-          <p class="text-base text-text-secondary mb-6">Quick question or informal chat? WhatsApp is the fastest way to reach me.</p>
-          <span class="text-text-accent font-medium text-base">WhatsApp me &rarr;</span>
-        </a>
+          <p class="text-base text-text-secondary mb-6">For a quicker, more direct conversation.</p>
+          <CTA href="https://wa.me/61414185721?text=Hi%20Miles%2C%20I%20found%20your%20site%20and%20would%20like%20to%20connect." size="sm">
+            Open WhatsApp
+          </CTA>
+        </div>
       </div>
 
-      <div class="mt-16 max-w-[600px]">
-        <h2 class="font-display text-2xl text-text-primary mb-4">What I'm open to</h2>
-        <ul class="text-lg text-text-secondary space-y-3 list-none">
-          <li>Executive roles (CEO, CXO) in insurance and financial services</li>
-          <li>Non-Executive Director and advisory board positions</li>
-          <li>Strategic advisory and transformation consulting</li>
-          <li>Equity opportunities in insurtech and fintech</li>
+      <div class="mt-20 max-w-[720px]">
+        <h2 class="font-display text-[2.5rem] max-md:text-[2rem] leading-[1.2] tracking-[-0.02em] text-text-primary mb-6">
+          What I am open to
+        </h2>
+        <ul class="text-lg leading-relaxed text-text-secondary space-y-3 list-none pl-0">
+          <li>CEO and CXO roles in insurance and financial services</li>
+          <li>Non-executive director appointments</li>
+          <li>Advisory and consulting engagements</li>
         </ul>
-      </div>
-
-      <div class="mt-12">
-        <a href="https://linkedin.com/in/milessowden" target="_blank" rel="noopener noreferrer" class="text-text-accent hover:text-[#B36F4F] transition-colors no-underline font-medium">
-          View my full LinkedIn profile &rarr;
-        </a>
       </div>
     </div>
   </section>
