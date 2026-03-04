@@ -1,4 +1,4 @@
-const MAX_PER_DAY = 10;
+const MAX_PER_DAY = 100;
 
 export async function checkRateLimit(
   ip: string,

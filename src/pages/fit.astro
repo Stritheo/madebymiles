@@ -100,12 +100,19 @@ import CTA from '@/components/CTA.astro';
         <div id="matches-locked" class="relative mb-8">
           <div id="blurred-matches" class="grid grid-cols-1 md:grid-cols-2 gap-8 blur-md select-none pointer-events-none transition-all duration-500"></div>
           <div class="absolute inset-0 flex flex-col items-center justify-center bg-bg-primary/60">
-            <p class="text-lg text-text-primary font-medium mb-4">Want the full picture?</p>
+            <p class="text-lg text-text-primary font-medium mb-2">Want the full picture?</p>
+            <p class="text-base text-text-secondary mb-6">Send Miles a quick intro on LinkedIn first.</p>
             <button
-              id="unlock-btn"
-              class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-8 py-3.5 text-base bg-transparent text-text-primary border-[1.5px] border-border-light hover:border-[#D4D4D4] hover:bg-bg-card"
+              id="linkedin-unlock-btn"
+              class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-8 py-3.5 text-base bg-bg-dark text-white border-[1.5px] border-bg-dark hover:bg-[#151A26] hover:border-[#151A26] hover:-translate-y-px"
             >
-              I've contacted Miles
+              Connect on LinkedIn
+            </button>
+            <button
+              id="confirm-unlock-btn"
+              class="hidden inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-8 py-3.5 text-base bg-transparent text-text-primary border-[1.5px] border-border-light hover:border-[#D4D4D4] hover:bg-bg-card"
+            >
+              I've sent my intro — show full results
             </button>
           </div>
         </div>
@@ -159,7 +166,8 @@ import CTA from '@/components/CTA.astro';
   const matchesLocked = document.getElementById('matches-locked')!;
   const blurredMatches = document.getElementById('blurred-matches')!;
   const matchesUnlocked = document.getElementById('matches-unlocked')!;
-  const unlockBtn = document.getElementById('unlock-btn')!;
+  const linkedinUnlockBtn = document.getElementById('linkedin-unlock-btn')!;
+  const confirmUnlockBtn = document.getElementById('confirm-unlock-btn')!;
   const shareBtn = document.getElementById('share-btn')!;
   const shareConfirmation = document.getElementById('share-confirmation')!;
 
@@ -215,8 +223,14 @@ import CTA from '@/components/CTA.astro';
     showState('upload');
   });
 
-  // Unlock (honour system)
-  unlockBtn.addEventListener('click', () => {
+  // Unlock (two-step LinkedIn flow)
+  linkedinUnlockBtn.addEventListener('click', () => {
+    window.open('https://www.linkedin.com/in/milessowden', '_blank');
+    linkedinUnlockBtn.classList.add('hidden');
+    confirmUnlockBtn.classList.remove('hidden');
+  });
+
+  confirmUnlockBtn.addEventListener('click', () => {
     matchesLocked.classList.add('hidden');
     matchesUnlocked.classList.remove('hidden');
   });

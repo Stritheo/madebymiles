@@ -33,8 +33,9 @@ async function extractFromFile(request: Request): Promise<string> {
   const isPDF = PDF_MAGIC.every((byte, i) => header[i] === byte);
   if (!isPDF) throw new Error('Only PDF files are accepted');
 
-  const { getDocumentText } = await import('unpdf');
-  const text = await getDocumentText(buffer);
+  const { extractText: extractPdfText } = await import('unpdf');
+  const { text: pages } = await extractPdfText(new Uint8Array(buffer), { mergePages: true });
+  const text = pages as string;
 
   const sanitised = sanitise(text);
   if (sanitised.length < MIN_TEXT_LENGTH) {

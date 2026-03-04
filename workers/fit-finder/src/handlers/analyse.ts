@@ -36,7 +36,7 @@ export async function handleAnalyse(
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Analysis failed';
     await postAlert(env.DISCORD_WEBHOOK_ALERTS, `Claude API error: ${msg.slice(0, 100)}`);
-    return json({ error: 'Analysis failed. Please try again.' }, 502);
+    return json({ error: `Analysis failed: ${msg.slice(0, 200)}` }, 502);
   }
 
   // Sign results for shareable URL
