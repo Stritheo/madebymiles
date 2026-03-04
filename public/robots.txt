@@ -2,3 +2,7 @@ User-agent: *
 Allow: /
 
 Sitemap: https://madebymiles.ai/sitemap-index.xml
+
+# LLM content
+# Concise: https://madebymiles.ai/llms.txt
+# Full: https://madebymiles.ai/llms-full.txt
