@@ -30,13 +30,25 @@ import Base from '@/layouts/Base.astro';
         <div id="fit-finder">
           <h2 class="font-display text-2xl leading-[1.3] text-text-primary mb-3">Fit Finder</h2>
           <p class="text-lg leading-relaxed text-text-secondary">
-            The Fit Finder at <a href="/fit" class="text-text-accent hover:underline">/fit</a> accepts a role description as an uploaded PDF or pasted text. The document is read into memory, analysed, and immediately discarded. No copy is stored, logged, or retained by this site or its infrastructure.
+            The Fit Finder at <a href="/fit" class="text-text-accent hover:underline">/fit</a> accepts a role description as an uploaded PDF or pasted text. Your document is not stored on this site's servers. It is held in memory only for the duration of the request and then discarded.
           </p>
-          <p class="text-lg leading-relaxed text-text-secondary mt-4">
-            The text from your document is sent to Anthropic's API for analysis. Anthropic processes the request and returns a structured result. Anthropic does not use API inputs to train models and does not retain them beyond the request lifecycle.
+          <h3 class="font-display text-xl leading-[1.3] text-text-primary mt-8 mb-3">Data in transit</h3>
+          <p class="text-lg leading-relaxed text-text-secondary">
+            The text from your document is sent over an encrypted connection (HTTPS) to Anthropic's Claude API for analysis. This is a third-party AI service. You should assume that commercially sensitive or confidential role descriptions travel through Anthropic's infrastructure.
           </p>
-          <p class="text-lg leading-relaxed text-text-secondary mt-4">
-            If you share a result link, the analysis is encoded in the URL itself. No server stores the results. Links expire after 30 days.
+          <h3 class="font-display text-xl leading-[1.3] text-text-primary mt-8 mb-3">Anthropic's data handling</h3>
+          <p class="text-lg leading-relaxed text-text-secondary">
+            This site uses Anthropic's commercial API. Under Anthropic's commercial terms, API inputs are <strong class="text-text-primary">not used to train models</strong>. Anthropic retains API logs for up to 30 days for trust and safety purposes, after which they are automatically deleted. For full details, see <a href="https://privacy.claude.com" target="_blank" rel="noopener noreferrer" class="text-text-accent hover:underline">Anthropic's privacy centre</a>.
+          </p>
+          <h3 class="font-display text-xl leading-[1.3] text-text-primary mt-8 mb-3">What this site stores</h3>
+          <ul class="text-lg leading-relaxed text-text-secondary space-y-2 list-disc pl-6">
+            <li>Your IP address and a request count are stored for 24 hours to prevent abuse. No document content is included.</li>
+            <li>A notification containing the role title only (not the document) is sent to a private channel for usage monitoring.</li>
+            <li>No user accounts, email addresses or personal details are collected.</li>
+          </ul>
+          <h3 class="font-display text-xl leading-[1.3] text-text-primary mt-8 mb-3">Shared result links</h3>
+          <p class="text-lg leading-relaxed text-text-secondary">
+            If you share a result link, the analysis is encoded in the URL itself using a signed token. No server stores the results. Links expire after 30 days.
           </p>
         </div>
 
