@@ -225,7 +225,7 @@ import CTA from '@/components/CTA.astro';
 
   // Unlock (two-step LinkedIn flow)
   linkedinUnlockBtn.addEventListener('click', () => {
-    window.open('https://www.linkedin.com/in/milessowden', '_blank');
+    window.open('https://www.linkedin.com/messaging/compose/?recipient=milessowden', '_blank');
     linkedinUnlockBtn.classList.add('hidden');
     confirmUnlockBtn.classList.remove('hidden');
   });
