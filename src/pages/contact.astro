@@ -18,21 +18,25 @@ import CTA from '@/components/CTA.astro';
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-[720px]">
         <!-- LinkedIn -->
-        <div class="p-10 max-md:p-8 bg-bg-card border-t-[3px] border-text-accent">
+        <div class="flex flex-col p-10 max-md:p-8 bg-bg-card border-t-[3px] border-text-accent">
           <h2 class="font-display text-2xl text-text-primary mb-3">LinkedIn</h2>
           <p class="text-base text-text-secondary mb-6">For professional introductions and conversations about roles, advisory or board opportunities.</p>
-          <CTA href="https://www.linkedin.com/in/milessowden" size="sm">
-            Connect on LinkedIn
-          </CTA>
+          <div class="mt-auto">
+            <CTA href="https://www.linkedin.com/in/milessowden" size="sm">
+              Connect on LinkedIn
+            </CTA>
+          </div>
         </div>
 
         <!-- WhatsApp -->
-        <div class="p-10 max-md:p-8 bg-bg-card border-t-[3px] border-text-accent">
+        <div class="flex flex-col p-10 max-md:p-8 bg-bg-card border-t-[3px] border-text-accent">
           <h2 class="font-display text-2xl text-text-primary mb-3">WhatsApp</h2>
           <p class="text-base text-text-secondary mb-6">For a quicker, more direct conversation.</p>
-          <CTA href="https://wa.me/61414185721?text=Hi%20Miles%2C%20I%20found%20your%20site%20and%20would%20like%20to%20connect." size="sm">
-            Open WhatsApp
-          </CTA>
+          <div class="mt-auto">
+            <CTA href="https://wa.me/61414185721?text=Hi%20Miles%2C%20I%20found%20your%20site%20and%20would%20like%20to%20connect." size="sm">
+              Open WhatsApp
+            </CTA>
+          </div>
         </div>
       </div>
 

@@ -1,12 +1,12 @@
 # Handoff Prompt — Continue in Claude Code
 
-Read this file first, then read `PRD.md`, `ROADMAP.md`, and `SETUP-CHECKLIST.md` for full context.
+Read this file first, then read `PRD.md` and `ROADMAP.md` for full context. Infrastructure setup is complete (covered below).
 
 ---
 
 ## Current state
 
-**Branch:** `main` (push pending or just pushed)
+**Branch:** `main` (pushed to origin)
 **Phase 1:** Complete. Site builds, 3 pages (home, contact, privacy), CI/CD with Discord notifications.
 
 ### What was completed this session
@@ -26,9 +26,11 @@ Read this file first, then read `PRD.md`, `ROADMAP.md`, and `SETUP-CHECKLIST.md`
 - Homepage redesigned with CEO positioning (not just tech/AI)
 - Header simplified: "Experience" and "Contact" text links, mobile hamburger
 - Footer: tagline "Growth and Transformation. MIT. GAICD." aligned with LinkedIn
-- Contact page: LinkedIn and WhatsApp cards, no "me" language
+- Contact page: LinkedIn and WhatsApp cards, no "me" language, buttons pinned to bottom with flex/mt-auto
 - Privacy page: plain language, published at /privacy
 - CTA buttons: consistent 1.5px borders for aligned height
+- "Work and impact" subheading: removed max-w-[720px] so text spans full grid width
+- Closing section: moved max-w-[720px] from container to paragraph, fixing left-alignment
 - Sitemap: @astrojs/sitemap, robots.txt updated
 - Favicon: SVG with "M" in brand colors
 - Deploy workflow: Discord success/failure notifications
@@ -83,7 +85,6 @@ Read this file first, then read `PRD.md`, `ROADMAP.md`, and `SETUP-CHECKLIST.md`
 
 ## What to do next
 
-1. If not pushed: commit and push to main, verify deploy and Discord notification
+1. Run PVT checks against live site (see testing plan in session history)
 2. Guide user through Cloudflare Transform Rules (SECURITY-HEADERS.md)
-3. Run PVT checks against live site
-4. Begin next sprint with priorities above
+3. Begin next sprint with priorities above
