@@ -199,13 +199,18 @@ Read this file first, then read `PRD.md` and `ROADMAP.md` for full context.
 
 ### Carry forward to Phase 5
 
-**Remaining Phase 4 (low priority):**
+**Sprint 1 — Should do (low effort, improves quality):**
+- JWT constant-time comparison fix — `jwt.ts:35` uses `!==`. Change `importKey` to include `['sign', 'verify']` and use `crypto.subtle.verify()` instead of sign-then-compare. ~10 lines.
+- Verify Anthropic retention policy — privacy page says "up to 30 days". Anthropic may have changed to 7 days from Sept 2025. Check current policy and update if needed.
+
+**Sprint 2 — Nice to have:**
 - Sentry SDK integration (JS error tracking)
-- SRI hashes on external resources (Google Fonts)
-- Cloudflare AI Crawl Control (manual dashboard step)
+- SRI hashes on Google Fonts
+- Cloudflare AI Crawl Control (dashboard config)
 - Supabase analytics beacon (deferred from Phase 2)
 - Anthropic billing alert ($5/month)
-- JWT constant-time comparison fix
+- Install `@astrojs/check` for Astro type checking
+- Update Worker dev deps to clear npm audit findings (wrangler/undici)
 
 ### Next: Phase 5 — Voice and Depth
 

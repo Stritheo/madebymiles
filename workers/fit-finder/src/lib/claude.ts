@@ -53,7 +53,7 @@ export async function callClaude(
 
   // Validate structure
   if (!Array.isArray(parsed.matches) || parsed.matches.length === 0) {
-    throw new Error('Invalid response: no matches returned');
+    throw new Error('Could not identify role requirements. Try pasting a more complete role description.');
   }
 
   return parsed;

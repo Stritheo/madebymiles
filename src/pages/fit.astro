@@ -41,10 +41,13 @@ import CTA from '@/components/CTA.astro';
           <div>
             <textarea
               id="text-input"
-              class="w-full h-full min-h-[200px] p-6 border border-border-light bg-bg-card rounded-lg text-base text-text-primary resize-none focus:outline-none focus:border-text-accent transition-colors"
+              class="w-full min-h-[200px] p-6 border border-border-light bg-bg-card rounded-lg text-base text-text-primary resize-none focus:outline-none focus:border-text-accent transition-colors"
               placeholder="Or paste the role description here..."
               aria-label="Paste role description"
             ></textarea>
+            <p id="char-hint" class="text-sm text-text-secondary mt-2 hidden">
+              <span id="char-count">0</span>/100 characters minimum
+            </p>
           </div>
         </div>
 
@@ -170,6 +173,8 @@ import CTA from '@/components/CTA.astro';
   const confirmUnlockBtn = document.getElementById('confirm-unlock-btn')!;
   const shareBtn = document.getElementById('share-btn')!;
   const shareConfirmation = document.getElementById('share-confirmation')!;
+  const charHint = document.getElementById('char-hint')!;
+  const charCount = document.getElementById('char-count')!;
 
   let selectedFile: File | null = null;
   let currentToken: string | null = null;
@@ -266,10 +271,18 @@ import CTA from '@/components/CTA.astro';
 
   function updateButtonState() {
     const hasFile = selectedFile !== null;
-    const hasText = textInput.value.trim().length >= 100;
+    const trimmedLength = textInput.value.trim().length;
+    const hasText = trimmedLength >= 100;
     analyseBtn.disabled = !hasFile && !hasText;
+    // Show character count hint while typing (but not enough yet)
+    if (trimmedLength > 0 && trimmedLength < 100 && !hasFile) {
+      charCount.textContent = String(trimmedLength);
+      charHint.classList.remove('hidden');
+    } else {
+      charHint.classList.add('hidden');
+    }
     // Clear file if text is entered
-    if (textInput.value.trim().length > 0) {
+    if (trimmedLength > 0) {
       selectedFile = null;
       fileName.classList.add('hidden');
     }
