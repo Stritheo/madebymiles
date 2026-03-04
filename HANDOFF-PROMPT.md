@@ -6,21 +6,21 @@ Read this file first, then read `PRD.md` and `ROADMAP.md` for full context.
 
 ## Current state
 
-**Branch:** `main` (pushed to origin)
+**Branch:** `claude/review-website-roadmap-rst4k`
 **Phase 1:** Complete and live at madebymiles.ai.
-**Sprint 1.5 (immediate priorities):** Complete.
+**Phase 2 (Credibility Engine):** In progress. Skill matrix, experience page, case study pages and content all built. Ready to commit and push.
 **PVT:** All checks passed. Site live, HTTPS, DNS, sitemap, Discord notifications all working.
 **Security headers:** A+ on securityheaders.com. Cloudflare Transform Rules configured.
 
 ### What is live
 
-**Pages:** Homepage, Contact (/contact), Privacy (/privacy)
+**Pages:** Homepage, Experience (/experience), Contact (/contact), Privacy (/privacy), 5 case study pages (/work/sci, /work/cba, /work/hollard, /work/suncorp, /work/westpac)
 **Infrastructure:** Cloudflare DNS (proxied), GitHub Pages, Discord (#alerts, #reports), UptimeRobot, Supabase, Sentry, Google Search Console, Dependabot.
 
 ### Homepage features
 - Hero with headshot (desktop: right column, mobile: above CTAs)
 - "What I bring" section: 4 capability blocks (Strategic Leadership, Business Transformation, People and Culture, Technology and AI)
-- "Work and impact" section: 6 cards in 3x2 grid (SCI, CBA, Hollard, Suncorp, Westpac, Agentic Engineering)
+- "Work and impact" section: 6 cards in 3x2 grid (SCI, CBA, Hollard, Suncorp, Westpac, Agentic Engineering). First 5 cards link to /work/ case study pages.
 - Role cards standardised: company name, role/scope subtitle, outcomes paragraph
 - Closing section with Contact CTA
 - Person JSON-LD with credentials, occupations, knowsAbout
@@ -49,15 +49,22 @@ Read this file first, then read `PRD.md` and `ROADMAP.md` for full context.
 
 ---
 
-## What to do next: Phase 2 — Credibility Engine
+### Phase 2 progress (Credibility Engine)
 
-Per ROADMAP.md steps 2.1 through 2.7:
+**Done:**
+- AICD-aligned skill matrix: 13 skill JSON files across 4 domains in `src/content/skills/`
+- Experience page (`/experience`): skill matrix grid with rating badges, career timeline, credentials
+- 5 case study pages (`/work/[slug]`): SCI, CBA, Hollard, Suncorp, Westpac with Context/What I did/Results
+- Homepage cards linked to case study pages (first 5 are clickable)
+- Skill cards with `caseStudySlug` link through to case studies
+- Header nav updated: Experience link points to `/experience`
+- @tailwindcss/typography installed for prose styling on case study pages
+- Credentials: GAICD, GDipAppFin, BBus on experience page and JSON-LD
 
-1. **AICD-aligned skill matrix** — Content Collection `src/content/skills/` with JSON schema. Build /experience page with grid component. CEO candidate lens first.
-2. **5 case study pages** — Content Collection `src/content/work/`. Template: Role/context, Challenge, Approach, Outcomes, Reflection. Companies: SCI, CBA, Hollard, Suncorp, Westpac.
-3. **Supabase analytics beacon** — Cloudflare Worker `/api/beacon`, sendBeacon on page_view, scroll_50, CTA clicks.
-4. **Discord reporting cron Worker** — Daily visitor summary to #reports, weekly funnel to #reports.
-5. **Lighthouse CI** — Add to GitHub Actions, thresholds: Perf 95, A11y 100, BP 95, SEO 95.
+**Remaining Phase 2:**
+1. **Supabase analytics beacon** — Cloudflare Worker `/api/beacon`, sendBeacon on page_view, scroll_50, CTA clicks.
+2. **Discord reporting cron Worker** — Daily visitor summary to #reports, weekly funnel to #reports.
+3. **Lighthouse CI** — Add to GitHub Actions, thresholds: Perf 95, A11y 100, BP 95, SEO 95.
 
 ---
 

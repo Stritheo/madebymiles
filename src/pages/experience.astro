@@ -1,0 +1,122 @@
+---
+import Base from '@/layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const allSkills = await getCollection('skills');
+
+const domains = [
+  'Governance and Accountability',
+  'Strategy and Risk',
+  'Finance and Operations',
+  'People and Culture',
+];
+
+const skillsByDomain = domains.map(domain => ({
+  domain,
+  skills: allSkills
+    .filter(s => s.data.domain === domain)
+    .sort((a, b) => a.data.category.localeCompare(b.data.category)),
+}));
+
+const ratingColour = (rating: string) => {
+  switch (rating) {
+    case 'Expert': return 'bg-text-accent text-white';
+    case 'Practised': return 'bg-bg-dark text-white';
+    case 'Awareness': return 'bg-border-light text-text-primary';
+    default: return 'bg-border-light text-text-primary';
+  }
+};
+
+const careers = [
+  { company: 'Strata Community Insurance', role: 'General Manager, Data and Technology Solutions', scope: 'Digital channels, pricing, AI automation' },
+  { company: 'Hollard Insurance', role: 'Chief Revenue Officer', scope: '15-year CBA alliance, portfolio transformation' },
+  { company: 'Commonwealth Bank', role: 'General Manager, General Insurance', scope: '$1 billion premium, 700 staff, one million customers' },
+  { company: 'Suncorp Group', role: 'Senior Manager, Personal Lines', scope: 'Personal lines turnaround, Promina integration' },
+  { company: 'Westpac Banking Corporation', role: 'Senior Manager, General Insurance', scope: 'Westpac-Allianz alliance, distribution' },
+];
+---
+
+<Base
+  title="Experience | Miles Sowden"
+  description="AICD-aligned skill matrix and career history across five major Australian financial institutions. Governance, strategy, operations and people."
+>
+  <!-- Skill matrix -->
+  <section class="pt-48 pb-32 max-md:pt-32 max-md:pb-20">
+    <div class="max-w-[1200px] mx-auto px-12 max-lg:px-8 max-md:px-6">
+      <h1 class="font-display text-[3.5rem] max-lg:text-5xl max-md:text-[2.5rem] leading-[1.1] tracking-[-0.02em] text-text-primary mb-6">
+        Experience
+      </h1>
+      <p class="text-xl max-md:text-lg leading-relaxed text-text-secondary mb-16">
+        Twenty years across governance, strategy, operations and people. Organised by the four domains of the Australian Institute of Company Directors framework.
+      </p>
+
+      <div class="space-y-16">
+        {skillsByDomain.map(({ domain, skills }) => (
+          <div>
+            <h2 class="font-display text-2xl leading-[1.3] text-text-primary mb-8 border-b-[3px] border-text-accent pb-4 inline-block">
+              {domain}
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {skills.map(skill => {
+                const inner = (
+                  <>
+                    <div class="flex items-start justify-between gap-4 mb-3">
+                      <h3 class="font-display text-lg leading-[1.3] text-text-primary">
+                        {skill.data.skillArea}
+                      </h3>
+                      <span class={`text-xs font-medium px-3 py-1 rounded-full flex-shrink-0 ${ratingColour(skill.data.rating)}`}>
+                        {skill.data.rating}
+                      </span>
+                    </div>
+                    <p class="text-sm text-text-secondary/70 mb-2">{skill.data.category}</p>
+                    <p class="text-base leading-relaxed text-text-secondary">{skill.data.evidence}</p>
+                  </>
+                );
+                return skill.data.caseStudySlug ? (
+                  <a href={`/work/${skill.data.caseStudySlug}`} class="block p-8 bg-bg-card no-underline hover:bg-bg-card/80 transition-colors">
+                    {inner}
+                  </a>
+                ) : (
+                  <div class="p-8 bg-bg-card">
+                    {inner}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Career timeline -->
+  <section class="py-32 max-md:py-20">
+    <div class="max-w-[1200px] mx-auto px-12 max-lg:px-8 max-md:px-6">
+      <h2 class="font-display text-[2.5rem] max-md:text-[2rem] leading-[1.2] tracking-[-0.02em] text-text-primary mb-12">
+        Career
+      </h2>
+      <div class="space-y-0">
+        {careers.map((role) => (
+          <div class="border-t border-border-light py-8 grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4 md:gap-12">
+            <div>
+              <h3 class="font-display text-xl leading-[1.3] text-text-primary">{role.company}</h3>
+            </div>
+            <div>
+              <p class="text-base text-text-primary font-medium">{role.role}</p>
+              <p class="text-base text-text-secondary mt-1">{role.scope}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div class="mt-16 pt-8 border-t border-border-light">
+        <h3 class="font-display text-xl leading-[1.3] text-text-primary mb-4">Credentials</h3>
+        <ul class="text-lg leading-relaxed text-text-secondary space-y-2 list-none pl-0">
+          <li>Graduate, Australian Institute of Company Directors (GAICD)</li>
+          <li>Graduate Diploma of Applied Finance (GDipAppFin)</li>
+          <li>Bachelor of Business (BBus)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</Base>
