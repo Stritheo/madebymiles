@@ -1,0 +1,189 @@
+{
+  "name": "Miles Sowden",
+  "title": "Insurance Executive, Growth and Transformation",
+  "credentials": [
+    "Graduate, Australian Institute of Company Directors (GAICD)",
+    "Graduate Diploma of Applied Finance (GDipAppFin)",
+    "Bachelor of Business (BBus)"
+  ],
+  "contact": {
+    "website": "https://madebymiles.ai",
+    "linkedin": "https://www.linkedin.com/in/milessowden",
+    "whatsapp": "https://wa.me/61414185721"
+  },
+  "domains": [
+    {
+      "domain": "Governance and Accountability",
+      "skills": [
+        {
+          "skillArea": "Board oversight and fiduciary duties",
+          "category": "Board Governance",
+          "rating": "Practised",
+          "evidence": "GAICD graduate. Reported to boards and committees at CBA, Hollard and SCI on the full range of executive topics including strategy, risk, performance and conduct. Prepared board papers, managed governance frameworks and maintained constructive working relationships with directors, auditors and regulators."
+        },
+        {
+          "skillArea": "Regulatory and compliance management",
+          "category": "Regulatory Compliance",
+          "rating": "Expert",
+          "evidence": "Led CBA Insurance through the Royal Commission, implementing conduct and compliance reforms across a $1 billion business. Uplifted risk management, strengthened operational governance and ran a disciplined remedial action plan. Signed the Executive Attestation to close ASIC's Pricing Promise Review with no regulatory action taken. Managed APRA, ASIC and AFCA relationships across multiple insurers."
+        },
+        {
+          "skillArea": "Stakeholder and shareholder engagement",
+          "category": "Stakeholder Management",
+          "rating": "Expert",
+          "evidence": "Negotiated with insurers, technology vendors and reinsurers across Singapore, London and Bermuda. Managed relationships with partner banks (CBA, Westpac) and distribution networks."
+        }
+      ]
+    },
+    {
+      "domain": "Strategy and Risk",
+      "skills": [
+        {
+          "skillArea": "Strategic planning and execution",
+          "category": "Business Strategy",
+          "rating": "Expert",
+          "evidence": "Set strategic direction at five major financial institutions. Established the Hollard-CBA 15-year alliance for one million customers. Defined portfolio strategy, channel mix and competitive positioning."
+        },
+        {
+          "skillArea": "Technology strategy and AI adoption",
+          "category": "Innovation",
+          "rating": "Practised",
+          "evidence": "Deployed agentic AI for underwriting with 97% accuracy at SCI. Integrated weather forecasting, predictive workforce planning, supplier allocation and digital claim services at CBA. Launched a packaged insurance product for high-net-worth individuals at Suncorp. Built governance frameworks for responsible AI use."
+        },
+        {
+          "skillArea": "Mergers, alliances and portfolio transitions",
+          "category": "Mergers and Partnerships",
+          "rating": "Practised",
+          "evidence": "Led the Hollard-CBA portfolio transition for one million customers. Established the Westpac-Allianz distribution alliance. Managed Suncorp/Promina integration in personal lines. Earlier career in venture capital on early-stage capital raising."
+        },
+        {
+          "skillArea": "Enterprise risk and underwriting",
+          "category": "Risk Management",
+          "rating": "Expert",
+          "evidence": "Delivered first underwriting profit at Suncorp personal lines after five consecutive loss years. Reduced peril exposure at CBA through improved data sources, cost and capital allocation models and granular monitoring. Developed pricing models, managed catastrophe exposure and built risk appetite frameworks."
+        }
+      ]
+    },
+    {
+      "domain": "Finance and Operations",
+      "skills": [
+        {
+          "skillArea": "Digital distribution and customer experience",
+          "category": "Digital Channels",
+          "rating": "Expert",
+          "evidence": "Quadrupled direct channel sales at SCI after three years of decline. Grew CBA digital sales from 20% to 70%. Built digital-first operating models for insurance distribution."
+        },
+        {
+          "skillArea": "P&L management and financial oversight",
+          "category": "Financial Performance",
+          "rating": "Expert",
+          "evidence": "Full P&L accountability for a $1 billion premium business at CBA. Improved loss ratios, managed combined ratios and delivered to target returns across multiple portfolios."
+        },
+        {
+          "skillArea": "Operational efficiency and transformation",
+          "category": "Operations",
+          "rating": "Practised",
+          "evidence": "Cleared a 30,000-task backlog at SCI, reduced underwriting cycle time by 19%. Shifted digital trading from under 5% to 60%. At CBA, managed record natural catastrophe seasons and additional compliance obligations with a flat headcount through digitisation and process engineering. Integrated claims operations to finalise event claims faster and at lower cost than industry averages. Grew CBA digital sales from 20% to 70%."
+        }
+      ]
+    },
+    {
+      "domain": "People and Culture",
+      "skills": [
+        {
+          "skillArea": "Organisational culture and change management",
+          "category": "Culture",
+          "rating": "Expert",
+          "evidence": "Led 700 staff through the Royal Commission, pandemic and divestment at CBA. Staff feedback consistently noted clarity of purpose, connection to customers and shared accountability for outcomes. Achieved 76% engagement at SCI. Rebuilt trust through the Hollard-CBA alliance and Suncorp/Promina integration."
+        },
+        {
+          "skillArea": "Customer advocacy and NPS",
+          "category": "Customer Outcomes",
+          "rating": "Practised",
+          "evidence": "Improved NPS at CBA from +15 to +45 and at Westpac from +25 to +44. Product recognised by CANSTAR for outstanding value five consecutive years. Developed a CBA rating factor that reduced premiums by 10% for customers while improving the loss ratio. Established customer systemic issue analysis to identify and prevent harm to customers."
+        },
+        {
+          "skillArea": "Executive leadership and team building",
+          "category": "Leadership",
+          "rating": "Expert",
+          "evidence": "Led teams of up to 700 people. Achieved 76% staff engagement at SCI. Built high-performing teams through clear strategy, capability development and cultural alignment across five institutions."
+        }
+      ]
+    }
+  ],
+  "caseStudies": [
+    {
+      "title": "Digital transformation and AI deployment at scale",
+      "company": "Strata Community Insurance",
+      "role": "General Manager, Data and Technology Solutions",
+      "order": 1,
+      "summary": "Deployed digital channels, pricing sophistication and AI automation. Cleared a backlog of 30,000 tasks, reduced underwriting cycle time by 19% and achieved 76% staff engagement.",
+      "outcomes": [
+        "Digital trading shifted from less than 5% to 60% of volume",
+        "Direct channel sales quadrupled after three years of decline",
+        "30,000-task backlog cleared",
+        "Underwriting cycle time reduced by 19%",
+        "AI deployed with 97% accuracy in underwriting triage",
+        "76% staff engagement score"
+      ]
+    },
+    {
+      "title": "Leading a $1 billion insurer through disruption",
+      "company": "Commonwealth Bank",
+      "role": "General Manager, General Insurance",
+      "order": 2,
+      "summary": "Led a $1 billion insurer through the Royal Commission, pandemic and regulatory reform. Developed a rating factor that reduced premiums by 10% while improving the loss ratio by 1%. Grew digital sales from 20% to 70%.",
+      "outcomes": [
+        "$1 billion premium managed across home, motor and landlord",
+        "700-person team led through Royal Commission, pandemic and divestment",
+        "CANSTAR outstanding value five consecutive years",
+        "Rating factor reduced premiums 10% while improving loss ratio 1%",
+        "NPS improved from +15 to +45",
+        "Digital sales grew by more than 20% annually for five years",
+        "Event claims finalised faster and at lower cost than industry averages",
+        "Motor portfolio decline reversed"
+      ]
+    },
+    {
+      "title": "Establishing a 15-year strategic alliance",
+      "company": "Hollard Insurance",
+      "role": "Chief Revenue Officer",
+      "order": 3,
+      "summary": "Established a 15-year strategic alliance with Commonwealth Bank for one million customers. Led the transition and portfolio transformation to meet target returns and risk appetite.",
+      "outcomes": [
+        "15-year strategic alliance established with CBA",
+        "Portfolio changes delivered within five months to meet target returns and risk appetite",
+        "ASIC Pricing Promise Review closed with no regulatory action",
+        "One million customers transitioned successfully"
+      ]
+    },
+    {
+      "title": "First underwriting profit after five consecutive loss years",
+      "company": "Suncorp Group",
+      "role": "Senior Manager, Personal Lines",
+      "order": 4,
+      "summary": "Delivered the first underwriting profit in personal lines after five consecutive loss years. Repriced the portfolio, improved claims management and rebuilt distributor relationships across the Promina network.",
+      "outcomes": [
+        "First underwriting profit in personal lines after five consecutive loss years",
+        "Portfolio repriced through group pricing engine integration",
+        "Underwriting operations consolidated across the Promina network",
+        "High-net-worth packaged insurance product launched",
+        "Distributor relationships rebuilt across the Promina network"
+      ]
+    },
+    {
+      "title": "Doubling premiums and lifting NPS from +25 to +44",
+      "company": "Westpac Banking Corporation",
+      "role": "Senior Manager, General Insurance",
+      "order": 5,
+      "summary": "Established distribution plan and operating model for the Westpac-Allianz alliance. Doubled written premiums and increased NPS from +25 to +44.",
+      "outcomes": [
+        "Written premiums doubled through portfolio transfers and lending integration",
+        "NPS increased from +25 to +44",
+        "50-person product and operations team",
+        "Distribution plan and operating model established for the Westpac-Allianz alliance"
+      ]
+    }
+  ],
+  "philosophy": "Pragmatic outcomes for users come first. Technology sits safely and securely in the background, powering the experience without being the experience. Build the strategy, teams and culture that deliver lasting performance. Evidence over adjectives."
+}

@@ -1,0 +1,418 @@
+---
+import Base from '@/layouts/Base.astro';
+import CTA from '@/components/CTA.astro';
+---
+
+<Base
+  title="Fit Finder | Miles Sowden"
+  description="Upload a role description and see how Miles Sowden's AICD skill matrix aligns to what the role requires."
+>
+  <section class="pt-48 pb-32 max-md:pt-32 max-md:pb-20">
+    <div class="max-w-[1200px] mx-auto px-12 max-lg:px-8 max-md:px-6">
+      <h1 class="font-display text-[3.5rem] max-lg:text-5xl max-md:text-[2.5rem] leading-[1.1] tracking-[-0.02em] text-text-primary mb-6">
+        Role Fit
+      </h1>
+      <p class="text-xl max-md:text-lg leading-relaxed text-text-secondary mb-16 max-w-[720px]">
+        Upload a role description or paste the text. The analysis matches requirements against an AICD-aligned skill matrix and twenty years of career evidence.
+      </p>
+
+      <!-- State: Upload form -->
+      <div id="state-upload">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+          <!-- File upload -->
+          <div>
+            <div
+              id="drop-zone"
+              class="flex flex-col items-center justify-center p-10 border-2 border-dashed border-border-light bg-bg-card rounded-lg cursor-pointer hover:border-text-accent transition-colors min-h-[200px]"
+              role="region"
+              aria-label="File upload area"
+              tabindex="0"
+            >
+              <svg class="w-10 h-10 mb-4 text-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              <p class="text-base text-text-secondary mb-1">Drop a PDF here or click to browse</p>
+              <p id="file-name" class="text-sm text-text-accent font-medium hidden"></p>
+              <input id="file-input" type="file" accept=".pdf,application/pdf" class="hidden" aria-label="Upload role description PDF" />
+            </div>
+          </div>
+
+          <!-- Text paste -->
+          <div>
+            <textarea
+              id="text-input"
+              class="w-full h-full min-h-[200px] p-6 border border-border-light bg-bg-card rounded-lg text-base text-text-primary resize-none focus:outline-none focus:border-text-accent transition-colors"
+              placeholder="Or paste the role description here..."
+              aria-label="Paste role description"
+            ></textarea>
+          </div>
+        </div>
+
+        <p class="text-sm text-text-secondary mb-6">
+          Your document is processed in memory and immediately discarded. Nothing is stored.
+          <a href="/privacy#fit-finder" class="text-text-accent hover:underline">Privacy details</a>
+        </p>
+
+        <button
+          id="analyse-btn"
+          disabled
+          class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-10 py-4.5 text-base bg-bg-dark text-white border-[1.5px] border-bg-dark hover:bg-[#151A26] hover:border-[#151A26] hover:-translate-y-px disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+        >
+          Analyse fit
+        </button>
+      </div>
+
+      <!-- State: Loading -->
+      <div id="state-loading" class="hidden" aria-live="polite">
+        <div class="flex flex-col items-center justify-center py-20">
+          <div class="w-10 h-10 border-3 border-border-light border-t-text-accent rounded-full animate-spin mb-6"></div>
+          <p class="text-xl text-text-primary font-medium mb-2">Analysing role fit...</p>
+          <p class="text-base text-text-secondary">This usually takes 10 to 15 seconds</p>
+        </div>
+      </div>
+
+      <!-- State: Error -->
+      <div id="state-error" class="hidden">
+        <div class="p-8 bg-bg-card border-t-[3px] border-red-500 mb-8">
+          <p class="text-lg text-text-primary mb-2 font-medium">Something went wrong</p>
+          <p id="error-message" class="text-base text-text-secondary mb-6"></p>
+          <button
+            id="retry-btn"
+            class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-5 py-2.5 text-sm bg-bg-dark text-white border-[1.5px] border-bg-dark hover:bg-[#151A26]"
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+
+      <!-- State: Results -->
+      <div id="state-results" class="hidden">
+        <!-- Summary -->
+        <div id="result-summary" class="p-8 bg-bg-card border-t-[3px] border-text-accent mb-8">
+          <p id="result-role-title" class="text-sm text-text-secondary uppercase tracking-wider mb-2 hidden"></p>
+          <p id="result-summary-text" class="text-xl text-text-primary leading-relaxed"></p>
+        </div>
+
+        <!-- Visible matches (top skillset + top mindset) -->
+        <div id="matches-visible" class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8"></div>
+
+        <!-- Blurred matches -->
+        <div id="matches-locked" class="relative mb-8">
+          <div id="blurred-matches" class="grid grid-cols-1 md:grid-cols-2 gap-8 blur-md select-none pointer-events-none transition-all duration-500"></div>
+          <div class="absolute inset-0 flex flex-col items-center justify-center bg-bg-primary/60">
+            <p class="text-lg text-text-primary font-medium mb-4">Want the full picture?</p>
+            <button
+              id="unlock-btn"
+              class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-8 py-3.5 text-base bg-transparent text-text-primary border-[1.5px] border-border-light hover:border-[#D4D4D4] hover:bg-bg-card"
+            >
+              I've contacted Miles
+            </button>
+          </div>
+        </div>
+
+        <!-- Unlocked matches (shown after honour system) -->
+        <div id="matches-unlocked" class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 hidden"></div>
+
+        <!-- CTAs -->
+        <div class="flex flex-wrap gap-4 mb-8">
+          <CTA href="https://www.linkedin.com/in/milessowden" size="sm">
+            Connect on LinkedIn
+          </CTA>
+          <CTA href="https://wa.me/61414185721?text=Hi%20Miles%2C%20I%20used%20Fit%20Finder%20and%20would%20like%20to%20connect." size="sm" variant="secondary">
+            Open WhatsApp
+          </CTA>
+        </div>
+
+        <!-- Share link -->
+        <div class="flex items-center gap-3">
+          <button
+            id="share-btn"
+            class="text-sm text-text-secondary hover:text-text-primary transition-colors"
+          >
+            Share this result
+          </button>
+          <span id="share-confirmation" class="text-sm text-text-accent hidden">Link copied</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const API_BASE = '/api/fit';
+
+  // Elements
+  const stateUpload = document.getElementById('state-upload')!;
+  const stateLoading = document.getElementById('state-loading')!;
+  const stateError = document.getElementById('state-error')!;
+  const stateResults = document.getElementById('state-results')!;
+  const dropZone = document.getElementById('drop-zone')!;
+  const fileInput = document.getElementById('file-input') as HTMLInputElement;
+  const fileName = document.getElementById('file-name')!;
+  const textInput = document.getElementById('text-input') as HTMLTextAreaElement;
+  const analyseBtn = document.getElementById('analyse-btn') as HTMLButtonElement;
+  const errorMessage = document.getElementById('error-message')!;
+  const retryBtn = document.getElementById('retry-btn')!;
+  const resultRoleTitle = document.getElementById('result-role-title')!;
+  const resultSummary = document.getElementById('result-summary-text')!;
+  const matchesVisible = document.getElementById('matches-visible')!;
+  const matchesLocked = document.getElementById('matches-locked')!;
+  const blurredMatches = document.getElementById('blurred-matches')!;
+  const matchesUnlocked = document.getElementById('matches-unlocked')!;
+  const unlockBtn = document.getElementById('unlock-btn')!;
+  const shareBtn = document.getElementById('share-btn')!;
+  const shareConfirmation = document.getElementById('share-confirmation')!;
+
+  let selectedFile: File | null = null;
+  let currentToken: string | null = null;
+
+  // Check for shared URL token
+  const urlToken = new URLSearchParams(window.location.search).get('token');
+  if (urlToken) {
+    loadSharedResult(urlToken);
+  }
+
+  // --- Event listeners ---
+
+  // Drag and drop
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('border-text-accent', 'bg-bg-primary');
+  });
+
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('border-text-accent', 'bg-bg-primary');
+  });
+
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-text-accent', 'bg-bg-primary');
+    const file = e.dataTransfer?.files[0];
+    if (file) handleFileSelect(file);
+  });
+
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      fileInput.click();
+    }
+  });
+
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files?.[0];
+    if (file) handleFileSelect(file);
+  });
+
+  // Text input
+  textInput.addEventListener('input', updateButtonState);
+
+  // Analyse
+  analyseBtn.addEventListener('click', analyse);
+
+  // Retry
+  retryBtn.addEventListener('click', () => {
+    showState('upload');
+  });
+
+  // Unlock (honour system)
+  unlockBtn.addEventListener('click', () => {
+    matchesLocked.classList.add('hidden');
+    matchesUnlocked.classList.remove('hidden');
+  });
+
+  // Share
+  shareBtn.addEventListener('click', () => {
+    if (!currentToken) return;
+    const url = new URL('/fit', window.location.origin);
+    url.searchParams.set('token', currentToken);
+    navigator.clipboard.writeText(url.toString()).then(() => {
+      shareConfirmation.classList.remove('hidden');
+      setTimeout(() => shareConfirmation.classList.add('hidden'), 3000);
+    });
+  });
+
+  // --- Functions ---
+
+  function handleFileSelect(file: File) {
+    if (file.type !== 'application/pdf' && !file.name.endsWith('.pdf')) {
+      showError('Only PDF files are accepted');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showError('File is too large (max 5MB)');
+      return;
+    }
+    selectedFile = file;
+    fileName.textContent = file.name;
+    fileName.classList.remove('hidden');
+    textInput.value = '';
+    updateButtonState();
+  }
+
+  function updateButtonState() {
+    const hasFile = selectedFile !== null;
+    const hasText = textInput.value.trim().length >= 100;
+    analyseBtn.disabled = !hasFile && !hasText;
+    // Clear file if text is entered
+    if (textInput.value.trim().length > 0) {
+      selectedFile = null;
+      fileName.classList.add('hidden');
+    }
+  }
+
+  async function analyse() {
+    showState('loading');
+
+    try {
+      let response: Response;
+
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        response = await fetch(API_BASE, {
+          method: 'POST',
+          body: formData,
+        });
+      } else {
+        response = await fetch(API_BASE, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: textInput.value.trim() }),
+        });
+      }
+
+      if (!response.ok) {
+        const err = await response.json() as { error?: string };
+        throw new Error(err.error ?? `Request failed (${response.status})`);
+      }
+
+      const data = await response.json() as {
+        matches: Match[];
+        roleTitle: string | null;
+        summary: string;
+        token: string;
+      };
+
+      renderResults(data.matches, data.roleTitle, data.summary, data.token, false);
+    } catch (err) {
+      showError(err instanceof Error ? err.message : 'Analysis failed. Please try again.');
+    }
+  }
+
+  async function loadSharedResult(token: string) {
+    showState('loading');
+
+    try {
+      const response = await fetch(`${API_BASE}/verify?token=${encodeURIComponent(token)}`);
+      if (!response.ok) {
+        throw new Error('This result link has expired or is invalid.');
+      }
+
+      const data = await response.json() as {
+        matches: Match[];
+        roleTitle: string | null;
+        summary: string;
+      };
+
+      renderResults(data.matches, data.roleTitle, data.summary, token, true);
+    } catch (err) {
+      showError(err instanceof Error ? err.message : 'Could not load shared result.');
+    }
+  }
+
+  interface Match {
+    rank: number;
+    category: 'skillset' | 'mindset';
+    aicdDomain: string;
+    skillArea: string;
+    matchReason: string;
+    evidence: string;
+    confidence: 'high' | 'medium' | 'low';
+  }
+
+  function renderResults(
+    matches: Match[],
+    roleTitle: string | null,
+    summary: string,
+    token: string,
+    isShared: boolean,
+  ) {
+    currentToken = token;
+
+    // Summary
+    if (roleTitle) {
+      resultRoleTitle.textContent = roleTitle;
+      resultRoleTitle.classList.remove('hidden');
+    }
+    resultSummary.textContent = summary;
+
+    // Split matches
+    const skillset = matches.filter(m => m.category === 'skillset').sort((a, b) => a.rank - b.rank);
+    const mindset = matches.filter(m => m.category === 'mindset').sort((a, b) => a.rank - b.rank);
+
+    // Top matches (visible)
+    const topMatches = [skillset[0], mindset[0]].filter(Boolean);
+    matchesVisible.innerHTML = topMatches.map(m => renderMatchCard(m)).join('');
+
+    // Remaining matches
+    const remaining = [...skillset.slice(1), ...mindset.slice(1)];
+
+    if (isShared) {
+      // Shared view: show all revealed
+      matchesLocked.classList.add('hidden');
+      matchesUnlocked.innerHTML = remaining.map(m => renderMatchCard(m)).join('');
+      matchesUnlocked.classList.remove('hidden');
+    } else {
+      // Normal view: blur remaining
+      blurredMatches.innerHTML = remaining.map(m => renderMatchCard(m)).join('');
+      matchesLocked.classList.remove('hidden');
+      matchesUnlocked.innerHTML = remaining.map(m => renderMatchCard(m)).join('');
+    }
+
+    showState('results');
+  }
+
+  function renderMatchCard(match: Match): string {
+    const categoryLabel = match.category === 'skillset' ? 'Skillset' : 'Mindset';
+    const confidenceClass = match.confidence === 'high'
+      ? 'bg-text-accent text-white'
+      : match.confidence === 'medium'
+        ? 'bg-bg-dark text-white'
+        : 'bg-border-light text-text-primary';
+
+    return `
+      <div class="p-8 bg-bg-card border-t-[3px] border-text-accent">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-sm text-text-secondary uppercase tracking-wider">${match.aicdDomain}</span>
+          <span class="text-xs font-medium px-3 py-1 rounded ${confidenceClass}">${match.confidence}</span>
+        </div>
+        <p class="text-xs text-text-accent uppercase tracking-wider font-medium mb-1">${categoryLabel} match</p>
+        <h3 class="font-display text-xl text-text-primary mb-4">${match.skillArea}</h3>
+        <p class="text-base text-text-secondary mb-4"><strong class="text-text-primary">Why this matches:</strong> ${match.matchReason}</p>
+        <p class="text-base text-text-secondary"><strong class="text-text-primary">Evidence:</strong> ${match.evidence}</p>
+      </div>
+    `;
+  }
+
+  function showState(state: 'upload' | 'loading' | 'error' | 'results') {
+    stateUpload.classList.toggle('hidden', state !== 'upload');
+    stateLoading.classList.toggle('hidden', state !== 'loading');
+    stateError.classList.toggle('hidden', state !== 'error');
+    stateResults.classList.toggle('hidden', state !== 'results');
+  }
+
+  function showError(message: string) {
+    errorMessage.textContent = message;
+    showState('error');
+  }
+</script>
+
+<style>
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+</style>

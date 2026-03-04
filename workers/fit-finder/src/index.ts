@@ -1,0 +1,39 @@
+import type { Env } from './types';
+import { handleAnalyse } from './handlers/analyse';
+import { handleVerify } from './handlers/verify';
+
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    const url = new URL(request.url);
+
+    // CORS preflight
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { headers: corsHeaders() });
+    }
+
+    if (url.pathname === '/api/fit' && request.method === 'POST') {
+      return handleAnalyse(request, env);
+    }
+
+    if (url.pathname === '/api/fit/verify' && request.method === 'GET') {
+      return handleVerify(request, env);
+    }
+
+    if (url.pathname === '/api/health' && request.method === 'GET') {
+      return new Response(JSON.stringify({ status: 'ok' }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    return new Response('Not Found', { status: 404 });
+  },
+} satisfies ExportedHandler<Env>;
+
+export function corsHeaders(): HeadersInit {
+  return {
+    'Access-Control-Allow-Origin': 'https://madebymiles.ai',
+    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Max-Age': '86400',
+  };
+}

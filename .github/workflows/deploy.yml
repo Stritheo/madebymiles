@@ -73,6 +73,7 @@ jobs:
             https://madebymiles.ai/
             https://madebymiles.ai/experience/
             https://madebymiles.ai/contact/
+            https://madebymiles.ai/fit/
           budgetPath: .github/lighthouse-budget.json
           uploadArtifacts: true
 
@@ -80,8 +81,29 @@ jobs:
         if: always()
         run: |
           curl -s -H "Content-Type: application/json" \
-            -d "{\"embeds\":[{\"title\":\"Lighthouse CI Complete\",\"description\":\"**Pages tested:** homepage, experience, contact\n**Details:** ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}\",\"color\":3447003}]}" \
+            -d "{\"embeds\":[{\"title\":\"Lighthouse CI Complete\",\"description\":\"**Pages tested:** homepage, experience, contact, fit\n**Details:** ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}\",\"color\":3447003}]}" \
             "${{ secrets.DISCORD_WEBHOOK_REPORTS }}"
+
+  deploy-worker:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: vars.WORKER_ENABLED == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Generate profile JSON
+        run: npm ci && npm run generate-profile
+
+      - name: Deploy Fit Finder Worker
+        working-directory: workers/fit-finder
+        run: npm ci && npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
   notify-failure:
     needs: [build, deploy]

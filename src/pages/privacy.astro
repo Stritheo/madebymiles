@@ -27,6 +27,19 @@ import Base from '@/layouts/Base.astro';
           </p>
         </div>
 
+        <div id="fit-finder">
+          <h2 class="font-display text-2xl leading-[1.3] text-text-primary mb-3">Fit Finder</h2>
+          <p class="text-lg leading-relaxed text-text-secondary">
+            The Fit Finder at <a href="/fit" class="text-text-accent hover:underline">/fit</a> accepts a role description as an uploaded PDF or pasted text. The document is read into memory, analysed, and immediately discarded. No copy is stored, logged, or retained by this site or its infrastructure.
+          </p>
+          <p class="text-lg leading-relaxed text-text-secondary mt-4">
+            The text from your document is sent to Anthropic's API for analysis. Anthropic processes the request and returns a structured result. Anthropic does not use API inputs to train models and does not retain them beyond the request lifecycle.
+          </p>
+          <p class="text-lg leading-relaxed text-text-secondary mt-4">
+            If you share a result link, the analysis is encoded in the URL itself. No server stores the results. Links expire after 30 days.
+          </p>
+        </div>
+
         <div>
           <h2 class="font-display text-2xl leading-[1.3] text-text-primary mb-3">External services</h2>
           <p class="text-lg leading-relaxed text-text-secondary">
