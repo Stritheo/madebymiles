@@ -94,33 +94,135 @@ Read this file first, then read `PRD.md` and `ROADMAP.md` for full context.
 
 ---
 
-### Phase 4 progress (Fit Finder) — DEPLOYED
+### Phase 4 progress (Fit Finder) — COMPLETE
 
 **Done:**
-- `/fit` page: drag-and-drop PDF upload, text paste, loading state, results with blur/honour-system unlock, shareable signed URLs
-- Cloudflare Worker (`fit-finder`): PDF extraction (unpdf), Claude Haiku analysis, HMAC-signed JWT tokens, KV rate limiting (10/IP/day), Discord notifications
+- `/fit` page: drag-and-drop PDF upload, text paste, loading state, results with blur/unlock, shareable signed URLs
+- Cloudflare Worker (`fit-finder`): PDF extraction (unpdf), Claude Haiku 4.5 analysis, HMAC-signed JWT tokens, KV rate limiting (100/IP/day), Discord notifications
 - Profile JSON generator (`scripts/generate-profile.ts`): reads content collections, builds structured profile for Claude prompt
 - Worker route: `madebymiles.ai/api/*` → fit-finder Worker
 - Worker secrets: ANTHROPIC_API_KEY, JWT_SECRET, DISCORD_WEBHOOK_REPORTS, DISCORD_WEBHOOK_ALERTS
 - KV namespace: RATE_LIMIT_KV (238b5712c7fe45dcb0c020aa7850036d)
-- Privacy page updated with Fit Finder data handling section
+- Privacy page updated with comprehensive Fit Finder data handling (data in transit, Anthropic terms, IP storage, shared links)
 - Header nav updated with Fit Finder link (desktop + mobile)
 - Lighthouse CI tests /fit page
 - Worker deploy in GitHub Actions gated behind `vars.WORKER_ENABLED` variable
 - `CLAUDE.md` created with CI/CD quality gate protocol
 
-**To enable CI Worker deploy:**
-1. Add `CLOUDFLARE_API_TOKEN` to GitHub repo secrets
+**Bug fixes (this session):**
+- Fixed unpdf API: changed `getDocumentText` to `extractText` with `mergePages: true` (correct export)
+- Fixed API key: secrets were stored as names not values in wrangler. All 4 secrets re-set correctly.
+- Surfaced actual Claude API errors in response (was generic "Analysis failed", now includes error detail)
+- Rate limit increased from 10 to 100/IP/day ($0.01/request, $50/month budget supports ~5,000 requests)
+
+**Two-step LinkedIn unlock flow:**
+- Replaced single "I've contacted Miles" honour-system button with two-step flow
+- Step 1: "Connect on LinkedIn" opens `linkedin.com/messaging/compose/?recipient=milessowden` in new tab
+- Step 2: "I've sent my intro — show full results" appears, removes blur on click
+- Guides users to LinkedIn messaging before revealing blurred matches
+
+**Privacy policy rewrite:**
+- Inline notice on `/fit`: "Your document is sent encrypted to Anthropic's Claude API for analysis. It is not used to train models and is automatically deleted within 30 days."
+- Full privacy page `/privacy#fit-finder` expanded with 4 subsections:
+  - Data in transit (HTTPS, Anthropic API, commercial sensitivity warning)
+  - Anthropic's data handling (not used for training under commercial terms, retained up to 30 days for trust/safety)
+  - What this site stores (IP + count for 24h rate limiting, Discord notification with role title only, no personal data)
+  - Shared result links (encoded in URL via signed token, no server storage, 30-day expiry)
+
+**CI Worker deploy:**
+1. Add `CLOUDFLARE_API_TOKEN` to GitHub repo secrets (can use existing `madebymiles-deploy` token)
 2. Set repo variable `WORKER_ENABLED` = `true`
 
-**Remaining Phase 4:**
-- Sentry SDK integration (optional)
-- SRI hashes on external resources
+---
+
+### Phase 4 QA Report (2026-03-04)
+
+**E2E Testing — All passed:**
+- Text paste (>100 chars): 6 matches returned, high confidence, role title extracted
+- XSS test (`<script>alert(1)</script>`): HTML stripped by sanitiser, valid results returned
+- Error paths: short text (400), empty text (400), invalid token (400), unsupported content type (400)
+- All pages return 200 (with expected trailing-slash 301 redirects)
+- All 5 case study pages load correctly
+- Machine-readable files: `/llms.txt`, `/llms-full.txt`, `/rss.xml`, `/sitemap-index.xml` all 200
+- `/api/health` returns `{"status":"ok"}` with 200
+
+**Performance:**
+- Homepage TTFB: 54ms, Privacy: 52ms, Experience: 266ms, Contact: 358ms, Fit: 268ms, Case study: 266ms
+- Worker `/api/health`: 49ms TTFB
+- All page sizes under 20KB HTML
+- No source maps deployed
+- No console errors
+
+**Security:**
+- Security headers: HSTS (max-age=63072000, includeSubDomains, preload), X-Frame-Options: DENY, X-Content-Type-Options: nosniff, CSP (full policy), Referrer-Policy: strict-origin-when-cross-origin, Permissions-Policy: camera=(), microphone=(), geolocation=()
+- CORS: locked to `https://madebymiles.ai` only (verified — other origins get correct CORS headers that browsers will block)
+- HTTP to HTTPS redirect: 301 working
+- No directory listing (404 on `/assets/`)
+- No `.env` files in git history
+- No actual API keys or webhook URLs in git history (only instruction text mentioning `sk-ant-` format)
+- No `any` types in Worker code
+- No `console.log` in Worker code
+- npm audit (root): 0 vulnerabilities
+- npm audit (Worker): 6 vulnerabilities in dev deps only (wrangler/miniflare/undici — not in deployed bundle)
+
+**Known issues (low risk, documented for Phase 5):**
+1. JWT signature comparison uses `!==` (not constant-time). Low risk: tokens are for sharing results, not authentication. Fix: use `crypto.subtle.verify()` with `['sign', 'verify']` key usage.
+2. `cf-cache-status: DYNAMIC` on HTML pages. Expected for GitHub Pages through Cloudflare proxy. Could add Page Rules for caching if needed.
+3. CSP `connect-src 'self'` works for `/api/fit` (same origin) but may need updating if Cloudflare Web Analytics JS beacon is added (would need `static.cloudflareinsights.com`).
+4. `@astrojs/check` not installed — can't run Astro-specific type checking. Low priority.
+
+**UAT (for Miles):**
+- [ ] Visit madebymiles.ai/fit on iPhone and Mac
+- [ ] Paste a real role description
+- [ ] Upload a real PDF
+- [ ] Review 6 match results for accuracy
+- [ ] Test LinkedIn unlock: opens messaging, confirm reveals results
+- [ ] Share a result link with someone — verify it works for them
+- [ ] Check Discord for notifications
+
+**Persona testing (manual):**
+- Board Chair (iPad): scan `/experience` in 30 seconds — does it convey credibility?
+- Search Consultant (Chrome): find P&L figures and team sizes within 60 seconds in case studies
+- CEO Peer (iPhone Safari): mobile Fit Finder — is upload easy, are results readable?
+- AI Agent: fetch `/llms.txt` and ask for summary — is it accurate?
+
+**Legal notes:**
+- Privacy page accurately reflects current data handling
+- Anthropic commercial API terms confirmed: inputs not used for training, retained up to 30 days
+- IP address stored 24h for rate limiting — low risk under Australian Privacy Act (no names, emails, accounts)
+- Role descriptions are employer-owned documents — privacy page warns about commercial sensitivity
+- "Twenty years" career claim accurate (Westpac 2005 to 2026 = 21 years)
+- GAICD credential is legitimate
+- "AICD-aligned skill matrix" phrasing is accurate (aligned to, not certified by)
+
+---
+
+### Carry forward to Phase 5
+
+**Remaining Phase 4 (low priority):**
+- Sentry SDK integration (JS error tracking)
+- SRI hashes on external resources (Google Fonts)
 - Cloudflare AI Crawl Control (manual dashboard step)
+- Supabase analytics beacon (deferred from Phase 2)
+- Anthropic billing alert ($5/month)
+- JWT constant-time comparison fix
 
 ### Next: Phase 5 — Voice and Depth
 
 See ROADMAP.md. Reflections (short-form writing), projects section, RSS expansion.
+
+**Phase 5.1 — Reflections:**
+- Content collection `src/content/reflections/` (Markdown)
+- `/reflections` listing page + individual pages
+- 3-5 initial pieces (culture, transformation lessons, AI adoption, leadership)
+- "Latest thinking" section on homepage
+- Add to RSS feed and `/llms-full.txt`
+
+**Phase 5.2 — Projects:**
+- Content collection `src/content/projects/` (Markdown)
+- `/projects` listing page + individual pages
+- 2-3 initial pieces (this website as meta case study, other AI/automation projects)
+- "Building things" teaser on homepage
 
 ---
 
@@ -134,6 +236,22 @@ See ROADMAP.md. Reflections (short-form writing), projects section, RSS expansio
 **Fix:** Relaxed to FCP 3500ms, interactive 5000ms (2x real-world baseline accounts for CI runner overhead).
 
 **Protocol added:** See `CLAUDE.md` "CI/CD quality gate protocol" section. Key rules: baseline before budget, soft-fail first, CI environment awareness, test the test.
+
+### Wrangler secrets stored as names (Phase 4)
+**Issue:** `wrangler secret put` prompts for the secret value interactively. User pasted API keys as the secret **name** (command argument) instead of the **value** (interactive prompt). Result: `wrangler secret list` showed `sk-ant-api03-...` as a secret name, and the actual value was empty/wrong. Two API keys were compromised (visible in terminal history/logs) and needed rotation.
+
+**Root cause:** Confusing UX of `wrangler secret put NAME` where NAME is the variable name, not the value. The value is entered at the "Enter a secret value:" prompt.
+
+**Fix:** Deleted all malformed secrets, created new API key (`madebymiles-fit-finder`), re-set all 4 secrets correctly. Rotated compromised keys on Anthropic console.
+
+**Lesson:** Always verify secrets with `wrangler secret list` after setting them. If a secret name looks like a key value, it was set wrong.
+
+### Rate limiting for executive tools (Phase 4)
+**Issue:** Initial rate limit of 10/IP/day hit during development testing. User correctly challenged: "why limit enquiries? this is for a CEO role."
+
+**Fix:** Math-based limit: $0.01/request, $50/month budget = ~5,000 requests. 100/IP/day is invisible to legitimate users and still prevents abuse.
+
+**Lesson:** Rate limits should be based on cost math and user experience, not arbitrary low numbers.
 
 ---
 
