@@ -1,29 +1,34 @@
 ---
-title: "First underwriting profit after five consecutive loss years"
-company: "Suncorp Group"
-role: "Senior Manager, Personal Lines"
+title: "First underwriting profit after four consecutive loss years"
+company: "Suncorp and Promina"
+role: "Product Manager Roles"
 order: 4
-summary: "Delivered the first underwriting profit in personal lines after five consecutive loss years. Repriced the portfolio, improved claims management and rebuilt distributor relationships across the Promina network."
+summary: "Delivered the first underwriting profit in Vero intermediated personal lines after four consecutive years of losses. Combined ratio from 105% to 98%. Post-merger platform integration across $2bn GWP. HNW packaged product to market in six months."
 ---
 
 ## Context
 
-Suncorp Group's personal lines portfolio had delivered five consecutive years of underwriting losses. The business was operating in a challenging market with aggressive competitor pricing, rising claims costs and the added complexity of integrating the Promina network following Suncorp's acquisition. Distributor relationships across the Promina broker and agent network needed rebuilding.
+Two portfolios totalling $2bn in gross written premium following the Suncorp-Promina merger. The Vero portfolio ($1bn across commercial, specialty, and retail) was well-governed at 30% return on capital but shrinking. The intermediated personal lines portfolio ($1bn, assembled post-acquisition) had been loss-making for four consecutive years at a 105% combined ratio. Distributed through brokers, agents, and financial institutions, with only the financial institutions segment profitable.
+
+The post-merger environment involved significant integration complexity across systems, people, products, and distribution.
 
 ## What I did
 
-**Portfolio repricing.** Conducted a comprehensive review of the personal lines portfolio and implemented repricing strategies that restored the portfolio to profitability. Integrated with Suncorp's group pricing engine to improve rate adequacy while balancing competitive positioning and distributor expectations.
+**Product innovation.** Developed the growth strategy with the leadership team. Built an end-to-end HNW packaged product (home, motor, landlord, travel) from distribution through to reinsurance. Six months to market. 1.4-year payback. Recognised by the Board for significant innovation.
 
-**Claims and operations.** Consolidated underwriting operations and integrated with Suncorp's claims supply chain. Improved claims management, reduced leakage and improved cycle times without compromising customer outcomes.
+**Platform integration.** Designed a best-of-both approach: Suncorp's pricing engine, Promina's policy administration (selected because it was superior), Guidewire for claims, Sunrise Exchange for intermediary lifecycle management.
 
-**Distributor relationships.** Set a clear underwriting appetite and rebuilt relationships across the Promina distribution network. After the acquisition, many distributors were uncertain about Suncorp's commitment to their channels. Restored confidence through clear communication, improved service levels and aligned incentives.
+**Personal lines turnaround.** Full end-to-end accountability for Vero personal lines ($120m within the broader $1bn book). Five levers in sequence: early price increases; underwriting rule changes to non-renew high-loss policies; consolidation from three wordings to one at parity; claims effectiveness through single-wording simplification; group claims supply chain for recovery.
 
-**Product innovation.** Launched a new product for high-net-worth individuals that packaged home, motor, landlord and travel insurance.
+**Distribution rationalisation.** Broker portfolio review to identify profitable relationships by segment. Simplified the product for Sunrise Exchange. Selected growth brokers. Exited unprofitable ones.
+
+**Transition.** Negotiated a six-month commitment from the executive to see the strategy through. Ensured the portfolio reached a healthy state. Set the team up for the successor. Handed over before departing.
 
 ## Results
 
-- First underwriting profit in personal lines after five consecutive loss years
-- Portfolio repriced through group pricing engine integration
-- Underwriting operations consolidated across the Promina network
-- High-net-worth packaged insurance product launched
-- Distributor relationships rebuilt across the Promina network
+- Combined ratio from 105% to 98% (first underwriting profit after four consecutive loss years)
+- HNW packaged product to market in six months, 1.4-year payback
+- Platform integration across $2bn GWP (best-of-both approach)
+- Broker network rationalised to profitable relationships
+- Three wordings consolidated to one
+- Portfolio handed over in good shape
