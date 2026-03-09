@@ -20,7 +20,7 @@ export const GET: APIRoute = async () => {
 
 ## About
 
-Miles Sowden is an insurance executive with two decades of experience leading end-to-end insurance functions, subsidiaries and divisions for institutions that include Suncorp, Westpac, Commonwealth Bank, Hollard and Strata Community Insurance. He diagnoses systemic problems, designs phased strategies, builds the teams and capabilities to execute, and leaves organisations stronger than he found them. He has led businesses with more than $1 billion in premium and teams of 700 across five major financial institutions.
+Miles Sowden leads insurers to compete better, build trust and create lasting value. More than $1 billion in premium, teams of 700, five major financial institutions: Suncorp, Westpac, Commonwealth Bank, Hollard and Strata Community Insurance. Every role follows the same discipline: find the root causes, design a phased strategy, build the teams to execute.
 
 ## Contact
 
