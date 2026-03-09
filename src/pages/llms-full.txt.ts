@@ -20,7 +20,7 @@ export const GET: APIRoute = async () => {
 
 ## About
 
-Miles Sowden is an insurance executive with two decades of experience leading end-to-end insurance functions, subsidiaries and divisions for institutions that include Suncorp, Westpac, Commonwealth Bank, Hollard and Strata Community Insurance. He diagnoses systemic problems, designs phased strategies, builds the teams and capabilities to execute, and leaves organisations stronger than he found them. He has led businesses with more than $1 billion in premium and teams of 700 across five major financial institutions.
+Miles Sowden leads insurers to compete better, build trust and create lasting value. More than $1 billion in premium, teams of 700, five major financial institutions: Suncorp, Westpac, Commonwealth Bank, Hollard and Strata Community Insurance. Every role follows the same discipline: find the root causes, design a phased strategy, build the teams to execute.
 
 ## Contact
 
@@ -75,7 +75,7 @@ Every role starts the same way. Understand the root causes, not the symptoms. De
 Strategy, pricing, operations, technology, and culture designed backward from customer outcomes. Not as a statement of values. As an operating discipline. NPS from +15 to +45 at CBA. From +25 to +44 at Westpac. CANSTAR Outstanding Value five consecutive years.
 
 ### Building capability that outlasts the leader
-The test of leadership is not what happens while you are there. It is what happens after you leave. Designed a 10-person executive team at CBA that stayed in place after divestment. Built succession at SCI that delivered sustained results after departure.
+The test of leadership is not what happens while you are there. It is what happens after you leave. Designed a 10-person executive team at CBA that stayed in place after divestment. Built succession at SCI with internal promotion now leading national operations.
 
 ### Designing the CEO operating model
 The CEO role has three value streams: strategic direction, external connection, and internal execution discipline. No single person excels at all three simultaneously. The CEOs who perform design their office and their leadership team to cover all three.

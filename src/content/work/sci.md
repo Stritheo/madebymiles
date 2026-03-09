@@ -28,4 +28,4 @@ Strata Community Insurance is a specialist strata insurance managed general agen
 - Agentic AI deployed at 97% accuracy
 - Staff engagement 76%
 - Absorbed doubled call volumes and 10x web traffic from competitor crisis with improved service levels
-- Departing March 2026 with strong leadership in place
+- Strong leadership succession in place

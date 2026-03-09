@@ -30,4 +30,4 @@ Hollard acquired the CBA general insurance portfolio, creating a 15-year strateg
 - Minor underwriting changes to 1% of the portfolio to fit target risk appetite
 - ASIC Pricing Promise Review signed on time (single review spanning both CBA and Hollard), no regulatory action
 - Cyclone Reinsurance Pool entry led for the entire combined CBA and Hollard group
-- Enduring board relationships maintained beyond departure
+- Enduring board relationships maintained
