@@ -13,14 +13,14 @@ export const GET: APIRoute = async () => {
     'People and Culture',
   ];
 
-  let text = `# Miles Sowden — Full Profile
+  let text = `# Miles Sowden - Full Profile
 
-> Twenty years leading Australian insurers through growth and transformation.
+> Twenty years leading Australian insurers through turnarounds, regulatory reform, and digital transformation.
 > Strategy, teams and culture that deliver lasting performance.
 
 ## About
 
-Miles Sowden is an insurance executive with two decades of experience leading end-to-end insurance functions, subsidiaries and divisions for institutions that include Suncorp, Westpac, Commonwealth Bank, Hollard and Strata Community Insurance. He has led teams of up to 700 staff through business transformations from M&A transactions and regulatory reforms to changes to operating model and technology platforms. These changes occurred while responding to a Royal Commission, record natural catastrophes and a pandemic.
+Miles Sowden is an insurance executive with two decades of experience leading end-to-end insurance functions, subsidiaries and divisions for institutions that include Suncorp, Westpac, Commonwealth Bank, Hollard and Strata Community Insurance. He diagnoses systemic problems, designs phased strategies, builds the teams and capabilities to execute, and leaves organisations stronger than he found them. He has led businesses with more than $1 billion in premium and teams of 700 across five major financial institutions.
 
 ## Contact
 
@@ -64,19 +64,21 @@ Miles Sowden is an insurance executive with two decades of experience leading en
 
   text += `---
 
-## What I bring
+## How I lead
 
-### Strategic Leadership
-Setting direction for boards and executive teams. Defining where to compete, how to win and what to stop doing.
+Four defining patterns across twenty years and five roles.
 
-### Business Transformation
-Turning around underperforming businesses through pricing, product modernisation, digital channels and operational discipline.
+### Systemic diagnosis and phased transformation
+Every role starts the same way. Understand the root causes, not the symptoms. Design a strategy that sequences for impact. Build capability in layers. Combined ratio from 101.5% to 89.2% at CBA. From 105% to 98% at Suncorp. Digital availability from less than 5% to 60% at SCI.
 
-### People and Culture
-Building high-performing, accountable teams through clear strategy, capability development and cultural alignment.
+### Customer outcomes as the organising principle
+Strategy, pricing, operations, technology, and culture designed backward from customer outcomes. Not as a statement of values. As an operating discipline. NPS from +15 to +45 at CBA. From +25 to +44 at Westpac. CANSTAR Outstanding Value five consecutive years.
 
-### Technology and AI
-Deploying data, digital and artificial intelligence as strategic assets to drive customer outcomes and competitive advantage.
+### Building capability that outlasts the leader
+The test of leadership is not what happens while you are there. It is what happens after you leave. Designed a 10-person executive team at CBA that stayed in place after divestment. Built succession at SCI that delivered sustained results after departure.
+
+### Designing the CEO operating model
+The CEO role has three value streams: strategic direction, external connection, and internal execution discipline. No single person excels at all three simultaneously. The CEOs who perform design their office and their leadership team to cover all three.
 
 ---
 
