@@ -14,7 +14,7 @@ Full P&L and balance sheet accountability including budgeting, forecasting, capi
 
 ## What I did
 
-**Phase 1: Pricing (three-year programme from 2017).** Rebuilt pricing at individual address, vehicle, and consumer level. Identified and removed inappropriate rating factors. Refunded significant customer remediations proactively. Developed a novel rating factor: 10% average premium reduction, 1% loss ratio improvement, up to 35% on home and 25% on motor for best-scored customers. No adverse rating on lower economic groups. CANSTAR Outstanding Value five consecutive years. Completed the end-to-end ASIC Pricing Promise Review.
+**Phase 1: Pricing (three-year programme from 2017).** Rebuilt pricing at individual address, vehicle, and consumer level. Identified and removed inappropriate rating factors. Refunded significant customer remediations proactively. Developed a novel rating factor: 10% average premium reduction, 1% loss ratio improvement, up to 35% on home and 25% on motor for best-scored customers. No adverse rating on lower economic groups. CANSTAR Outstanding Value five consecutive years. Completed the ASIC Pricing Promise Review across both CBA and Hollard, running strategic pricing reform and regulatory compliance in parallel.
 
 **Phase 2: Digital (from 2016).** Built channels embedded in the bank's app, website, group CRM, and home buying process. 30% of lending data reused. Quote-to-sale conversion 20% to 50% in home buying channel within three months. Digital sales from 20% to 70%. Headcount held flat.
 
@@ -40,6 +40,6 @@ Full P&L and balance sheet accountability including budgeting, forecasting, capi
 - Customer remediations refunded proactively
 - CANSTAR Outstanding Value five consecutive years
 - Royal Commission: zero enforceable undertakings, zero fines, zero capital consequences
-- ASIC Pricing Promise Review completed end to end, no regulatory action
+- ASIC Pricing Promise Review completed across both CBA and Hollard, no regulatory action
 - Reinsurance placed up to $1.9bn
 - Divestment with joint strategy and funded roadmap
