@@ -3,18 +3,18 @@ title: "First underwriting profit after four consecutive loss years"
 company: "Suncorp and Promina"
 role: "Product Manager Roles"
 order: 4
-summary: "Delivered the first underwriting profit in Vero intermediated personal lines after four consecutive years of losses. Combined ratio from 105% to 98%. Post-merger platform integration across $2bn GWP. HNW packaged product to market in six months."
+summary: "Delivered the first underwriting profit in Vero intermediated personal lines after four consecutive years of losses. Combined ratio from 105% to 98%. Post-merger platform integration across $2bn GWP. High-net-worth packaged product to market in six months."
 ---
 
 ## Context
 
-Two portfolios totalling $2bn in gross written premium following the Suncorp-Promina merger. The Vero portfolio ($1bn across commercial, specialty, and retail) was well-governed at 30% return on capital but shrinking. The intermediated personal lines portfolio ($1bn, assembled post-acquisition) had been loss-making for four consecutive years at a 105% combined ratio. Distributed through brokers, agents, and financial institutions, with only the financial institutions segment profitable.
+Two portfolios across pre-merger and post-merger roles. The $1bn Vero portfolio (commercial, specialty, and retail) pre-merger was well-governed at 30% return on capital but shrinking. Post-merger, the intermediated personal lines portfolio ($1bn, assembled post-acquisition) had been loss-making for four consecutive years at a 105% combined ratio. Distributed through brokers, agents, and financial institutions, with only the financial institutions segment profitable.
 
 The post-merger environment involved significant integration complexity across systems, people, products, and distribution.
 
 ## What I did
 
-**Product innovation.** Developed the growth strategy with the leadership team. Built an end-to-end HNW packaged product (home, motor, landlord, travel) from distribution through to reinsurance. Six months to market. 1.4-year payback. Recognised by the Board for significant innovation.
+**Product innovation.** Developed the growth strategy with the leadership team. Built an end-to-end High-net-worth packaged product (home, motor, landlord, travel) from distribution through to reinsurance. Six months to market. 1.4-year payback. Recognised by the Board for significant innovation.
 
 **Platform integration.** Designed a best-of-both approach: Suncorp's pricing engine, Promina's policy administration (selected because it was superior), Guidewire for claims, Sunrise Exchange for intermediary lifecycle management.
 
@@ -27,7 +27,7 @@ The post-merger environment involved significant integration complexity across s
 ## Results
 
 - Combined ratio from 105% to 98% (first underwriting profit after four consecutive loss years)
-- HNW packaged product to market in six months, 1.4-year payback
+- High-net-worth packaged product to market in six months, 1.4-year payback
 - Platform integration across $2bn GWP (best-of-both approach)
 - Broker network rationalised to profitable relationships
 - Three wordings consolidated to one
