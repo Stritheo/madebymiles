@@ -68,9 +68,12 @@ import CTA from '@/components/CTA.astro';
       <!-- State: Loading -->
       <div id="state-loading" class="hidden" aria-live="polite">
         <div class="flex flex-col items-center justify-center py-20">
-          <div class="w-10 h-10 border-3 border-border-light border-t-text-accent rounded-full animate-spin mb-6"></div>
           <p class="text-xl text-text-primary font-medium mb-2">Analysing role fit...</p>
-          <p class="text-base text-text-secondary">This usually takes 10 to 15 seconds</p>
+          <p class="text-base text-text-secondary mb-6">This usually takes 10 to 15 seconds</p>
+          <div class="w-full max-w-[400px] h-1.5 bg-border-light rounded-full overflow-hidden">
+            <div id="progress-bar" class="h-full bg-text-accent rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+          </div>
+          <p id="progress-percent" class="text-sm text-text-secondary mt-3">0%</p>
         </div>
       </div>
 
@@ -99,10 +102,9 @@ import CTA from '@/components/CTA.astro';
         <!-- Visible matches (top skillset + top mindset) -->
         <div id="matches-visible" class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8"></div>
 
-        <!-- Blurred matches -->
-        <div id="matches-locked" class="relative mb-8">
-          <div id="blurred-matches" class="grid grid-cols-1 md:grid-cols-2 gap-8 blur-md select-none pointer-events-none transition-all duration-500"></div>
-          <div class="absolute inset-0 flex flex-col items-center justify-center bg-bg-primary/60">
+        <!-- Unlock CTA + Blurred matches -->
+        <div id="matches-locked" class="mb-8">
+          <div id="unlock-cta" class="flex flex-col items-center py-8 mb-8 border border-border-light rounded-lg bg-bg-card">
             <p class="text-lg text-text-primary font-medium mb-2">Want the full picture?</p>
             <p class="text-base text-text-secondary mb-6">Send Miles a quick intro on LinkedIn first.</p>
             <button
@@ -115,9 +117,10 @@ import CTA from '@/components/CTA.astro';
               id="confirm-unlock-btn"
               class="hidden inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-8 py-3.5 text-base bg-transparent text-text-primary border-[1.5px] border-border-light hover:border-[#D4D4D4] hover:bg-bg-card"
             >
-              I've sent my intro — show full results
+              I've sent my intro - show full results
             </button>
           </div>
+          <div id="blurred-matches" class="grid grid-cols-1 md:grid-cols-2 gap-8 blur-md select-none pointer-events-none transition-all duration-500"></div>
         </div>
 
         <!-- Unlocked matches (shown after honour system) -->
@@ -178,6 +181,29 @@ import CTA from '@/components/CTA.astro';
 
   let selectedFile: File | null = null;
   let currentToken: string | null = null;
+  let progressInterval: ReturnType<typeof setInterval> | null = null;
+
+  const progressBar = document.getElementById('progress-bar')!;
+  const progressPercent = document.getElementById('progress-percent')!;
+
+  function startProgress() {
+    let progress = 0;
+    progressBar.style.width = '0%';
+    progressPercent.textContent = '0%';
+    progressInterval = setInterval(() => {
+      // Ease toward 90% over ~15 seconds, never reaching 100
+      progress += (90 - progress) * 0.04;
+      const rounded = Math.min(Math.round(progress), 90);
+      progressBar.style.width = `${rounded}%`;
+      progressPercent.textContent = `${rounded}%`;
+    }, 200);
+  }
+
+  function finishProgress() {
+    if (progressInterval) clearInterval(progressInterval);
+    progressBar.style.width = '100%';
+    progressPercent.textContent = '100%';
+  }
 
   // Check for shared URL token
   const urlToken = new URLSearchParams(window.location.search).get('token');
@@ -290,6 +316,7 @@ import CTA from '@/components/CTA.astro';
 
   async function analyse() {
     showState('loading');
+    startProgress();
 
     try {
       let response: Response;
@@ -321,14 +348,17 @@ import CTA from '@/components/CTA.astro';
         token: string;
       };
 
+      finishProgress();
       renderResults(data.matches, data.roleTitle, data.summary, data.token, false);
     } catch (err) {
+      finishProgress();
       showError(err instanceof Error ? err.message : 'Analysis failed. Please try again.');
     }
   }
 
   async function loadSharedResult(token: string) {
     showState('loading');
+    startProgress();
 
     try {
       const response = await fetch(`${API_BASE}/verify?token=${encodeURIComponent(token)}`);
@@ -342,8 +372,10 @@ import CTA from '@/components/CTA.astro';
         summary: string;
       };
 
+      finishProgress();
       renderResults(data.matches, data.roleTitle, data.summary, token, true);
     } catch (err) {
+      finishProgress();
       showError(err instanceof Error ? err.message : 'Could not load shared result.');
     }
   }
@@ -435,11 +467,3 @@ import CTA from '@/components/CTA.astro';
   }
 </script>
 
-<style>
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-  .animate-spin {
-    animation: spin 1s linear infinite;
-  }
-</style>
