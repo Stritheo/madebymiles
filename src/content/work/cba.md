@@ -3,7 +3,7 @@ title: "Transforming a structurally broken $1 billion insurer"
 company: "Commonwealth Bank"
 role: "General Manager, General Insurance"
 order: 2
-summary: "Full P&L accountability for $1bn+ GWP, 700 staff, one million customers. Combined ratio from 101.5% to 89.2%. Motor profitable for the first time in 15 months. Digital sales from 20% to 70%. Navigated the Royal Commission without material consequences."
+summary: "Full P&L accountability for $1bn+ GWP, 700 staff, one million customers. Combined ratio from 101.5% to 89.2%. Motor profitable within 15 months, a first for the book. Digital sales from 20% to 70%. Navigated the Royal Commission without material consequences."
 ---
 
 ## Context
