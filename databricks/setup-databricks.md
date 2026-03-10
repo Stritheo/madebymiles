@@ -2,12 +2,15 @@
 
 Step-by-step instructions to set up the observability dashboard for madebymiles.ai.
 
-## Step 1: Create your account
+## Step 1: Open your workspace
 
-1. Go to https://login.databricks.com
-2. Sign up (no credit card required)
-3. You get a serverless workspace immediately
-4. Note your workspace URL (e.g. `https://dbc-xxxxx.cloud.databricks.com`)
+Your Databricks workspace is already created:
+
+**Workspace URL:** `https://dbc-0caa5555-b747.cloud.databricks.com`
+**Login:** mlfsowden@gmail.com
+
+1. Open the workspace URL in Chrome or Firefox
+2. Sign in with your Google account (mlfsowden@gmail.com)
 
 ## Step 2: Create the catalog and schema
 
@@ -58,7 +61,7 @@ dbutils.secrets.put(scope="madebymiles", key="SUPABASE_PROJECT_REF", string_valu
 2. Create a folder called `madebymiles-observability`
 3. For each file in `databricks/notebooks/` in this repo:
    - Click **Import** > paste the Python code
-   - Or use the Databricks CLI: `databricks workspace import_dir ./databricks/notebooks /Users/you@email/madebymiles-observability`
+   - Or use the Databricks CLI: `databricks workspace import_dir ./databricks/notebooks /Users/mlfsowden@gmail.com/madebymiles-observability`
 
 ## Step 5: Test each notebook
 
@@ -100,7 +103,7 @@ SELECT * FROM madebymiles.observability.github_actions_runs LIMIT 10;
 # Databricks > User Settings > Developer > Access tokens
 
 claude mcp add --transport http databricks \
-  https://YOUR-WORKSPACE.cloud.databricks.com/api/2.0/mcp/madebymiles/observability
+  https://dbc-0caa5555-b747.cloud.databricks.com/api/2.0/mcp/madebymiles/observability
 ```
 
 ## Step 9: Add GitHub Actions secrets
@@ -111,7 +114,7 @@ For the weekly report workflow to work, add these to your GitHub repo:
 
 | Secret | Value |
 |---|---|
-| `DATABRICKS_HOST` | Your workspace URL (e.g. `https://dbc-xxxxx.cloud.databricks.com`) |
+| `DATABRICKS_HOST` | `https://dbc-0caa5555-b747.cloud.databricks.com` |
 | `DATABRICKS_TOKEN` | Your Databricks personal access token |
 | `ANTHROPIC_API_KEY` | Your Anthropic API key (for Claude to generate the report) |
 
