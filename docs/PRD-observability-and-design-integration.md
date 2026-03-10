@@ -2,7 +2,7 @@
 
 **Project:** madebymiles.ai
 **Date:** 2026-03-10
-**Status:** Ready for local setup
+**Status:** Notebooks, workflow, and setup guide built. Ready for Databricks account creation and local Penpot setup.
 
 ---
 
@@ -90,127 +90,221 @@ Chrome or Firefox recommended. If using Brave, disable Shield for the Penpot dom
 - [x] Evaluated Grafana Cloud Free vs Databricks Free Edition
 - [x] Selected Databricks (GenAI analysis of data + code is the differentiator)
 - [x] Confirmed Free Edition includes: dashboards, Genie, notebooks, Unity Catalog, MCP
+- [x] Created 6 ingestion notebook templates in `databricks/notebooks/`
+- [x] Created weekly report GitHub Actions workflow `.github/workflows/weekly-report.yml`
+- [x] Created step-by-step setup guide `databricks/setup-databricks.md`
+
+### Files built and ready to use
+
+```
+databricks/
+  setup-databricks.md              # 10-step setup guide with screenshots guidance
+  notebooks/
+    ingest_github_actions.py        # GitHub Actions workflow runs
+    ingest_cloudflare.py            # Cloudflare analytics (GraphQL API)
+    ingest_sentry.py                # Sentry issues and error trends
+    ingest_gsc.py                   # Google Search Console clicks/impressions
+    ingest_lighthouse.py            # Lighthouse scores from CI artifacts
+    ingest_supabase.py              # Supabase project health metrics
+
+.github/workflows/
+    weekly-report.yml               # Sunday 8am AEST GenAI report to Discord
+```
 
 ### What to do at home
 
-#### Step 1: Sign up for Databricks Free Edition
+Follow `databricks/setup-databricks.md` for the full walkthrough. Summary:
 
-1. Go to https://login.databricks.com/
-2. Sign up (no credit card required)
-3. You will get a serverless workspace immediately
+#### Phase 1: Account and infrastructure (Day 1)
 
-#### Step 2: Create the data ingestion notebooks
+1. Sign up at https://login.databricks.com (free, no card)
+2. Create catalog and schema:
+   ```sql
+   CREATE CATALOG IF NOT EXISTS madebymiles;
+   CREATE SCHEMA IF NOT EXISTS madebymiles.observability;
+   ```
+3. Create secret scope `madebymiles` and add API keys (see setup guide for where to get each one)
 
-Create one Python notebook per data source. Each pulls from the service API and writes to a Unity Catalog table.
+#### Phase 2: Ingestion notebooks (Day 1-2)
 
-| Notebook | Data source | API | Schedule |
+Import notebooks from `databricks/notebooks/` into your workspace. Test in this order (easiest first):
+
+| Order | Notebook | Key needed | Difficulty |
 |---|---|---|---|
-| `ingest_cloudflare.py` | Cloudflare Analytics | Cloudflare API v4 (API token) | Daily |
-| `ingest_github_actions.py` | GitHub Actions runs | GitHub REST API (`/repos/.../actions/runs`) | Daily |
-| `ingest_lighthouse.py` | Lighthouse CI results | Parse from GitHub Actions artifacts | After each deploy |
-| `ingest_sentry.py` | Sentry errors | Sentry API (`/api/0/projects/.../issues/`) | Daily |
-| `ingest_gsc.py` | Google Search Console | GSC API via `google-api-python-client` | Daily |
-| `ingest_supabase.py` | Supabase metrics | Supabase Management API | Daily |
+| 1 | `ingest_github_actions.py` | `GITHUB_TOKEN` | Easy -- you already have a GitHub token |
+| 2 | `ingest_cloudflare.py` | `CLOUDFLARE_API_TOKEN` + `ZONE_ID` | Easy -- token already in GitHub Actions secrets |
+| 3 | `ingest_sentry.py` | `SENTRY_AUTH_TOKEN` + org/project | Easy -- straightforward REST |
+| 4 | `ingest_supabase.py` | `SUPABASE_ACCESS_TOKEN` + project ref | Easy -- simple health check |
+| 5 | `ingest_lighthouse.py` | `GITHUB_TOKEN` | Medium -- parses zip artifacts |
+| 6 | `ingest_gsc.py` | `GSC_SERVICE_ACCOUNT_JSON` | Harder -- needs Google Cloud service account |
 
-**API keys needed (store as Databricks secrets):**
-- `CLOUDFLARE_API_TOKEN` (already have this in GitHub Actions)
-- `GITHUB_TOKEN` (personal access token with `repo` and `actions:read`)
-- `SENTRY_AUTH_TOKEN`
-- `GSC_SERVICE_ACCOUNT_JSON`
-- `SUPABASE_ACCESS_TOKEN`
+After each notebook succeeds, verify data:
+```sql
+SELECT * FROM madebymiles.observability.github_actions_runs LIMIT 10;
+```
 
-#### Step 3: Build the dashboards
+#### Phase 3: Dashboard build (Day 3-4)
 
-Create an AI/BI Dashboard with these panels:
+Create an AI/BI Dashboard with four tabs:
 
 **Performance tab:**
-- Lighthouse scores over time (performance, accessibility, SEO, best practices)
-- Page load time trends
-- Core Web Vitals (from Cloudflare)
+- Lighthouse scores over time (line chart: performance, accessibility, SEO, best practices)
+- FCP and TTI trends (line chart from lighthouse_scores table)
+- Total page weight trend (bar chart)
 
 **Security tab:**
-- Sentry error count and trend
-- Dependency audit results (from `npm audit` in CI)
-- CSP/header compliance status
+- Sentry error count by level (stacked bar: error, warning, info)
+- Top 5 issues by frequency (table)
+- Threats blocked by Cloudflare (from cloudflare_analytics.threats)
 
 **Deployment tab:**
-- GitHub Actions success/fail rate
-- Deploy frequency and duration
-- Build size trend
+- GitHub Actions pass/fail rate (pie chart from github_actions_runs.conclusion)
+- Deploy frequency per week (bar chart)
+- Build duration trend (line chart: updated_at - run_started_at)
 
 **Search and traffic tab:**
-- GSC impressions, clicks, CTR, position
-- Cloudflare request volume and cache hit rate
-- Top pages by traffic
+- GSC clicks and impressions over time (dual-axis line chart)
+- Average position trend (line chart, inverted y-axis)
+- Cloudflare unique visitors and cache hit rate (combo chart)
+- Top 10 search queries by clicks (table)
 
-#### Step 4: Enable Genie
+**SQL queries for each panel are in the notebooks -- the table schemas match.**
 
-Each published dashboard gets a Genie space by default. Use it to ask:
-- "What were the top 3 performance regressions this week?"
-- "Show me the error trend for the last 30 days"
-- "Which pages have the worst Lighthouse scores?"
+#### Phase 4: Genie and MCP (Day 5)
 
-#### Step 5: Connect Databricks MCP to Claude Code
+1. Publish the dashboard -- Genie space is created automatically
+2. Test Genie with: "What are the top performance regressions this week?"
+3. Connect Claude Code:
+   ```bash
+   claude mcp add --transport http databricks \
+     https://YOUR-WORKSPACE.cloud.databricks.com/api/2.0/mcp/madebymiles/observability
+   ```
+4. Test in Claude Code: "Query my Databricks observability tables and summarise this week's Lighthouse scores"
 
-```bash
-claude mcp add --transport http databricks \
-  https://YOUR-WORKSPACE.cloud.databricks.com/api/2.0/mcp/...
-```
+#### Phase 5: Weekly GenAI report (Day 6-7)
 
-Replace with your actual workspace URL. Authentication via personal access token or OAuth.
+1. Schedule the ingestion job in Databricks Workflows (daily at midnight UTC)
+2. Note the job ID and SQL warehouse ID
+3. Add GitHub Actions secrets and variables:
 
-#### Step 6: Create the weekly GenAI report (GitHub Actions)
+   **Repository secrets:**
+   | Secret | Value |
+   |---|---|
+   | `DATABRICKS_HOST` | Your workspace URL |
+   | `DATABRICKS_TOKEN` | Databricks personal access token |
+   | `ANTHROPIC_API_KEY` | Anthropic API key |
 
-Add this workflow to `.github/workflows/weekly-report.yml`:
+   **Repository variables:**
+   | Variable | Value |
+   |---|---|
+   | `DATABRICKS_REFRESH_JOB_ID` | Job ID from Databricks Workflows |
+   | `DATABRICKS_WAREHOUSE_ID` | SQL warehouse ID |
 
-```yaml
-name: Weekly Observability Report
+4. Trigger the weekly report manually first:
+   - Actions > Weekly Observability Report > Run workflow
+   - Check Discord #reports for output
+   - Both jobs have `continue-on-error: true` (per CI quality gate protocol)
+   - Remove `continue-on-error` only after it passes green
 
-on:
-  schedule:
-    - cron: '0 22 * * 0'   # Sunday 8am AEST (UTC+10)
-  workflow_dispatch:
+#### Phase 6: Mobile access
 
-jobs:
-  report:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
+Bookmark your published Databricks dashboard URL on iOS Safari. Add to home screen for app-like access.
 
-      - name: Generate report via Claude Code
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
-          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
-        run: |
-          # Install Claude Code CLI
-          npm install -g @anthropic-ai/claude-code
+### How the GenAI report works
 
-          # Run analysis
-          claude -p "You have access to the Databricks MCP server.
-          Query this week's performance, security, and error data.
-          Read the repo codebase.
-          Produce a weekly report with:
-          1. Key metrics summary (Lighthouse, errors, traffic)
-          2. Top 3 risks or regressions
-          3. Top 5 proposed improvements ranked by impact
-          Format as a Discord embed JSON." > report.json
+The weekly report workflow does three things:
 
-      - name: Post to Discord
-        run: |
-          curl -s -H "Content-Type: application/json" \
-            -d @report.json \
-            "${{ secrets.DISCORD_WEBHOOK_REPORTS }}"
-```
+1. **Triggers Databricks** to refresh all ingestion notebooks (fresh data)
+2. **Calls the Claude API** with this week's metrics data, asking it to:
+   - Summarise key performance, security, and traffic numbers
+   - Identify the top 3 risks or regressions
+   - Propose the top 5 improvements ranked by impact
+   - Reference specific file paths in the repo where changes should be made
+3. **Posts to Discord #reports** as a formatted embed
 
-**Note:** This workflow pattern needs testing. Follow the CI/CD quality gate protocol:
-- Use `continue-on-error: true` on the first run
-- Trigger via `workflow_dispatch` first to verify
-- Only enforce after it passes green
+The report uses Claude Sonnet (not Opus) to keep API costs low. A single weekly call is roughly $0.01-0.05 depending on data volume.
 
-#### Step 7: Mobile access
+### Unity Catalog table schemas
 
-Databricks dashboards are responsive. Bookmark your dashboard URL on iOS Safari and add to home screen for app-like access.
+#### `madebymiles.observability.github_actions_runs`
+| Column | Type | Description |
+|---|---|---|
+| run_id | long | Workflow run ID |
+| name | string | Workflow name |
+| status | string | completed, in_progress, etc. |
+| conclusion | string | success, failure, cancelled |
+| created_at | string | ISO timestamp |
+| updated_at | string | ISO timestamp |
+| run_started_at | string | ISO timestamp |
+| head_sha | string | Short commit SHA |
+| actor | string | GitHub username |
+| event | string | push, workflow_dispatch, etc. |
+| run_attempt | int | Attempt number |
+| html_url | string | Link to run |
+
+#### `madebymiles.observability.cloudflare_analytics`
+| Column | Type | Description |
+|---|---|---|
+| date | string | YYYY-MM-DD |
+| requests | long | Total requests |
+| cached_requests | long | Cached requests |
+| bytes | long | Total bandwidth |
+| cached_bytes | long | Cached bandwidth |
+| threats | long | Threats blocked |
+| page_views | long | Page views |
+| unique_visitors | long | Unique visitors |
+| cache_hit_rate | double | Cache hit percentage |
+
+#### `madebymiles.observability.sentry_issues`
+| Column | Type | Description |
+|---|---|---|
+| issue_id | string | Sentry issue ID |
+| title | string | Issue title |
+| culprit | string | Source location |
+| level | string | error, warning, info |
+| status | string | unresolved, resolved, ignored |
+| count | int | Event count |
+| first_seen | string | ISO timestamp |
+| last_seen | string | ISO timestamp |
+| type | string | Error type |
+| platform | string | Platform |
+| permalink | string | Link to issue |
+
+#### `madebymiles.observability.gsc_search_data`
+| Column | Type | Description |
+|---|---|---|
+| date | string | YYYY-MM-DD |
+| page | string | Page URL |
+| query | string | Search query |
+| clicks | int | Click count |
+| impressions | int | Impression count |
+| ctr | double | Click-through rate (%) |
+| position | double | Average position |
+
+#### `madebymiles.observability.lighthouse_scores`
+| Column | Type | Description |
+|---|---|---|
+| run_id | long | GitHub Actions run ID |
+| run_date | string | ISO timestamp |
+| url | string | Page URL tested |
+| performance | int | Score 0-100 |
+| accessibility | int | Score 0-100 |
+| best_practices | int | Score 0-100 |
+| seo | int | Score 0-100 |
+| fcp_ms | double | First Contentful Paint (ms) |
+| tti_ms | double | Time to Interactive (ms) |
+| total_bytes | double | Total page weight (bytes) |
+
+#### `madebymiles.observability.supabase_health`
+| Column | Type | Description |
+|---|---|---|
+| snapshot_date | string | YYYY-MM-DD |
+| project_ref | string | Supabase project reference |
+| db_healthy | boolean | Database health status |
+| db_status | string | Status string |
+| db_size_bytes | long | Database size |
+| storage_size_bytes | long | Storage size |
+| bandwidth_bytes | long | Bandwidth used |
 
 ---
 
@@ -222,27 +316,26 @@ Data Sources
           |
           v
   Databricks Free Edition
-  [Python notebooks - scheduled ingestion]
+  [Python notebooks - scheduled daily ingestion]
           |
           v
-  Unity Catalog tables
+  Unity Catalog tables (6 tables)
           |
     +-----+-----+
     |             |
     v             v
   AI/BI         Genie
-  Dashboards    (natural language)
+  Dashboards    (natural language queries)
     |
-    +---> Desktop browser + iOS Safari
+    +---> Desktop browser + iOS Safari (home screen bookmark)
     |
     v
-  Claude Code + Databricks MCP
-  (reads data + reads repo code)
+  Claude API (Sonnet) via GitHub Actions
+  [Reads metrics data + references repo code]
           |
           v
   Weekly improvement report --> Discord #reports
-
-  Alert rules --> Discord #alerts (existing webhooks)
+  Failures --> Discord #alerts
 ```
 
 ---
@@ -255,6 +348,8 @@ Data Sources
 | Dashboard platform | Databricks Free Edition (not Grafana) | GenAI layer (Genie + Claude MCP) reads both data and code to propose improvements |
 | Alert channel | Discord (not Slack, not email) | Already working, unlimited webhooks, unlimited history, free |
 | Report delivery | Discord #reports via GitHub Actions | No new tools, fits existing workflow |
+| Report model | Claude Sonnet (not Opus) | Keeps weekly API cost under $0.05 |
+| Ingestion pattern | Databricks notebooks (not external ETL) | Simplest path, runs on free serverless compute |
 
 ---
 
@@ -262,18 +357,39 @@ Data Sources
 
 | Risk | Mitigation |
 |---|---|
-| Databricks MCP may not work on Free Edition | Test immediately after signup. Fall back to Genie-only if needed. |
+| Databricks MCP may not work on Free Edition | Test immediately after signup. Fall back to Genie-only if needed. The weekly report uses direct API calls as a backup path. |
 | Fair-use compute quota exceeded | Weekly batch for a solo project is well within 99th percentile. Monitor. |
 | No commercial use on Free Edition | madebymiles.ai is a personal site, not a commercial product. Review terms if that changes. |
 | Penpot MCP server is relatively new | Official team maintains it. Pin to `mcp-prod` branch for stability. |
-| Weekly report Claude Code call costs | Uses Anthropic API credits. Monitor usage. Consider running less frequently if costs rise. |
+| Weekly report Claude API costs | Uses Sonnet, not Opus. Single weekly call is ~$0.01-0.05. Monitor via Anthropic dashboard. |
+| Supabase/GSC API changes | Notebooks are simple enough to update. Schema changes caught by `write.mode("overwrite")` failures. |
+| Databricks secrets management on Free Edition | `dbutils.secrets` may have limitations. Fall back to environment variables if needed. |
 
 ---
 
 ## Order of operations
 
-1. **Today at home:** Run `bash scripts/setup-penpot-mcp.sh` and verify the design loop works
-2. **This week:** Sign up for Databricks Free Edition, create first notebook (start with GitHub Actions data -- easiest API)
-3. **Next week:** Add remaining data sources one at a time
-4. **Week 3:** Build dashboard panels, enable Genie, test Databricks MCP with Claude Code
-5. **Week 4:** Create the weekly report GitHub Action (soft-fail first)
+### Week 1
+1. **At home today:** Run `bash scripts/setup-penpot-mcp.sh` and verify the design loop works
+2. **Same session:** Sign up for Databricks Free Edition at https://login.databricks.com
+3. **Same session:** Create catalog/schema, add `GITHUB_TOKEN` secret, run `ingest_github_actions.py`
+
+### Week 2
+4. Add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ZONE_ID` secrets, run `ingest_cloudflare.py`
+5. Add Sentry secrets, run `ingest_sentry.py`
+6. Add Supabase secrets, run `ingest_supabase.py`
+7. Run `ingest_lighthouse.py` (uses same GitHub token)
+
+### Week 3
+8. Set up Google Cloud service account for GSC, run `ingest_gsc.py`
+9. Build the AI/BI Dashboard (4 tabs, panels as specified above)
+10. Publish dashboard, test Genie
+11. Test Databricks MCP with Claude Code
+
+### Week 4
+12. Schedule daily ingestion job in Databricks Workflows
+13. Add GitHub Actions secrets (DATABRICKS_HOST, DATABRICKS_TOKEN, ANTHROPIC_API_KEY)
+14. Add repo variables (DATABRICKS_REFRESH_JOB_ID, DATABRICKS_WAREHOUSE_ID)
+15. Trigger weekly report via `workflow_dispatch` -- verify in Discord #reports
+16. Remove `continue-on-error` after green pass
+17. Bookmark dashboard on iOS Safari home screen
