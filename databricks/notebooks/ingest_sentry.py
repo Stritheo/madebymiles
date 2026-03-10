@@ -5,10 +5,24 @@
 import requests
 from datetime import datetime
 
+# -- Helper: get secret with widget fallback for Free Edition --
+def get_secret(key, label=None):
+    """Try dbutils.secrets first. If unavailable, fall back to widget input."""
+    try:
+        return dbutils.secrets.get(scope="madebymiles", key=key)
+    except Exception:
+        if label is None:
+            label = key
+        dbutils.widgets.text(key, "", label)
+        val = dbutils.widgets.get(key)
+        if not val:
+            raise ValueError(f"Please provide {label} via the widget at the top of the notebook")
+        return val
+
 # -- Config --
-TOKEN = dbutils.secrets.get(scope="madebymiles", key="SENTRY_AUTH_TOKEN")
-ORG = dbutils.secrets.get(scope="madebymiles", key="SENTRY_ORG")
-PROJECT = dbutils.secrets.get(scope="madebymiles", key="SENTRY_PROJECT")
+TOKEN = get_secret("SENTRY_AUTH_TOKEN", "Sentry Auth Token")
+ORG = get_secret("SENTRY_ORG", "Sentry Org Slug")
+PROJECT = get_secret("SENTRY_PROJECT", "Sentry Project Slug")
 HEADERS = {"Authorization": f"Bearer {TOKEN}"}
 BASE_URL = f"https://sentry.io/api/0/projects/{ORG}/{PROJECT}"
 

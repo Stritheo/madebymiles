@@ -6,9 +6,23 @@
 import requests
 from datetime import datetime
 
+# -- Helper: get secret with widget fallback for Free Edition --
+def get_secret(key, label=None):
+    """Try dbutils.secrets first. If unavailable, fall back to widget input."""
+    try:
+        return dbutils.secrets.get(scope="madebymiles", key=key)
+    except Exception:
+        if label is None:
+            label = key
+        dbutils.widgets.text(key, "", label)
+        val = dbutils.widgets.get(key)
+        if not val:
+            raise ValueError(f"Please provide {label} via the widget at the top of the notebook")
+        return val
+
 # -- Config --
-TOKEN = dbutils.secrets.get(scope="madebymiles", key="SUPABASE_ACCESS_TOKEN")
-PROJECT_REF = dbutils.secrets.get(scope="madebymiles", key="SUPABASE_PROJECT_REF")
+TOKEN = get_secret("SUPABASE_ACCESS_TOKEN", "Supabase Access Token")
+PROJECT_REF = get_secret("SUPABASE_PROJECT_REF", "Supabase Project Ref")
 HEADERS = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
 BASE_URL = "https://api.supabase.com/v1"
 

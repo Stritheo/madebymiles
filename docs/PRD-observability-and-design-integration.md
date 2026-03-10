@@ -360,21 +360,168 @@ Data Sources
 
 | Risk | Mitigation |
 |---|---|
-| Databricks MCP may not work on Free Edition | Test immediately after signup. Fall back to Genie-only if needed. The weekly report uses direct API calls as a backup path. |
+| `dbutils.secrets` not available on Free Edition | Notebooks updated with widget fallback (text input prompts). You paste keys each run. Not ideal for scheduled jobs -- if secrets are blocked, we move data collection into GitHub Actions instead. |
+| Outbound internet restricted from notebooks | Test on Day 1. If blocked, GitHub Actions collects data and pushes to Databricks via REST API. Dashboards still work. |
+| Personal access tokens not available on Free Edition | Test on Day 1. If unavailable, weekly report workflow cannot trigger Databricks jobs. Fall back to GitHub Actions doing all work independently. |
+| Databricks MCP may not work on Free Edition | Test after setup. Fall back to Genie-only (browser). Weekly report uses direct Claude API calls as backup. |
 | Fair-use compute quota exceeded | Weekly batch for a solo project is well within 99th percentile. Monitor. |
 | No commercial use on Free Edition | madebymiles.ai is a personal site, not a commercial product. Review terms if that changes. |
 | Penpot MCP server is relatively new | Official team maintains it. Pin to `mcp-prod` branch for stability. |
 | Weekly report Claude API costs | Uses Sonnet, not Opus. Single weekly call is ~$0.01-0.05. Monitor via Anthropic dashboard. |
 | Supabase/GSC API changes | Notebooks are simple enough to update. Schema changes caught by `write.mode("overwrite")` failures. |
-| Databricks secrets management on Free Edition | `dbutils.secrets` may have limitations. Fall back to environment variables if needed. |
 
 ---
 
-## VS Code manual steps (what you need to do yourself)
+## Important: Free Edition limitations
 
-These are the steps that require your browser, your credentials, or your hands in VS Code. Everything else is already scripted or automated.
+Research indicates these limitations on Databricks Free Edition that affect our plan:
 
-### Session 1: Pull the branch and start Penpot (~15 mins)
+| Feature | Status on Free Edition | Impact |
+|---|---|---|
+| `dbutils.secrets` | Likely unavailable (requires Premium) | Notebooks must use widget-based input instead |
+| Personal access tokens | May not be available | Weekly report workflow may need OAuth or alternative auth |
+| Outbound internet from notebooks | Restricted to trusted domains | API calls to GitHub/Cloudflare/Sentry may be blocked |
+| MCP server | Unconfirmed on Free Edition | May need Genie-only fallback |
+
+**You need to test these on Day 1.** The notebooks have been updated with a fallback: if `dbutils.secrets` fails, they use Databricks widgets (text input boxes at the top of each notebook) so you can paste API keys directly when you run them. The keys are not stored permanently in this mode -- you paste them each time you run the notebook.
+
+If outbound internet is blocked, we fall back to **GitHub Actions doing all the data collection** and pushing results to Databricks via the REST API (or skip Databricks entirely and go dashboard-in-Discord).
+
+---
+
+## Manual steps: what you can do from any browser (work laptop) vs Mac only
+
+### From any browser (work laptop included)
+
+Everything marked "Browser" below works from Chrome on your work laptop. No terminal, no VS Code, no local files needed.
+
+#### Browser Session 1: Databricks first look and smoke test (~15 mins)
+
+1. **Open Databricks:** `https://dbc-0caa5555-b747.cloud.databricks.com`
+   - Sign in with mlfsowden@gmail.com (Google sign-in)
+
+2. **Create catalog and schema.** Click **SQL Editor** in the left sidebar, paste and run:
+   ```sql
+   CREATE CATALOG IF NOT EXISTS madebymiles;
+   CREATE SCHEMA IF NOT EXISTS madebymiles.observability;
+   ```
+
+3. **Test if secrets work.** Click **+** > **Notebook**, set language to Python, paste and run:
+   ```python
+   dbutils.secrets.createScope("madebymiles")
+   ```
+   - **If it works:** secrets are available. Follow the "Secrets path" below.
+   - **If it fails with "not enabled":** you are on the widget path. The notebooks are already set up to handle this. Note the result so you know which path you are on.
+
+4. **Test outbound internet.** In the same notebook, paste and run:
+   ```python
+   import requests
+   r = requests.get("https://api.github.com/repos/Stritheo/madebymiles")
+   print(r.status_code, r.json().get("full_name"))
+   ```
+   - **If it prints `200 Stritheo/madebymiles`:** outbound works. Notebooks can fetch API data directly.
+   - **If it fails or times out:** outbound is blocked. We will need the GitHub Actions fallback (see Risks section).
+
+#### Browser Session 2: Import and run the first notebook (~10 mins)
+
+1. In the left sidebar, click **Workspace** > your email folder
+2. Click **Create** > **Folder** > name it `madebymiles-observability`
+3. Click into the folder > **Import** > **URL** > paste this raw GitHub URL for the first notebook:
+   `https://raw.githubusercontent.com/Stritheo/madebymiles/claude/figma-mcp-integration-6pINb/databricks/notebooks/ingest_github_actions.py`
+   (Or paste the Python code directly if raw URL does not work)
+
+4. **If secrets work:** First add the token:
+   ```python
+   dbutils.secrets.put(scope="madebymiles", key="GITHUB_TOKEN", string_value="ghp_YOUR_TOKEN")
+   ```
+   To get a token: github.com > Settings > Developer settings > Personal access tokens > Fine-grained > Generate. Select `Stritheo/madebymiles`. Permissions: Actions (read), Contents (read).
+
+5. **If secrets do not work:** The notebook has a widget at the top. When you click **Run All**, a text box will appear asking for the token. Paste it there.
+
+6. Click **Run All**
+7. Verify: go to SQL Editor, run:
+   ```sql
+   SELECT * FROM madebymiles.observability.github_actions_runs LIMIT 5;
+   ```
+
+#### Browser Session 3: Generate API tokens from other services (~15 mins)
+
+You can collect all the API keys from your browser at work and save them somewhere safe (password manager, secure note). You will paste them into Databricks later.
+
+| Service | Where to go | What to create |
+|---|---|---|
+| GitHub | github.com > Settings > Developer settings > Personal access tokens > Fine-grained | Token for `Stritheo/madebymiles` with Actions (read), Contents (read) |
+| Cloudflare | dash.cloudflare.com > My Profile > API Tokens > Create Token | Use "Read analytics" template. Also note your Zone ID from the madebymiles.ai Overview page (right sidebar) |
+| Sentry | sentry.io > Settings > Auth Tokens > Create | Read-only token. Note your org slug and project slug from the URL |
+| Supabase | supabase.com > Account > Access Tokens | Generate token. Note project ref from Settings > General |
+| GSC | console.cloud.google.com > APIs > Search Console API > Enable | Create service account, download JSON key, add email as owner in GSC |
+
+#### Browser Session 4: Import remaining notebooks and add keys (~10 mins each)
+
+Repeat the import process for each notebook. If using widgets, you will paste API keys when prompted on each run.
+
+Import order (same as before):
+
+| Order | Notebook | Keys needed |
+|---|---|---|
+| 1 | `ingest_github_actions.py` | GitHub token |
+| 2 | `ingest_cloudflare.py` | Cloudflare API token + zone ID |
+| 3 | `ingest_sentry.py` | Sentry auth token + org + project |
+| 4 | `ingest_supabase.py` | Supabase access token + project ref |
+| 5 | `ingest_lighthouse.py` | GitHub token (same as #1) |
+| 6 | `ingest_gsc.py` | GSC service account JSON |
+
+#### Browser Session 5: Build the dashboard (~30 mins)
+
+1. In Databricks, go to **SQL** > **Dashboards** > **Create Dashboard**
+2. Name it `madebymiles.ai Observability`
+3. For each panel, click **Add** > **Visualization** > write a SQL query against your Unity Catalog tables
+4. The table schemas are documented in this PRD -- use them to write your queries
+5. Arrange into 4 tabs: Performance, Security, Deployment, Search and Traffic
+6. Click **Publish** when done
+7. Genie is enabled automatically on published dashboards
+
+#### Browser Session 6: Schedule notebooks and test Genie (~10 mins)
+
+1. Go to **Workflows** > **Create Job**
+2. Name: `madebymiles-daily-ingest`
+3. Add a task for each notebook
+4. Set schedule: Daily at midnight UTC (10am AEST)
+5. Note the **Job ID** (you will need this for GitHub Actions later)
+6. Test Genie: open your published dashboard, click the Genie icon, ask "What are the Lighthouse scores this week?"
+
+#### Browser Session 7: Add GitHub repo secrets (~5 mins)
+
+1. Go to `https://github.com/Stritheo/madebymiles/settings/secrets/actions`
+2. Click **New repository secret** for each:
+
+   | Name | Value |
+   |---|---|
+   | `DATABRICKS_HOST` | `https://dbc-0caa5555-b747.cloud.databricks.com` |
+   | `DATABRICKS_TOKEN` | Databricks personal access token (see Mac Session 2 below, or skip if PATs are not available on Free Edition) |
+   | `ANTHROPIC_API_KEY` | Your Anthropic API key (from console.anthropic.com > API Keys) |
+
+3. Click **Variables** tab, then **New repository variable** for each:
+
+   | Name | Value |
+   |---|---|
+   | `DATABRICKS_REFRESH_JOB_ID` | The job ID from Browser Session 6 |
+   | `DATABRICKS_WAREHOUSE_ID` | Found in Databricks > SQL Warehouses > click your warehouse > copy the ID from the URL |
+
+#### Browser Session 8: Trigger and verify the weekly report (~5 mins)
+
+1. Go to `https://github.com/Stritheo/madebymiles/actions/workflows/weekly-report.yml`
+2. Click **Run workflow**
+3. Check Discord #reports for the output
+4. If it passes, remove `continue-on-error: true` from the workflow (can do via GitHub web editor)
+
+---
+
+### Mac only (needs terminal/VS Code)
+
+These steps need your local dev environment.
+
+#### Mac Session 1: Pull the branch and start Penpot (~15 mins)
 
 Open VS Code terminal:
 
@@ -386,40 +533,9 @@ bash scripts/setup-penpot-mcp.sh
 
 Then open Chrome and connect Penpot (see Stream 1 steps above).
 
-### Session 2: Databricks first notebook (~20 mins)
+#### Mac Session 2: Generate a Databricks personal access token (~5 mins)
 
-1. **Open Databricks** in Chrome: `https://dbc-0caa5555-b747.cloud.databricks.com`
-   - Sign in with mlfsowden@gmail.com
-
-2. **Create catalog and schema.** Click **SQL Editor** in the left sidebar, paste and run:
-   ```sql
-   CREATE CATALOG IF NOT EXISTS madebymiles;
-   CREATE SCHEMA IF NOT EXISTS madebymiles.observability;
-   ```
-
-3. **Create a secret scope.** Click **+** > **Notebook**, set language to Python, paste and run:
-   ```python
-   dbutils.secrets.createScope("madebymiles")
-   ```
-   If this fails on Free Edition, the notebooks will need editing to use hardcoded values or environment variables instead. Ask Claude Code for help.
-
-4. **Add your GitHub token.** In the same notebook:
-   ```python
-   dbutils.secrets.put(scope="madebymiles", key="GITHUB_TOKEN", string_value="ghp_YOUR_TOKEN")
-   ```
-   To get a token: github.com > Settings > Developer settings > Personal access tokens > Fine-grained > Generate. Select the `Stritheo/madebymiles` repo. Permissions: Actions (read), Contents (read).
-
-5. **Import and run the first notebook.** In the left sidebar:
-   - Click **Workspace** > your email folder > **Create** > **Folder** > name it `madebymiles-observability`
-   - Click into the folder > **Import** > select **File** > choose `databricks/notebooks/ingest_github_actions.py` from your local repo
-   - Click **Run All**
-   - Verify: go to SQL Editor, run `SELECT * FROM madebymiles.observability.github_actions_runs LIMIT 5;`
-
-6. **Repeat** for each notebook as you add more API keys (see the table in Phase 2 above for the order).
-
-### Session 3: Generate a Databricks personal access token (~5 mins)
-
-You need this for the weekly report workflow.
+**Try this in the browser first** -- it may work from your work laptop:
 
 1. In Databricks, click your profile icon (top right) > **Settings**
 2. Click **Developer** in the left sidebar
@@ -429,86 +545,13 @@ You need this for the weekly report workflow.
 6. Lifetime: 90 days (set a calendar reminder to rotate it)
 7. Copy the token immediately (you will not see it again)
 
-### Session 4: Add GitHub repo secrets (~5 mins)
+If the Developer/Access tokens option does not appear, PATs are not available on Free Edition. In that case, the weekly report workflow will need to use OAuth or a different auth method -- ask Claude Code for help adapting it.
 
-1. Go to `https://github.com/Stritheo/madebymiles/settings/secrets/actions`
-2. Click **New repository secret** for each:
-
-   | Name | Value |
-   |---|---|
-   | `DATABRICKS_HOST` | `https://dbc-0caa5555-b747.cloud.databricks.com` |
-   | `DATABRICKS_TOKEN` | The token from Session 3 |
-   | `ANTHROPIC_API_KEY` | Your Anthropic API key (from console.anthropic.com > API Keys) |
-
-3. Click **Variables** tab, then **New repository variable** for each:
-
-   | Name | Value |
-   |---|---|
-   | `DATABRICKS_REFRESH_JOB_ID` | The job ID after you schedule notebooks in Databricks Workflows |
-   | `DATABRICKS_WAREHOUSE_ID` | Found in Databricks > SQL Warehouses > click your warehouse > copy the ID from the URL |
-
-### Session 5: Add remaining API keys to Databricks (~10 mins per source)
-
-In a Databricks notebook, add each secret one at a time as you are ready:
-
-**Cloudflare (you already have these):**
-```python
-# Get zone ID: dash.cloudflare.com > madebymiles.ai > Overview > right sidebar
-dbutils.secrets.put(scope="madebymiles", key="CLOUDFLARE_API_TOKEN", string_value="YOUR_TOKEN")
-dbutils.secrets.put(scope="madebymiles", key="CLOUDFLARE_ZONE_ID", string_value="YOUR_ZONE_ID")
-```
-Then import and run `ingest_cloudflare.py`.
-
-**Sentry:**
-```python
-# Get token: sentry.io > Settings > Auth Tokens > Create
-dbutils.secrets.put(scope="madebymiles", key="SENTRY_AUTH_TOKEN", string_value="YOUR_TOKEN")
-dbutils.secrets.put(scope="madebymiles", key="SENTRY_ORG", string_value="YOUR_ORG")
-dbutils.secrets.put(scope="madebymiles", key="SENTRY_PROJECT", string_value="YOUR_PROJECT")
-```
-Then import and run `ingest_sentry.py`.
-
-**Supabase:**
-```python
-# Get token: supabase.com > Account > Access Tokens
-# Get project ref: from your project URL or Settings > General
-dbutils.secrets.put(scope="madebymiles", key="SUPABASE_ACCESS_TOKEN", string_value="YOUR_TOKEN")
-dbutils.secrets.put(scope="madebymiles", key="SUPABASE_PROJECT_REF", string_value="YOUR_REF")
-```
-Then import and run `ingest_supabase.py`.
-
-**Google Search Console (most involved):**
-1. Go to console.cloud.google.com
-2. Create a project (or use existing)
-3. Enable the Search Console API
-4. Go to IAM > Service Accounts > Create
-5. Download the JSON key file
-6. In Google Search Console, add the service account email as an owner
-7. In Databricks:
-```python
-import json
-with open("/path/to/downloaded-key.json") as f:
-    sa_json = f.read()
-dbutils.secrets.put(scope="madebymiles", key="GSC_SERVICE_ACCOUNT_JSON", string_value=sa_json)
-```
-Then import and run `ingest_gsc.py`.
-
-### Session 6: Build the dashboard (~30 mins)
-
-1. In Databricks, go to **SQL** > **Dashboards** > **Create Dashboard**
-2. Name it `madebymiles.ai Observability`
-3. For each panel, click **Add** > **Visualization** > write a SQL query against your Unity Catalog tables
-4. The table schemas are documented above -- use them to write your queries
-5. Arrange into 4 tabs: Performance, Security, Deployment, Search and Traffic
-6. Click **Publish** when done
-7. Genie is enabled automatically on published dashboards
-
-### Session 7: Connect Claude Code MCP and test weekly report (~10 mins)
+#### Mac Session 3: Connect Claude Code MCP (~10 mins)
 
 In VS Code terminal:
 
 ```bash
-# Generate a personal access token in Databricks first (see Session 3)
 claude mcp add --transport http databricks \
   https://dbc-0caa5555-b747.cloud.databricks.com/api/2.0/mcp/madebymiles/observability
 ```
@@ -518,32 +561,30 @@ Test it works:
 claude "Query my Databricks observability tables and summarise this week's data"
 ```
 
-Then trigger the weekly report:
-1. Go to `https://github.com/Stritheo/madebymiles/actions/workflows/weekly-report.yml`
-2. Click **Run workflow**
-3. Check Discord #reports for the output
+If MCP is not available on Free Edition, skip this step. Genie (in the browser) provides the same natural-language query capability.
 
 ---
 
 ## Order of operations
 
 ### Week 1
-1. **At home today:** Pull branch, run `bash scripts/setup-penpot-mcp.sh`, verify the design loop works (VS Code Session 1)
-2. **Same evening:** Open Databricks workspace, create catalog/schema, add `GITHUB_TOKEN` secret, run `ingest_github_actions.py` (VS Code Session 2)
-3. **Same evening:** Generate Databricks personal access token (VS Code Session 3)
+1. **From work browser:** Open Databricks, create catalog/schema, smoke test secrets and outbound internet (Browser Session 1)
+2. **From work browser:** Generate API tokens from GitHub, Cloudflare, Sentry, Supabase (Browser Session 3) -- save in password manager
+3. **At home (Mac):** Pull branch, run `bash scripts/setup-penpot-mcp.sh`, verify Penpot (Mac Session 1)
+4. **At home (Mac) or work browser:** Import and run `ingest_github_actions.py` (Browser Session 2)
 
 ### Week 2
-4. Add Cloudflare, Sentry, Supabase secrets and run their notebooks (VS Code Session 5)
-5. Run `ingest_lighthouse.py` (uses same GitHub token, no new secrets needed)
-6. Add GitHub repo secrets and variables (VS Code Session 4)
+5. **From work browser:** Import and run Cloudflare, Sentry, Supabase, Lighthouse notebooks (Browser Session 4)
+6. **From work browser:** Try generating a Databricks personal access token (Mac Session 2 -- try browser first)
+7. **From work browser:** Add GitHub repo secrets (Browser Session 7)
 
 ### Week 3
-7. Set up Google Cloud service account for GSC, run `ingest_gsc.py` (VS Code Session 5, GSC section)
-8. Build the AI/BI Dashboard (VS Code Session 6)
-9. Publish dashboard, test Genie
+8. **From work browser:** Set up Google Cloud service account for GSC (Browser Session 3, GSC row)
+9. **From work browser:** Build the AI/BI Dashboard (Browser Session 5)
+10. **From work browser:** Schedule notebooks, test Genie (Browser Session 6)
 
 ### Week 4
-10. Schedule daily ingestion job in Databricks Workflows
-11. Connect Claude Code MCP, test weekly report (VS Code Session 7)
-12. Remove `continue-on-error` after green pass
-13. Bookmark dashboard on iOS Safari home screen
+11. **From work browser:** Trigger weekly report, verify Discord output (Browser Session 8)
+12. **At home (Mac):** Connect Claude Code MCP (Mac Session 3)
+13. **From work browser or iPhone:** Remove `continue-on-error` after green pass
+14. **iPhone:** Bookmark dashboard on iOS Safari home screen

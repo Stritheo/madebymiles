@@ -10,9 +10,23 @@ from googleapiclient.discovery import build
 from datetime import datetime, timedelta
 import json
 
+# -- Helper: get secret with widget fallback for Free Edition --
+def get_secret(key, label=None):
+    """Try dbutils.secrets first. If unavailable, fall back to widget input."""
+    try:
+        return dbutils.secrets.get(scope="madebymiles", key=key)
+    except Exception:
+        if label is None:
+            label = key
+        dbutils.widgets.text(key, "", label)
+        val = dbutils.widgets.get(key)
+        if not val:
+            raise ValueError(f"Please provide {label} via the widget at the top of the notebook")
+        return val
+
 # -- Config --
 SITE_URL = "sc-domain:madebymiles.ai"  # or "https://madebymiles.ai/"
-sa_json = dbutils.secrets.get(scope="madebymiles", key="GSC_SERVICE_ACCOUNT_JSON")
+sa_json = get_secret("GSC_SERVICE_ACCOUNT_JSON", "GSC Service Account JSON")
 credentials = service_account.Credentials.from_service_account_info(
     json.loads(sa_json),
     scopes=["https://www.googleapis.com/auth/webmasters.readonly"]

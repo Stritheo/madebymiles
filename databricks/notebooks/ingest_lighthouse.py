@@ -8,9 +8,23 @@ import zipfile
 import io
 from datetime import datetime, timedelta
 
+# -- Helper: get secret with widget fallback for Free Edition --
+def get_secret(key, label=None):
+    """Try dbutils.secrets first. If unavailable, fall back to widget input."""
+    try:
+        return dbutils.secrets.get(scope="madebymiles", key=key)
+    except Exception:
+        if label is None:
+            label = key
+        dbutils.widgets.text(key, "", label)
+        val = dbutils.widgets.get(key)
+        if not val:
+            raise ValueError(f"Please provide {label} via the widget at the top of the notebook")
+        return val
+
 # -- Config --
 REPO = "Stritheo/madebymiles"
-TOKEN = dbutils.secrets.get(scope="madebymiles", key="GITHUB_TOKEN")
+TOKEN = get_secret("GITHUB_TOKEN", "GitHub Personal Access Token")
 HEADERS = {"Authorization": f"Bearer {TOKEN}", "Accept": "application/vnd.github+json"}
 BASE_URL = f"https://api.github.com/repos/{REPO}"
 
