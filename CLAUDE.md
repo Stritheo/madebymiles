@@ -37,6 +37,21 @@ These rules prevent the class of error where CI checks are committed without ver
 
 5. **No silent failures.** Every CI job must either pass green or post to Discord #alerts. Never add a job that can fail silently.
 
+## Design tooling
+
+- **Design tool:** Penpot (open source, free cloud at design.penpot.app)
+- **MCP server:** Official Penpot MCP at `http://localhost:4401/mcp` (requires local server running)
+- **Setup:** Run `bash scripts/setup-penpot-mcp.sh` to install and start the MCP server
+- **Design tokens:** Sync colours, typography, and spacing between Penpot and `tailwind.config.mjs`
+- **Plugin:** Load from `http://localhost:4400/manifest.json` in Penpot's Plugins menu
+
+## Observability
+
+- **Dashboard:** Databricks Free Edition (AI/BI dashboards + Genie)
+- **Data sources:** Cloudflare, Supabase, Sentry, GitHub Actions, Google Search Console
+- **Reports:** Weekly GenAI improvement proposals via GitHub Actions to Discord #reports
+- **PRD:** See `docs/PRD-observability-and-design-integration.md` for full setup plan
+
 ## Technical notes
 
 - CSP requires `script-src 'self' 'unsafe-inline'` because Astro bundles scripts as inline modules
