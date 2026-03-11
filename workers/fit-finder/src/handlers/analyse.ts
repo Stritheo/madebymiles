@@ -13,11 +13,15 @@ export async function handleAnalyse(
 ): Promise<Response> {
   const ip = request.headers.get('CF-Connecting-IP') ?? 'unknown';
 
-  // Rate limit
-  const allowed = await checkRateLimit(ip, env.RATE_LIMIT_KV);
-  if (!allowed) {
-    ctx.waitUntil(postAlert(env.DISCORD_WEBHOOK_ALERTS, 'Rate limit hit'));
-    return json({ error: 'Rate limit exceeded. Try again tomorrow.' }, 429);
+  // Rate limit (per-IP and global daily cap)
+  const rateResult = await checkRateLimit(ip, env.RATE_LIMIT_KV);
+  if (!rateResult.allowed) {
+    const isGlobal = rateResult.reason === 'global';
+    ctx.waitUntil(postAlert(env.DISCORD_WEBHOOK_ALERTS, `Rate limit hit: ${rateResult.reason}`));
+    const error = isGlobal
+      ? 'Due to current interest the Fit Finder has reached its daily limit. Please connect with me directly on LinkedIn or WhatsApp, or try again tomorrow.'
+      : 'Rate limit exceeded. Try again tomorrow.';
+    return json({ error, limitType: rateResult.reason }, 429);
   }
 
   // Extract text

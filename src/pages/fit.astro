@@ -455,7 +455,12 @@ import Base from '@/layouts/Base.astro';
       }
 
       if (!response.ok) {
-        const err = await response.json() as { error?: string };
+        const err = await response.json() as { error?: string; limitType?: string };
+        if (err.limitType === 'global') {
+          showGlobalLimitError();
+          finishProgress();
+          return;
+        }
         throw new Error(err.error ?? `Request failed (${response.status})`);
       }
 
@@ -727,6 +732,11 @@ import Base from '@/layouts/Base.astro';
 
   function showError(message: string) {
     errorMessage.textContent = message;
+    showState('error');
+  }
+
+  function showGlobalLimitError() {
+    errorMessage.innerHTML = `Due to current interest the Fit Finder has reached its daily limit. Please connect with me directly on <a href="https://www.linkedin.com/in/milessowden" target="_blank" rel="noopener" class="underline text-text-accent hover:text-[#B36F4F]">LinkedIn</a> or <a href="https://wa.me/61414185721" target="_blank" rel="noopener" class="underline text-text-accent hover:text-[#B36F4F]">WhatsApp</a>, or try again tomorrow.`;
     showState('error');
   }
 </script>
