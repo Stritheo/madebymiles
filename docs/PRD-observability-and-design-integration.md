@@ -401,21 +401,72 @@ Tested on 2026-03-11. Results:
 
 ## Retro: 2026-03-11 session
 
+### The commit timeline tells the story
+
+15 commits on this branch. The Databricks notebooks went through **3 complete architectures**:
+
+| Version | Approach | Why it failed |
+|---|---|---|
+| v1 (`0410a19`) | `dbutils.secrets` for tokens, SQL `http_request()` for API calls | Secrets API not available on Free Edition |
+| v2 (`7a27113`) | Unity Catalog connections with SQL `http_request(conn => ...)` | Spark SQL string literals mangle JSON escaping |
+| v3 (`b0345ad`) | Python `requests` with widget-based tokens | **This one worked** |
+
+Then 5 bug-fix commits on top of v2 before finally pivoting to v3:
+- `8dded67` fix deprecation warnings
+- `eb8df81` collapse GraphQL to single line (escaping workaround)
+- `fbc20b5` double-backslash escaping (another workaround)
+- `7203001` give up on SQL for Cloudflare, switch to Python requests
+- `1b85519` refine the Python requests approach
+
+Two full rewrites and five patches. That is why the session felt rough.
+
 ### What worked
 - Cloudflare ingestion: 7 days of analytics successfully ingested
 - GitHub Actions ingestion: workflow runs successfully ingested
-- Lighthouse notebook ran clean (no scores yet, expected -- needs Lighthouse CI in deploy workflow)
+- Lighthouse notebook ran clean (no scores yet -- needs Lighthouse CI in deploy workflow)
 - Outbound internet from Databricks Free Edition notebooks: confirmed working
 - Unity Catalog catalog/schema creation: worked first time
 
-### What went wrong
-- **`http_request()` SQL function corrupts JSON.** Spark SQL string literals interpret backslash escapes, mangling the `\"` sequences inside JSON payloads. Wasted significant time debugging. All notebooks rewritten to use Python `requests` instead.
-- **Widget defaults do not persist.** `dbutils.widgets.text("key", "default_value", "label")` ignores the default if the widget was previously created empty. Required manual input or `removeAll()` first.
-- **`DESCRIBE CONNECTION` does not expose bearer tokens.** Cannot programmatically read stored tokens from Unity Catalog connections, so the Python `requests` approach needs tokens via widgets.
-- **GSC service account JSON too long for widget.** The JSON string gets truncated by the widget text box character limit. Needs Databricks secrets or CLI instead.
+### What went wrong (symptoms)
+- **`http_request()` SQL function corrupts JSON.** Spark SQL string literals interpret backslash escapes, mangling the `\"` sequences inside JSON payloads.
+- **Widget defaults do not persist.** `dbutils.widgets.text("key", "default_value", "label")` ignores the default if the widget was previously created empty.
+- **`DESCRIBE CONNECTION` does not expose bearer tokens.** Cannot programmatically read stored tokens from Unity Catalog connections.
+- **GSC service account JSON too long for widget.** The JSON string gets truncated by the widget text box character limit.
 - **Databricks notebook sync friction.** Code changes pushed to GitHub were not reflected in Databricks. Had to manually copy/paste updated code into Databricks cells each time.
 
-### Lessons learned
+### Root causes (why it was avoidable)
+
+**1. Built 6 notebooks before testing 1.**
+All 6 ingestion notebooks were written in the first commit before confirming that `dbutils.secrets` or `http_request()` actually worked on Free Edition. When the platform behaved differently, all 6 had to be rewritten. Twice. Should have written 1 notebook (GitHub Actions, the simplest), tested it end-to-end in Databricks, confirmed the credential and HTTP patterns worked, THEN templated the other 5.
+
+**2. Assumed Databricks Free Edition = paid Databricks.**
+The code was written assuming standard Databricks features (secrets API, REST endpoints, `http_request()` SQL function behaving like a proper HTTP client). Free Edition has undocumented limitations that only surface at runtime. Should have run a 5-minute smoke test (create scope, store secret, make an HTTP call) before writing any production code. The PRD even had a "smoke test" section, but it was written after the notebooks, not before.
+
+**3. Tried to patch SQL escaping instead of pivoting immediately.**
+When `http_request()` mangled JSON, the response was 3 successive workaround attempts (single-line queries, double backslashes, etc.) before accepting that Spark SQL string escaping is fundamentally incompatible with embedded JSON payloads. Python `requests` was the obvious answer from the start. At the first sign of string escaping issues, should have pivoted immediately instead of layering workarounds on a broken abstraction.
+
+### The anti-pattern
+
+**"Write everything, then test"** instead of **"Test one thing, then scale."**
+
+This is the classic integration anti-pattern. When working with an unfamiliar platform, the correct approach is:
+
+1. **Spike:** build the smallest possible thing that touches all the integration points
+2. **Confirm:** verify it works in the actual target environment
+3. **Scale:** template the pattern across all use cases
+
+This session did steps 1-3 in reverse order: wrote all 6 notebooks (scale), discovered the platform was different (confirm failed), then rewrote everything twice (forced re-spike).
+
+### Process fix for next time
+
+When integrating with any unfamiliar platform or free tier:
+
+1. **Smoke test first, code second.** Before writing any production logic, run the smallest possible test that exercises the credential storage, HTTP call mechanism, and data write path. 5 minutes of testing saves hours of rewriting.
+2. **One notebook, fully tested, then clone.** Do not write 6 variations of untested code. Get one working end-to-end, then replicate the proven pattern.
+3. **Pivot on first failure, do not patch.** If an approach requires more than one workaround, it is the wrong approach. Switch to a fundamentally different method instead of layering fixes.
+4. **Document platform constraints before building on them.** The "Free Edition limitations" table in this PRD was filled in during debugging. It should have been filled in first, from the docs and a quick smoke test, before any notebook code was written.
+
+### Tactical lessons
 1. Always use Python `requests` for HTTP calls in Databricks notebooks -- avoid `http_request()` SQL function for anything beyond trivial GET requests
 2. Test widget defaults by running `dbutils.widgets.removeAll()` before first run
 3. For long credential strings (like service account JSON), use Databricks secrets, not widgets
