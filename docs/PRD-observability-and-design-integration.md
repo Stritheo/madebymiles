@@ -382,17 +382,19 @@ Tested on 2026-03-11. Results:
 | `dbutils.secrets.put` | Not available in notebooks | Cannot write secrets from notebooks at all |
 | Secrets REST API (`/api/2.0/secrets/put`) | 404 -- endpoint not found | REST API not available on Free Edition |
 | `dbutils.secrets.get` | Available (confirmed by Genie) | Can read secrets if they exist in a scope |
-| Outbound internet from notebooks | **Testing** | Waiting on result |
+| Outbound internet from notebooks | Works | `200 Stritheo/madebymiles` -- notebooks can reach GitHub, Cloudflare, Sentry APIs |
+| Unity Catalog connections (`CREATE CONNECTION TYPE HTTP`) | Works | Credentials stored securely, persist across sessions, usable by scheduled jobs |
 | Personal access tokens | **Not yet tested** | Check Settings > Developer |
 | MCP server | **Not yet tested** | Test after data is loaded |
 
-**Confirmed path: Widget-based input.** Notebooks use `dbutils.widgets.text()` to show text input boxes at the top of each notebook. You paste API keys each time you run. Keys are not stored -- this is manual but works for weekly runs.
+**Confirmed path: Unity Catalog connections.** This is the best outcome. Credentials are stored securely in Unity Catalog connections (one per API service). Notebooks use `http_request(conn => 'connection_name', ...)` to make authenticated API calls. Scheduled jobs run unattended -- no manual key pasting needed.
 
-**Scheduling limitation:** Since secrets cannot be stored, scheduled jobs cannot run unattended. Options:
-1. Run notebooks manually each week (paste keys, click Run All)
-2. Move data collection into GitHub Actions (automated, no key pasting) and push results to Databricks for dashboards only
+**One-time setup:** Run `setup_connections.py` notebook to create connections for GitHub, Cloudflare, Sentry, and Supabase. You paste tokens once during setup, then never again. GSC uses Google OAuth service accounts, which still needs a widget for the JSON key.
 
-If outbound internet is also blocked, we pivot entirely to GitHub Actions for data collection.
+**How it works:**
+1. `CREATE CONNECTION github_api TYPE HTTP OPTIONS (host = '...', bearer_token = '...')` -- stores the token
+2. `SELECT http_request(conn => 'github_api', method => 'GET', path => '/repos/...')` -- uses the stored token
+3. Scheduled jobs use the connection automatically -- no human interaction needed
 
 ---
 

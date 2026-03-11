@@ -1,35 +1,22 @@
 # Databricks notebook: Ingest Cloudflare Analytics data
 # Schedule: Daily
-# Secrets required: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID
+# Requires: Unity Catalog connection 'cloudflare_api' (run setup_connections.py first)
+# Also requires: CLOUDFLARE_ZONE_ID stored as a notebook widget (not secret, just config)
 
-import requests
+import json
 from datetime import datetime, timedelta
 
-# -- Helper: get secret with widget fallback for Free Edition --
-def get_secret(key, label=None):
-    """Try dbutils.secrets first. If unavailable, fall back to widget input."""
-    try:
-        return dbutils.secrets.get(scope="madebymiles", key=key)
-    except Exception:
-        if label is None:
-            label = key
-        dbutils.widgets.text(key, "", label)
-        val = dbutils.widgets.get(key)
-        if not val:
-            raise ValueError(f"Please provide {label} via the widget at the top of the notebook")
-        return val
-
 # -- Config --
-TOKEN = get_secret("CLOUDFLARE_API_TOKEN", "Cloudflare API Token")
-ZONE_ID = get_secret("CLOUDFLARE_ZONE_ID", "Cloudflare Zone ID")
-HEADERS = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
+dbutils.widgets.text("CLOUDFLARE_ZONE_ID", "", "Cloudflare Zone ID")
+ZONE_ID = dbutils.widgets.get("CLOUDFLARE_ZONE_ID")
+if not ZONE_ID:
+    raise ValueError("Please provide CLOUDFLARE_ZONE_ID via the widget at the top of the notebook")
 
 # -- Fetch zone analytics (last 7 days) --
 since = (datetime.utcnow() - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
 until = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 
-# GraphQL analytics query
-query = """
+query_body = json.dumps({"query": """
 query {
   viewer {
     zones(filter: {zoneTag: "%s"}) {
@@ -51,15 +38,18 @@ query {
     }
   }
 }
-""" % (ZONE_ID, since[:10], until[:10])
+""" % (ZONE_ID, since[:10], until[:10])})
 
-response = requests.post(
-    "https://api.cloudflare.com/client/v4/graphql",
-    headers=HEADERS,
-    json={"query": query}
+result = spark.sql(f"""
+SELECT http_request(
+  conn => 'cloudflare_api',
+  method => 'POST',
+  path => '/client/v4/graphql',
+  json => '{query_body.replace("'", "''")}'
 )
-response.raise_for_status()
-data = response.json()
+""").collect()[0][0]
+
+data = json.loads(result.text)
 
 rows = []
 zones = data.get("data", {}).get("viewer", {}).get("zones", [])

@@ -1,7 +1,9 @@
 # Databricks notebook: Ingest Google Search Console data
 # Schedule: Daily (GSC data has 2-3 day lag)
-# Secrets required: GSC_SERVICE_ACCOUNT_JSON
-# Pip install: google-api-python-client google-auth
+# Note: GSC uses OAuth service accounts, not bearer tokens.
+# This notebook uses direct requests with the service account JSON
+# because Unity Catalog HTTP connections only support bearer tokens.
+# The service account JSON is provided via a widget.
 
 # %pip install google-api-python-client google-auth
 
@@ -10,23 +12,13 @@ from googleapiclient.discovery import build
 from datetime import datetime, timedelta
 import json
 
-# -- Helper: get secret with widget fallback for Free Edition --
-def get_secret(key, label=None):
-    """Try dbutils.secrets first. If unavailable, fall back to widget input."""
-    try:
-        return dbutils.secrets.get(scope="madebymiles", key=key)
-    except Exception:
-        if label is None:
-            label = key
-        dbutils.widgets.text(key, "", label)
-        val = dbutils.widgets.get(key)
-        if not val:
-            raise ValueError(f"Please provide {label} via the widget at the top of the notebook")
-        return val
-
 # -- Config --
-SITE_URL = "sc-domain:madebymiles.ai"  # or "https://madebymiles.ai/"
-sa_json = get_secret("GSC_SERVICE_ACCOUNT_JSON", "GSC Service Account JSON")
+dbutils.widgets.text("GSC_SERVICE_ACCOUNT_JSON", "", "GSC Service Account JSON")
+sa_json = dbutils.widgets.get("GSC_SERVICE_ACCOUNT_JSON")
+if not sa_json:
+    raise ValueError("Please provide GSC_SERVICE_ACCOUNT_JSON via the widget at the top")
+
+SITE_URL = "sc-domain:madebymiles.ai"
 credentials = service_account.Credentials.from_service_account_info(
     json.loads(sa_json),
     scopes=["https://www.googleapis.com/auth/webmasters.readonly"]

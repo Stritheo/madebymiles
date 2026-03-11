@@ -1,40 +1,30 @@
 # Databricks notebook: Ingest GitHub Actions data
 # Schedule: Daily
-# Secrets required: GITHUB_TOKEN (personal access token with repo, actions:read)
+# Requires: Unity Catalog connection 'github_api' (run setup_connections.py first)
 
-import requests
 import json
 from datetime import datetime, timedelta
 
-# -- Helper: get secret with widget fallback for Free Edition --
-def get_secret(key, label=None):
-    """Try dbutils.secrets first. If unavailable, fall back to widget input."""
-    try:
-        return dbutils.secrets.get(scope="madebymiles", key=key)
-    except Exception:
-        if label is None:
-            label = key
-        dbutils.widgets.text(key, "", label)
-        val = dbutils.widgets.get(key)
-        if not val:
-            raise ValueError(f"Please provide {label} via the widget at the top of the notebook")
-        return val
-
 # -- Config --
 REPO = "Stritheo/madebymiles"
-TOKEN = get_secret("GITHUB_TOKEN", "GitHub Personal Access Token")
-HEADERS = {"Authorization": f"Bearer {TOKEN}", "Accept": "application/vnd.github+json"}
-BASE_URL = f"https://api.github.com/repos/{REPO}"
 
-# -- Fetch workflow runs (last 7 days) --
+# -- Fetch workflow runs via Unity Catalog connection --
 since = (datetime.utcnow() - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
-runs_url = f"{BASE_URL}/actions/runs?created=>={since}&per_page=100"
-response = requests.get(runs_url, headers=HEADERS)
-response.raise_for_status()
-runs_data = response.json()
+path = f"/repos/{REPO}/actions/runs?created=>={since}&per_page=100"
+
+result = spark.sql(f"""
+SELECT http_request(
+  conn => 'github_api',
+  method => 'GET',
+  path => '{path}',
+  headers => map('Accept', 'application/vnd.github+json')
+)
+""").collect()[0][0]
+
+response_data = json.loads(result.text)
 
 rows = []
-for run in runs_data.get("workflow_runs", []):
+for run in response_data.get("workflow_runs", []):
     rows.append({
         "run_id": run["id"],
         "name": run["name"],
