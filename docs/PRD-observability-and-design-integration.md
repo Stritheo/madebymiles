@@ -2,7 +2,7 @@
 
 **Project:** madebymiles.ai
 **Date:** 2026-03-10
-**Status:** Notebooks, workflow, and setup guide built. Databricks workspace created. Ready for local Penpot setup and Databricks configuration.
+**Status:** Ingestion notebooks working. Cloudflare and GitHub Actions confirmed ingesting. Ready to finish remaining sources, build dashboard, and schedule jobs.
 **Databricks workspace:** `https://dbc-0caa5555-b747.cloud.databricks.com` (mlfsowden@gmail.com)
 
 ---
@@ -387,14 +387,39 @@ Tested on 2026-03-11. Results:
 | Personal access tokens | **Not yet tested** | Check Settings > Developer |
 | MCP server | **Not yet tested** | Test after data is loaded |
 
-**Confirmed path: Unity Catalog connections.** This is the best outcome. Credentials are stored securely in Unity Catalog connections (one per API service). Notebooks use `http_request(conn => 'connection_name', ...)` to make authenticated API calls. Scheduled jobs run unattended -- no manual key pasting needed.
-
-**One-time setup:** Run `setup_connections.py` notebook to create connections for GitHub, Cloudflare, Sentry, and Supabase. You paste tokens once during setup, then never again. GSC uses Google OAuth service accounts, which still needs a widget for the JSON key.
+**Confirmed path: Python `requests` with widget-based tokens.** Unity Catalog connections work for storing tokens, but the `http_request()` SQL function corrupts JSON escaping for complex payloads (like Cloudflare GraphQL). All notebooks now use Python `requests` directly with tokens pasted into Databricks widgets.
 
 **How it works:**
-1. `CREATE CONNECTION github_api TYPE HTTP OPTIONS (host = '...', bearer_token = '...')` -- stores the token
-2. `SELECT http_request(conn => 'github_api', method => 'GET', path => '/repos/...')` -- uses the stored token
-3. Scheduled jobs use the connection automatically -- no human interaction needed
+1. Each notebook has `dbutils.widgets.text("TOKEN_NAME", "", "description")` at the top
+2. You paste the API token into the widget, then run the notebook
+3. Python `requests` makes the HTTP call directly -- no SQL string escaping issues
+4. For scheduled jobs, tokens will need to be stored in Databricks secrets or environment variables
+
+**Widget quirk discovered:** Databricks widgets ignore default values if the widget was previously created with an empty value. Fix: run `dbutils.widgets.removeAll()` before running the notebook, or manually type the default value into the widget.
+
+---
+
+## Retro: 2026-03-11 session
+
+### What worked
+- Cloudflare ingestion: 7 days of analytics successfully ingested
+- GitHub Actions ingestion: workflow runs successfully ingested
+- Lighthouse notebook ran clean (no scores yet, expected -- needs Lighthouse CI in deploy workflow)
+- Outbound internet from Databricks Free Edition notebooks: confirmed working
+- Unity Catalog catalog/schema creation: worked first time
+
+### What went wrong
+- **`http_request()` SQL function corrupts JSON.** Spark SQL string literals interpret backslash escapes, mangling the `\"` sequences inside JSON payloads. Wasted significant time debugging. All notebooks rewritten to use Python `requests` instead.
+- **Widget defaults do not persist.** `dbutils.widgets.text("key", "default_value", "label")` ignores the default if the widget was previously created empty. Required manual input or `removeAll()` first.
+- **`DESCRIBE CONNECTION` does not expose bearer tokens.** Cannot programmatically read stored tokens from Unity Catalog connections, so the Python `requests` approach needs tokens via widgets.
+- **GSC service account JSON too long for widget.** The JSON string gets truncated by the widget text box character limit. Needs Databricks secrets or CLI instead.
+- **Databricks notebook sync friction.** Code changes pushed to GitHub were not reflected in Databricks. Had to manually copy/paste updated code into Databricks cells each time.
+
+### Lessons learned
+1. Always use Python `requests` for HTTP calls in Databricks notebooks -- avoid `http_request()` SQL function for anything beyond trivial GET requests
+2. Test widget defaults by running `dbutils.widgets.removeAll()` before first run
+3. For long credential strings (like service account JSON), use Databricks secrets, not widgets
+4. Keep notebook code in a single cell where possible to avoid partial-update confusion
 
 ---
 
@@ -574,26 +599,53 @@ If MCP is not available on Free Edition, skip this step. Genie (in the browser) 
 
 ---
 
-## Order of operations
+## Tomorrow morning: finish in under 1 hour
 
-### Week 1
-1. **From work browser:** Open Databricks, create catalog/schema, smoke test secrets and outbound internet (Browser Session 1)
-2. **From work browser:** Generate API tokens from GitHub, Cloudflare, Sentry, Supabase (Browser Session 3) -- save in password manager
-3. **At home (Mac):** Pull branch, run `bash scripts/setup-penpot-mcp.sh`, verify Penpot (Mac Session 1)
-4. **At home (Mac) or work browser:** Import and run `ingest_github_actions.py` (Browser Session 2)
+### Pre-flight (2 mins)
+- Open Databricks workspace
+- Run `dbutils.widgets.removeAll()` in a scratch cell (clears stale widget defaults)
 
-### Week 2
-5. **From work browser:** Import and run Cloudflare, Sentry, Supabase, Lighthouse notebooks (Browser Session 4)
-6. **From work browser:** Try generating a Databricks personal access token (Mac Session 2 -- try browser first)
-7. **From work browser:** Add GitHub repo secrets (Browser Session 7)
+### Step 1: Finish Sentry ingestion (10 mins)
+- Create a Sentry auth token if you have not already: sentry.io > Settings > Auth Tokens
+- Paste the complete notebook code into a single Databricks cell
+- Fill in widgets: `SENTRY_ORG` = `stritheo`, `SENTRY_PROJECT` = `madebymiles`, `SENTRY_TOKEN` = your token
+- Run. Verify: `SELECT * FROM madebymiles.observability.sentry_issues LIMIT 5;`
 
-### Week 3
-8. **From work browser:** Set up Google Cloud service account for GSC (Browser Session 3, GSC row)
-9. **From work browser:** Build the AI/BI Dashboard (Browser Session 5)
-10. **From work browser:** Schedule notebooks, test Genie (Browser Session 6)
+### Step 2: Finish Supabase ingestion (10 mins)
+- Create a Supabase access token if you have not already: supabase.com > Account > Access Tokens
+- Paste the complete notebook code into a single Databricks cell
+- Fill in widgets: `SUPABASE_PROJECT_REF` = `wmjgvscktxawvfybxoue`, `SUPABASE_TOKEN` = your token
+- Run. Verify: `SELECT * FROM madebymiles.observability.supabase_health LIMIT 5;`
 
-### Week 4
-11. **From work browser:** Trigger weekly report, verify Discord output (Browser Session 8)
-12. **At home (Mac):** Connect Claude Code MCP (Mac Session 3)
-13. **From work browser or iPhone:** Remove `continue-on-error` after green pass
-14. **iPhone:** Bookmark dashboard on iOS Safari home screen
+### Step 3: GSC ingestion (15 mins)
+- GSC needs a Google Cloud service account JSON key, which is too long for a widget
+- Option A (recommended): Set up Databricks CLI and store via `databricks secrets put-secret madebymiles gsc-sa-json`
+- Option B: Skip GSC for now -- it is the least critical source. Come back when Databricks CLI is set up.
+- If you do not have a Google Cloud service account yet:
+  1. console.cloud.google.com > Create project or use existing
+  2. Enable Search Console API
+  3. Create service account > download JSON key
+  4. In Google Search Console, add the service account email as a property owner for madebymiles.ai
+
+### Step 4: Build the dashboard (20 mins)
+- Go to SQL > Dashboards > Create Dashboard
+- Name: `madebymiles.ai Observability`
+- Add panels using SQL queries against your tables (schemas documented below in this PRD)
+- Start with 2 tabs that have data now:
+  - **Deployment tab:** GitHub Actions pass/fail rate, deploy frequency
+  - **Traffic tab:** Cloudflare unique visitors, page views, cache hit rate, threats
+- Add Sentry and Supabase panels as those tables come online
+- Click Publish
+
+### Step 5: Test Genie (5 mins)
+- Open the published dashboard
+- Click the Genie icon
+- Ask: "How many deploys succeeded this week?" or "What is the cache hit rate trend?"
+
+### Parking lot (do later, not tomorrow)
+- Schedule daily ingestion job in Databricks Workflows
+- Generate Databricks personal access token for GitHub Actions
+- Set up weekly GenAI report workflow
+- Connect Databricks MCP to Claude Code
+- GSC ingestion (if skipped above)
+- Add Lighthouse CI step to deploy workflow so lighthouse_scores table populates
