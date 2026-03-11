@@ -50,11 +50,11 @@ export async function callClaude(
     },
     body: JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 2048,
+      max_tokens: 4096,
       system: systemPrompt,
       messages: [{ role: 'user', content: `Role description:\n\n${roleText}` }],
     }),
-    signal: AbortSignal.timeout(30_000),
+    signal: AbortSignal.timeout(45_000),
   });
 
   if (!response.ok) {
@@ -64,7 +64,13 @@ export async function callClaude(
 
   const data = (await response.json()) as {
     content: { type: string; text: string }[];
+    stop_reason?: string;
   };
+
+  // Detect truncation before attempting parse
+  if (data.stop_reason === 'max_tokens') {
+    throw new Error('Response was truncated. Try a shorter role description.');
+  }
 
   const textBlock = data.content.find((b) => b.type === 'text');
   if (!textBlock) throw new Error('No text in Claude response');
@@ -75,7 +81,13 @@ export async function callClaude(
     jsonText = jsonText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
   }
 
-  const parsed = JSON.parse(jsonText) as ClaudeCompactResponse;
+  let parsed: ClaudeCompactResponse;
+  try {
+    parsed = JSON.parse(jsonText) as ClaudeCompactResponse;
+  } catch (parseErr) {
+    // Provide a user-friendly error instead of raw JSON parse details
+    throw new Error('Could not parse analysis results. Please try again with a different role description.');
+  }
 
   // Validate structure
   if (!Array.isArray(parsed.skillMatrix) || parsed.skillMatrix.length !== 10) {
