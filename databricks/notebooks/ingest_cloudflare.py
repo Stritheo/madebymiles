@@ -4,7 +4,7 @@
 # Also requires: CLOUDFLARE_ZONE_ID stored as a notebook widget (not secret, just config)
 
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 # -- Config --
 dbutils.widgets.text("CLOUDFLARE_ZONE_ID", "fd6f6b524d5d40110ebb65d504ae827b", "Cloudflare Zone ID")
@@ -13,8 +13,8 @@ if not ZONE_ID:
     raise ValueError("Please provide CLOUDFLARE_ZONE_ID via the widget at the top of the notebook")
 
 # -- Fetch zone analytics (last 7 days) --
-since = (datetime.utcnow() - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
-until = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+since = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
+until = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 query_body = json.dumps({"query": """
 query {
@@ -51,8 +51,19 @@ SELECT http_request(
 
 data = json.loads(result.text)
 
+# Surface API errors before processing
+if data.get("errors"):
+    for err in data["errors"]:
+        print(f"Cloudflare API error: {err.get('message', err)}")
+    raise RuntimeError("Cloudflare GraphQL returned errors (check your API token permissions)")
+
+viewer = (data.get("data") or {}).get("viewer")
+if viewer is None:
+    print(f"Full API response: {json.dumps(data, indent=2)[:500]}")
+    raise RuntimeError("Cloudflare returned viewer=null. The API token likely lacks analytics read permission for this zone.")
+
 rows = []
-zones = data.get("data", {}).get("viewer", {}).get("zones", [])
+zones = viewer.get("zones", [])
 for zone in zones:
     for group in zone.get("httpRequests1dGroups", []):
         s = group["sum"]
