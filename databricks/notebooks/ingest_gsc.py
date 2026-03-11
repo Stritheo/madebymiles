@@ -13,10 +13,23 @@ from datetime import datetime, timedelta
 import json
 
 # -- Config --
-dbutils.widgets.text("GSC_SERVICE_ACCOUNT_JSON", "", "GSC Service Account JSON")
-sa_json = dbutils.widgets.get("GSC_SERVICE_ACCOUNT_JSON")
+# Option 1: Store the GSC service account JSON as a Databricks Secret (recommended)
+#   databricks secrets create-scope madebymiles
+#   databricks secrets put-secret madebymiles gsc-sa-json --string-value '{"type":"service_account",...}'
+# Option 2: Paste JSON into the widget text box at the top of the notebook
+try:
+    sa_json = dbutils.secrets.get(scope="madebymiles", key="gsc-sa-json")
+except Exception:
+    dbutils.widgets.text("GSC_SERVICE_ACCOUNT_JSON", "", "GSC Service Account JSON (paste full JSON)")
+    sa_json = dbutils.widgets.get("GSC_SERVICE_ACCOUNT_JSON")
+
 if not sa_json:
-    raise ValueError("Please provide GSC_SERVICE_ACCOUNT_JSON via the widget at the top")
+    raise ValueError(
+        "Please either:\n"
+        "  1. Store the service account JSON as a Databricks secret: "
+        "scope='madebymiles', key='gsc-sa-json'\n"
+        "  2. Paste the JSON into the widget at the top of this notebook"
+    )
 
 SITE_URL = "sc-domain:madebymiles.ai"
 credentials = service_account.Credentials.from_service_account_info(

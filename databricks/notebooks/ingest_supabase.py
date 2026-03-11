@@ -6,7 +6,7 @@ import json
 from datetime import datetime
 
 # -- Config --
-dbutils.widgets.text("SUPABASE_PROJECT_REF", "", "Supabase Project Ref")
+dbutils.widgets.text("SUPABASE_PROJECT_REF", "wmjgvscktxawvfybxoue", "Supabase Project Ref")
 PROJECT_REF = dbutils.widgets.get("SUPABASE_PROJECT_REF")
 if not PROJECT_REF:
     raise ValueError("Please provide SUPABASE_PROJECT_REF via the widget at the top")

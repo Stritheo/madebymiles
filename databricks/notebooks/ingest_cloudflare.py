@@ -7,7 +7,7 @@ import json
 from datetime import datetime, timedelta
 
 # -- Config --
-dbutils.widgets.text("CLOUDFLARE_ZONE_ID", "", "Cloudflare Zone ID")
+dbutils.widgets.text("CLOUDFLARE_ZONE_ID", "fd6f6b524d5d40110ebb65d504ae827b", "Cloudflare Zone ID")
 ZONE_ID = dbutils.widgets.get("CLOUDFLARE_ZONE_ID")
 if not ZONE_ID:
     raise ValueError("Please provide CLOUDFLARE_ZONE_ID via the widget at the top of the notebook")
