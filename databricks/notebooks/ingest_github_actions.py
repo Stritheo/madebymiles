@@ -42,6 +42,6 @@ for run in response_data.get("workflow_runs", []):
 
 # -- Write to Unity Catalog table --
 df = spark.createDataFrame(rows)
-df.write.mode("overwrite").saveAsTable("madebymiles.observability.github_actions_runs")
+df.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("madebymiles.observability.github_actions_runs")
 
 print(f"Ingested {len(rows)} workflow runs")
