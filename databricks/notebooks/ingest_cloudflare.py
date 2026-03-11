@@ -16,36 +16,23 @@ if not ZONE_ID:
 since = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
 until = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-query_body = json.dumps({"query": """
-query {
-  viewer {
-    zones(filter: {zoneTag: "%s"}) {
-      httpRequests1dGroups(
-        limit: 7,
-        filter: {date_geq: "%s", date_lt: "%s"}
-      ) {
-        dimensions { date }
-        sum {
-          requests
-          cachedRequests
-          bytes
-          cachedBytes
-          threats
-          pageViews
-        }
-        uniq { uniques }
-      }
-    }
-  }
-}
-""" % (ZONE_ID, since[:10], until[:10])})
+gql_query = (
+    'query { viewer { zones(filter: {zoneTag: "%s"}) { '
+    'httpRequests1dGroups(limit: 7, filter: {date_geq: "%s", date_lt: "%s"}) { '
+    'dimensions { date } '
+    'sum { requests cachedRequests bytes cachedBytes threats pageViews } '
+    'uniq { uniques } } } } }'
+) % (ZONE_ID, since[:10], until[:10])
+
+query_body = json.dumps({"query": gql_query})
+sql_safe_body = query_body.replace("'", "''")
 
 result = spark.sql(f"""
 SELECT http_request(
   conn => 'cloudflare_api',
   method => 'POST',
   path => '/client/v4/graphql',
-  json => '{query_body.replace("'", "''")}'
+  json => '{sql_safe_body}'
 )
 """).collect()[0][0]
 
