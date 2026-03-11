@@ -6,8 +6,8 @@ import json
 from datetime import datetime
 
 # -- Config --
-dbutils.widgets.text("SENTRY_ORG", "", "Sentry Org Slug")
-dbutils.widgets.text("SENTRY_PROJECT", "", "Sentry Project Slug")
+dbutils.widgets.text("SENTRY_ORG", "stritheo", "Sentry Org Slug")
+dbutils.widgets.text("SENTRY_PROJECT", "madebymiles", "Sentry Project Slug")
 ORG = dbutils.widgets.get("SENTRY_ORG")
 PROJECT = dbutils.widgets.get("SENTRY_PROJECT")
 if not ORG or not PROJECT:
