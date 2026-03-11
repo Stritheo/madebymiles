@@ -1,16 +1,22 @@
 # Databricks notebook: Ingest Cloudflare Analytics data
 # Schedule: Daily
-# Requires: Unity Catalog connection 'cloudflare_api' (run setup_connections.py first)
-# Also requires: CLOUDFLARE_ZONE_ID stored as a notebook widget (not secret, just config)
+# Paste your Cloudflare API token into the CLOUDFLARE_API_TOKEN widget at the top
 
 import json
+import requests
 from datetime import datetime, timedelta, timezone
 
 # -- Config --
 dbutils.widgets.text("CLOUDFLARE_ZONE_ID", "fd6f6b524d5d40110ebb65d504ae827b", "Cloudflare Zone ID")
+dbutils.widgets.text("CLOUDFLARE_API_TOKEN", "", "Cloudflare API Token")
+
 ZONE_ID = dbutils.widgets.get("CLOUDFLARE_ZONE_ID")
+TOKEN = dbutils.widgets.get("CLOUDFLARE_API_TOKEN")
+
 if not ZONE_ID:
     raise ValueError("Please provide CLOUDFLARE_ZONE_ID via the widget at the top of the notebook")
+if not TOKEN:
+    raise ValueError("Please paste your Cloudflare API token into the CLOUDFLARE_API_TOKEN widget at the top of the notebook")
 
 # -- Fetch zone analytics (last 7 days) --
 since = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -24,20 +30,17 @@ gql_query = (
     'uniq { uniques } } } } }'
 ) % (ZONE_ID, since[:10], until[:10])
 
-query_body = json.dumps({"query": gql_query})
-# Double backslashes so Spark SQL doesn't interpret \" as escape sequences
-sql_safe_body = query_body.replace("\\", "\\\\").replace("'", "''")
-
-result = spark.sql(f"""
-SELECT http_request(
-  conn => 'cloudflare_api',
-  method => 'POST',
-  path => '/client/v4/graphql',
-  json => '{sql_safe_body}'
+resp = requests.post(
+    "https://api.cloudflare.com/client/v4/graphql",
+    headers={
+        "Authorization": f"Bearer {TOKEN}",
+        "Content-Type": "application/json",
+    },
+    json={"query": gql_query},
+    timeout=30,
 )
-""").collect()[0][0]
-
-data = json.loads(result.text)
+resp.raise_for_status()
+data = resp.json()
 
 # Surface API errors before processing
 if data.get("errors"):
