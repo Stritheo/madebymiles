@@ -374,18 +374,25 @@ Data Sources
 
 ## Important: Free Edition limitations
 
-Research indicates these limitations on Databricks Free Edition that affect our plan:
+Tested on 2026-03-11. Results:
 
-| Feature | Status on Free Edition | Impact |
+| Feature | Status on Free Edition | Test result |
 |---|---|---|
-| `dbutils.secrets` | Likely unavailable (requires Premium) | Notebooks must use widget-based input instead |
-| Personal access tokens | May not be available | Weekly report workflow may need OAuth or alternative auth |
-| Outbound internet from notebooks | Restricted to trusted domains | API calls to GitHub/Cloudflare/Sentry may be blocked |
-| MCP server | Unconfirmed on Free Edition | May need Genie-only fallback |
+| `dbutils.secrets.createScope` | Not available in notebooks | Scope must be created via UI: `workspace-url#secrets/createScope` (this worked) |
+| `dbutils.secrets.put` | Not available in notebooks | Cannot write secrets from notebooks at all |
+| Secrets REST API (`/api/2.0/secrets/put`) | 404 -- endpoint not found | REST API not available on Free Edition |
+| `dbutils.secrets.get` | Available (confirmed by Genie) | Can read secrets if they exist in a scope |
+| Outbound internet from notebooks | **Testing** | Waiting on result |
+| Personal access tokens | **Not yet tested** | Check Settings > Developer |
+| MCP server | **Not yet tested** | Test after data is loaded |
 
-**You need to test these on Day 1.** The notebooks have been updated with a fallback: if `dbutils.secrets` fails, they use Databricks widgets (text input boxes at the top of each notebook) so you can paste API keys directly when you run them. The keys are not stored permanently in this mode -- you paste them each time you run the notebook.
+**Confirmed path: Widget-based input.** Notebooks use `dbutils.widgets.text()` to show text input boxes at the top of each notebook. You paste API keys each time you run. Keys are not stored -- this is manual but works for weekly runs.
 
-If outbound internet is blocked, we fall back to **GitHub Actions doing all the data collection** and pushing results to Databricks via the REST API (or skip Databricks entirely and go dashboard-in-Discord).
+**Scheduling limitation:** Since secrets cannot be stored, scheduled jobs cannot run unattended. Options:
+1. Run notebooks manually each week (paste keys, click Run All)
+2. Move data collection into GitHub Actions (automated, no key pasting) and push results to Databricks for dashboards only
+
+If outbound internet is also blocked, we pivot entirely to GitHub Actions for data collection.
 
 ---
 
