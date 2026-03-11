@@ -50,11 +50,16 @@ Insurance Executive, Growth and Transformation
   for (const entry of sorted) {
     text += `### ${entry.data.company}\n`;
     text += `${entry.data.role}\n`;
-    text += `${entry.data.summary}\n`;
-    text += `Read more: https://madebymiles.ai/work/${entry.id.replace(/\.md$/, '')}\n\n`;
+    text += `${entry.data.summary}\n\n`;
   }
 
-  text += `## More information
+  text += `## Fit Finder
+
+Upload a role description to see how this profile maps to a specific role. The Fit Finder evaluates all 10 AICD skill areas, selects the most relevant case studies, and produces a structured fit assessment.
+
+Try it: https://madebymiles.ai/fit
+
+## More information
 - Full content: https://madebymiles.ai/llms-full.txt
 - Experience page: https://madebymiles.ai/experience
 - Contact: https://madebymiles.ai/contact

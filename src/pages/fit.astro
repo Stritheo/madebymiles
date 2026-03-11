@@ -1,6 +1,5 @@
 ---
 import Base from '@/layouts/Base.astro';
-import CTA from '@/components/CTA.astro';
 ---
 
 <Base
@@ -69,7 +68,7 @@ import CTA from '@/components/CTA.astro';
       <div id="state-loading" class="hidden" aria-live="polite">
         <div class="flex flex-col items-center justify-center py-20">
           <p class="text-xl text-text-primary font-medium mb-2">Analysing role fit...</p>
-          <p class="text-base text-text-secondary mb-6">This usually takes 10 to 15 seconds</p>
+          <p class="text-base text-text-secondary mb-6">This usually takes 15 to 25 seconds</p>
           <div class="w-full max-w-[400px] h-1.5 bg-border-light rounded-full overflow-hidden">
             <div id="progress-bar" class="h-full bg-text-accent rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
           </div>
@@ -93,47 +92,98 @@ import CTA from '@/components/CTA.astro';
 
       <!-- State: Results -->
       <div id="state-results" class="hidden">
-        <!-- Summary -->
+        <!-- Tier 1: Summary -->
         <div id="result-summary" class="p-8 bg-bg-card border-t-[3px] border-text-accent mb-8">
           <p id="result-role-title" class="text-sm text-text-secondary uppercase tracking-wider mb-2 hidden"></p>
-          <p id="result-summary-text" class="text-xl text-text-primary leading-relaxed"></p>
+          <p id="result-summary-text" class="text-lg text-text-primary leading-relaxed"></p>
         </div>
 
-        <!-- Visible matches (top skillset + top mindset) -->
+        <!-- Tier 1: Top match cards (visible) -->
         <div id="matches-visible" class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8"></div>
 
-        <!-- Unlock CTA + Blurred matches -->
-        <div id="matches-locked" class="mb-8">
-          <div id="unlock-cta" class="flex flex-col items-center py-8 mb-8 border border-border-light rounded-lg bg-bg-card">
-            <p class="text-lg text-text-primary font-medium mb-2">Want the full picture?</p>
-            <p class="text-base text-text-secondary mb-6">Send Miles a quick intro on LinkedIn first.</p>
-            <button
-              id="linkedin-unlock-btn"
+        <!-- Unlock Gate -->
+        <div id="unlock-gate" class="mb-8">
+          <div id="unlock-cta" class="flex flex-col items-center py-10 mb-8 border border-border-light rounded-lg bg-bg-card">
+            <p class="text-lg text-text-primary leading-relaxed mb-2 max-w-[560px] text-center">
+              The full evaluation and matched case studies are shared in conversation. The depth is there. It belongs in a discussion, not on a screen.
+            </p>
+            <div id="unlock-buttons" class="flex flex-wrap gap-4 mt-6">
+              <button
+                id="linkedin-unlock-btn"
+                class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-8 py-3.5 text-base bg-bg-dark text-white border-[1.5px] border-bg-dark hover:bg-[#151A26] hover:border-[#151A26] hover:-translate-y-px"
+              >
+                Connect on LinkedIn
+              </button>
+              <a
+                id="whatsapp-btn"
+                href="https://wa.me/61414185721?text=I%20ran%20the%20Fit%20Finder%20and%20would%20welcome%20a%20conversation."
+                target="_blank"
+                rel="noopener"
+                class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-8 py-3.5 text-base bg-transparent text-text-primary border-[1.5px] border-border-light hover:border-[#D4D4D4] hover:bg-bg-card"
+              >
+                Open WhatsApp
+              </a>
+            </div>
+            <!-- Post-connect choice (hidden until LinkedIn/WhatsApp clicked) -->
+            <div id="unlock-choice" class="hidden mt-6">
+              <p class="text-base text-text-secondary mb-4 text-center">I've connected. Show me:</p>
+              <div class="flex flex-wrap gap-4 justify-center">
+                <button
+                  id="show-matrix-btn"
+                  class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-6 py-3 text-base bg-bg-dark text-white border-[1.5px] border-bg-dark hover:bg-[#151A26]"
+                >
+                  The full skill evaluation
+                </button>
+                <button
+                  id="show-cases-btn"
+                  class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-6 py-3 text-base bg-transparent text-text-primary border-[1.5px] border-border-light hover:border-[#D4D4D4] hover:bg-bg-card"
+                >
+                  The matched case studies
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tier 2: AICD Skill Matrix -->
+        <div id="skill-matrix-section" class="mb-8">
+          <h2 class="font-display text-2xl text-text-primary mb-6">AICD Skill Matrix Evaluation</h2>
+          <div id="skill-matrix" class="space-y-6"></div>
+          <button id="also-matrix-btn" class="hidden text-sm text-text-accent hover:underline mt-4">
+            Also available: full skill evaluation
+          </button>
+        </div>
+
+        <!-- Tier 3: Matched Case Studies -->
+        <div id="case-studies-section" class="mb-8">
+          <h2 class="font-display text-2xl text-text-primary mb-6">Matched Case Studies</h2>
+          <div id="case-studies" class="space-y-6"></div>
+          <button id="also-cases-btn" class="hidden text-sm text-text-accent hover:underline mt-4">
+            Also available: matched case studies
+          </button>
+        </div>
+
+        <!-- Post-unlock footer -->
+        <div class="flex flex-col items-center py-8 mb-8">
+          <p class="text-lg text-text-primary mb-6">Good outcomes start with good conversations.</p>
+          <div class="flex flex-wrap gap-4">
+            <a
+              href="https://www.linkedin.com/in/milessowden"
+              target="_blank"
+              rel="noopener"
               class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-8 py-3.5 text-base bg-bg-dark text-white border-[1.5px] border-bg-dark hover:bg-[#151A26] hover:border-[#151A26] hover:-translate-y-px"
             >
               Connect on LinkedIn
-            </button>
-            <button
-              id="confirm-unlock-btn"
-              class="hidden inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-8 py-3.5 text-base bg-transparent text-text-primary border-[1.5px] border-border-light hover:border-[#D4D4D4] hover:bg-bg-card"
+            </a>
+            <a
+              href="https://wa.me/61414185721?text=Hi%20Miles%2C%20I%20used%20Fit%20Finder%20and%20would%20like%20to%20connect."
+              target="_blank"
+              rel="noopener"
+              class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-8 py-3.5 text-base bg-transparent text-text-primary border-[1.5px] border-border-light hover:border-[#D4D4D4] hover:bg-bg-card"
             >
-              I've sent my intro - show full results
-            </button>
+              Open WhatsApp
+            </a>
           </div>
-          <div id="blurred-matches" class="grid grid-cols-1 md:grid-cols-2 gap-8 blur-md select-none pointer-events-none transition-all duration-500"></div>
-        </div>
-
-        <!-- Unlocked matches (shown after honour system) -->
-        <div id="matches-unlocked" class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 hidden"></div>
-
-        <!-- CTAs -->
-        <div class="flex flex-wrap gap-4 mb-8">
-          <CTA href="https://www.linkedin.com/in/milessowden" size="sm">
-            Connect on LinkedIn
-          </CTA>
-          <CTA href="https://wa.me/61414185721?text=Hi%20Miles%2C%20I%20used%20Fit%20Finder%20and%20would%20like%20to%20connect." size="sm" variant="secondary">
-            Open WhatsApp
-          </CTA>
         </div>
 
         <!-- Share link -->
@@ -169,11 +219,18 @@ import CTA from '@/components/CTA.astro';
   const resultRoleTitle = document.getElementById('result-role-title')!;
   const resultSummary = document.getElementById('result-summary-text')!;
   const matchesVisible = document.getElementById('matches-visible')!;
-  const matchesLocked = document.getElementById('matches-locked')!;
-  const blurredMatches = document.getElementById('blurred-matches')!;
-  const matchesUnlocked = document.getElementById('matches-unlocked')!;
+  const unlockGate = document.getElementById('unlock-gate')!;
+  const unlockButtons = document.getElementById('unlock-buttons')!;
+  const unlockChoice = document.getElementById('unlock-choice')!;
   const linkedinUnlockBtn = document.getElementById('linkedin-unlock-btn')!;
-  const confirmUnlockBtn = document.getElementById('confirm-unlock-btn')!;
+  const showMatrixBtn = document.getElementById('show-matrix-btn')!;
+  const showCasesBtn = document.getElementById('show-cases-btn')!;
+  const skillMatrixSection = document.getElementById('skill-matrix-section')!;
+  const skillMatrixContainer = document.getElementById('skill-matrix')!;
+  const caseStudiesSection = document.getElementById('case-studies-section')!;
+  const caseStudiesContainer = document.getElementById('case-studies')!;
+  const alsoMatrixBtn = document.getElementById('also-matrix-btn')!;
+  const alsoCasesBtn = document.getElementById('also-cases-btn')!;
   const shareBtn = document.getElementById('share-btn')!;
   const shareConfirmation = document.getElementById('share-confirmation')!;
   const charHint = document.getElementById('char-hint')!;
@@ -191,8 +248,7 @@ import CTA from '@/components/CTA.astro';
     progressBar.style.width = '0%';
     progressPercent.textContent = '0%';
     progressInterval = setInterval(() => {
-      // Ease toward 90% over ~15 seconds, never reaching 100
-      progress += (90 - progress) * 0.04;
+      progress += (90 - progress) * 0.025;
       const rounded = Math.min(Math.round(progress), 90);
       progressBar.style.width = `${rounded}%`;
       progressPercent.textContent = `${rounded}%`;
@@ -209,6 +265,37 @@ import CTA from '@/components/CTA.astro';
   const urlToken = new URLSearchParams(window.location.search).get('token');
   if (urlToken) {
     loadSharedResult(urlToken);
+  }
+
+  // --- Interfaces ---
+
+  interface SkillMatrixEntry {
+    aicdDomain: string;
+    skillArea: string;
+    relevance: 'primary' | 'supporting' | 'noted';
+    matchReason: string;
+    evidence: string;
+    evidenceQualitative: string;
+    confidence: 'high' | 'medium' | 'low';
+  }
+
+  interface CaseStudyMatch {
+    company: string;
+    role: string;
+    descriptor: string;
+    relevanceReason: string;
+    fullContent: string;
+  }
+
+  // Legacy format for backwards compatibility
+  interface LegacyMatch {
+    rank: number;
+    category: 'skillset' | 'mindset';
+    aicdDomain: string;
+    skillArea: string;
+    matchReason: string;
+    evidence: string;
+    confidence: 'high' | 'medium' | 'low';
   }
 
   // --- Event listeners ---
@@ -254,16 +341,49 @@ import CTA from '@/components/CTA.astro';
     showState('upload');
   });
 
-  // Unlock (two-step LinkedIn flow)
+  // Unlock flow
   linkedinUnlockBtn.addEventListener('click', () => {
     window.open('https://www.linkedin.com/messaging/compose/?recipient=milessowden', '_blank');
-    linkedinUnlockBtn.classList.add('hidden');
-    confirmUnlockBtn.classList.remove('hidden');
+    unlockButtons.classList.add('hidden');
+    unlockChoice.classList.remove('hidden');
   });
 
-  confirmUnlockBtn.addEventListener('click', () => {
-    matchesLocked.classList.add('hidden');
-    matchesUnlocked.classList.remove('hidden');
+  // WhatsApp click also shows choice
+  document.getElementById('whatsapp-btn')!.addEventListener('click', () => {
+    setTimeout(() => {
+      unlockButtons.classList.add('hidden');
+      unlockChoice.classList.remove('hidden');
+    }, 500);
+  });
+
+  showMatrixBtn.addEventListener('click', () => {
+    unblurSection('skill-matrix-section');
+    alsoMatrixBtn.classList.add('hidden');
+    alsoCasesBtn.classList.remove('hidden');
+    unlockGate.classList.add('hidden');
+    skillMatrixSection.scrollIntoView({ behavior: 'smooth' });
+  });
+
+  showCasesBtn.addEventListener('click', () => {
+    unblurSection('case-studies-section');
+    alsoCasesBtn.classList.add('hidden');
+    alsoMatrixBtn.classList.remove('hidden');
+    unlockGate.classList.add('hidden');
+    caseStudiesSection.scrollIntoView({ behavior: 'smooth' });
+  });
+
+  alsoMatrixBtn.addEventListener('click', () => {
+    unblurSection('skill-matrix-section');
+    alsoMatrixBtn.classList.add('hidden');
+    // Also swap evidence from qualitative to full
+    swapEvidence('skill-matrix-section');
+    skillMatrixSection.scrollIntoView({ behavior: 'smooth' });
+  });
+
+  alsoCasesBtn.addEventListener('click', () => {
+    unblurSection('case-studies-section');
+    alsoCasesBtn.classList.add('hidden');
+    caseStudiesSection.scrollIntoView({ behavior: 'smooth' });
   });
 
   // Share
@@ -300,14 +420,12 @@ import CTA from '@/components/CTA.astro';
     const trimmedLength = textInput.value.trim().length;
     const hasText = trimmedLength >= 100;
     analyseBtn.disabled = !hasFile && !hasText;
-    // Show character count hint while typing (but not enough yet)
     if (trimmedLength > 0 && trimmedLength < 100 && !hasFile) {
       charCount.textContent = String(trimmedLength);
       charHint.classList.remove('hidden');
     } else {
       charHint.classList.add('hidden');
     }
-    // Clear file if text is entered
     if (trimmedLength > 0) {
       selectedFile = null;
       fileName.classList.add('hidden');
@@ -341,15 +459,17 @@ import CTA from '@/components/CTA.astro';
         throw new Error(err.error ?? `Request failed (${response.status})`);
       }
 
-      const data = await response.json() as {
-        matches: Match[];
-        roleTitle: string | null;
-        summary: string;
-        token: string;
-      };
+      const data = await response.json();
 
       finishProgress();
-      renderResults(data.matches, data.roleTitle, data.summary, data.token, false);
+
+      // Handle new format
+      if ('skillMatrix' in data) {
+        renderResults(data, false);
+      } else if ('matches' in data) {
+        // Legacy format
+        renderLegacyResults(data.matches, data.roleTitle, data.summary, data.token, false);
+      }
     } catch (err) {
       finishProgress();
       showError(err instanceof Error ? err.message : 'Analysis failed. Please try again.');
@@ -366,32 +486,192 @@ import CTA from '@/components/CTA.astro';
         throw new Error('This result link has expired or is invalid.');
       }
 
-      const data = await response.json() as {
-        matches: Match[];
-        roleTitle: string | null;
-        summary: string;
-      };
+      const data = await response.json();
 
       finishProgress();
-      renderResults(data.matches, data.roleTitle, data.summary, token, true);
+
+      // Handle both formats for backwards compatibility
+      if ('skillMatrix' in data) {
+        renderResults({ ...data, token }, true);
+      } else if ('matches' in data) {
+        renderLegacyResults(data.matches, data.roleTitle, data.summary, token, true);
+      }
     } catch (err) {
       finishProgress();
       showError(err instanceof Error ? err.message : 'Could not load shared result.');
     }
   }
 
-  interface Match {
-    rank: number;
-    category: 'skillset' | 'mindset';
-    aicdDomain: string;
-    skillArea: string;
-    matchReason: string;
-    evidence: string;
-    confidence: 'high' | 'medium' | 'low';
+  function renderResults(
+    data: {
+      skillMatrix: SkillMatrixEntry[];
+      topMatches: { skillset: string; mindset: string };
+      roleTitle: string | null;
+      summary: string;
+      relevantCaseStudies: CaseStudyMatch[];
+      token: string;
+    },
+    isShared: boolean,
+  ) {
+    currentToken = data.token;
+
+    // Summary
+    if (data.roleTitle) {
+      resultRoleTitle.textContent = data.roleTitle;
+      resultRoleTitle.classList.remove('hidden');
+    }
+    resultSummary.textContent = data.summary;
+
+    // Top match cards (Tier 1)
+    const topSkillset = data.skillMatrix.find(e => e.skillArea === data.topMatches.skillset);
+    const topMindset = data.skillMatrix.find(e => e.skillArea === data.topMatches.mindset);
+    const topCards = [topSkillset, topMindset].filter(Boolean) as SkillMatrixEntry[];
+    matchesVisible.innerHTML = topCards.map((entry, i) =>
+      renderTopMatchCard(entry, i === 0 ? 'Skillset' : 'Mindset')
+    ).join('');
+
+    // Skill matrix (Tier 2)
+    renderSkillMatrix(data.skillMatrix, data.topMatches, !isShared);
+
+    // Case studies (Tier 3)
+    caseStudiesContainer.innerHTML = data.relevantCaseStudies
+      .map(cs => renderCaseStudyCard(cs, !isShared))
+      .join('');
+
+    if (isShared) {
+      // Shared view: everything visible, no gate
+      unlockGate.classList.add('hidden');
+      alsoMatrixBtn.classList.add('hidden');
+      alsoCasesBtn.classList.add('hidden');
+    } else {
+      // Normal view: gate visible, tiers blurred
+      unlockGate.classList.remove('hidden');
+    }
+
+    showState('results');
   }
 
-  function renderResults(
-    matches: Match[],
+  function renderTopMatchCard(entry: SkillMatrixEntry, categoryLabel: string): string {
+    const confidenceClass = entry.confidence === 'high'
+      ? 'bg-text-accent text-white'
+      : entry.confidence === 'medium'
+        ? 'bg-bg-dark text-white'
+        : 'bg-border-light text-text-primary';
+
+    return `
+      <div class="p-8 bg-bg-card border-t-[3px] border-text-accent">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-sm text-text-secondary uppercase tracking-wider">${entry.aicdDomain}</span>
+          <span class="text-xs font-medium px-3 py-1 rounded ${confidenceClass}">${entry.confidence}</span>
+        </div>
+        <p class="text-xs text-text-accent uppercase tracking-wider font-medium mb-1">${categoryLabel} match</p>
+        <h3 class="font-display text-xl text-text-primary mb-4">${entry.skillArea}</h3>
+        <p class="text-base text-text-secondary mb-4"><strong class="text-text-primary">Why this matches:</strong> ${entry.matchReason}</p>
+        <p class="text-base text-text-secondary"><strong class="text-text-primary">Evidence:</strong> ${entry.evidenceQualitative}</p>
+      </div>
+    `;
+  }
+
+  function renderSkillMatrix(
+    matrix: SkillMatrixEntry[],
+    topMatches: { skillset: string; mindset: string },
+    blurred: boolean,
+  ) {
+    // Group by domain
+    const domains = new Map<string, SkillMatrixEntry[]>();
+    for (const entry of matrix) {
+      const list = domains.get(entry.aicdDomain) ?? [];
+      list.push(entry);
+      domains.set(entry.aicdDomain, list);
+    }
+
+    let html = '';
+    for (const [domain, entries] of domains) {
+      html += `<div class="mb-4">`;
+      html += `<h3 class="text-sm text-text-secondary uppercase tracking-wider font-medium mb-3 px-4">${domain}</h3>`;
+      html += `<div class="space-y-2">`;
+      for (const entry of entries) {
+        const isTop = entry.skillArea === topMatches.skillset || entry.skillArea === topMatches.mindset;
+        html += renderSkillMatrixRow(entry, blurred, isTop);
+      }
+      html += `</div></div>`;
+    }
+
+    skillMatrixContainer.innerHTML = html;
+  }
+
+  function renderSkillMatrixRow(entry: SkillMatrixEntry, blurred: boolean, isTopMatch: boolean): string {
+    const isPrimary = entry.relevance === 'primary';
+    const relevanceClass = isPrimary ? 'border-l-2 border-text-accent bg-bg-card/50' : '';
+    const topMatchNote = isTopMatch ? ' (detailed above)' : '';
+
+    const relevanceLabel = entry.relevance.charAt(0).toUpperCase() + entry.relevance.slice(1);
+
+    // Use qualitative evidence when blurred, full evidence when unblurred
+    const evidenceText = blurred ? entry.evidenceQualitative : entry.evidence;
+
+    return `
+      <div class="p-4 ${relevanceClass} bg-bg-card rounded">
+        <div class="flex justify-between items-baseline mb-2">
+          <span class="text-base text-text-primary font-medium">${entry.skillArea}</span>
+          <span class="text-sm text-text-secondary uppercase tracking-wider">${relevanceLabel}${topMatchNote}</span>
+        </div>
+        <div class="${blurred ? 'blur-md select-none pointer-events-none' : ''} transition-all duration-500" data-evidence-full="${escapeAttr(entry.evidence)}" data-evidence-qual="${escapeAttr(entry.evidenceQualitative)}">
+          <p class="text-sm text-text-secondary mb-1">${entry.matchReason}</p>
+          <p class="text-base text-text-secondary">${evidenceText}</p>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderCaseStudyCard(cs: CaseStudyMatch, blurred: boolean): string {
+    return `
+      <div class="p-8 bg-bg-card border-t-[3px] border-text-accent">
+        <p class="text-sm text-text-secondary uppercase tracking-wider mb-2">${cs.company}</p>
+        <h3 class="font-display text-xl text-text-primary mb-2">${cs.role}</h3>
+        <p class="text-base text-text-secondary mb-4">${cs.descriptor}</p>
+        <p class="text-sm text-text-accent mb-4">${cs.relevanceReason}</p>
+        <div class="${blurred ? 'blur-md select-none pointer-events-none' : ''} transition-all duration-500">
+          <div class="text-base text-text-secondary leading-relaxed whitespace-pre-line">${cs.fullContent}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function escapeAttr(str: string): string {
+    return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function unblurSection(sectionId: string) {
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+    const blurredElements = section.querySelectorAll('.blur-md');
+    blurredElements.forEach(el => {
+      el.classList.remove('blur-md', 'select-none', 'pointer-events-none');
+    });
+    // Swap qualitative evidence to full evidence for skill matrix
+    if (sectionId === 'skill-matrix-section') {
+      swapEvidence(sectionId);
+    }
+  }
+
+  function swapEvidence(sectionId: string) {
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+    const rows = section.querySelectorAll('[data-evidence-full]');
+    rows.forEach(el => {
+      const fullEvidence = el.getAttribute('data-evidence-full') ?? '';
+      const paragraphs = el.querySelectorAll('p');
+      if (paragraphs.length >= 2) {
+        paragraphs[1].textContent = fullEvidence;
+      }
+    });
+  }
+
+  // --- Legacy rendering for old shared URLs ---
+
+  function renderLegacyResults(
+    matches: LegacyMatch[],
     roleTitle: string | null,
     summary: string,
     token: string,
@@ -399,40 +679,24 @@ import CTA from '@/components/CTA.astro';
   ) {
     currentToken = token;
 
-    // Summary
     if (roleTitle) {
       resultRoleTitle.textContent = roleTitle;
       resultRoleTitle.classList.remove('hidden');
     }
     resultSummary.textContent = summary;
 
-    // Split matches
-    const skillset = matches.filter(m => m.category === 'skillset').sort((a, b) => a.rank - b.rank);
-    const mindset = matches.filter(m => m.category === 'mindset').sort((a, b) => a.rank - b.rank);
+    // Show all matches as visible cards
+    matchesVisible.innerHTML = matches.map(m => renderLegacyMatchCard(m)).join('');
 
-    // Top matches (visible)
-    const topMatches = [skillset[0], mindset[0]].filter(Boolean);
-    matchesVisible.innerHTML = topMatches.map(m => renderMatchCard(m)).join('');
-
-    // Remaining matches
-    const remaining = [...skillset.slice(1), ...mindset.slice(1)];
-
-    if (isShared) {
-      // Shared view: show all revealed
-      matchesLocked.classList.add('hidden');
-      matchesUnlocked.innerHTML = remaining.map(m => renderMatchCard(m)).join('');
-      matchesUnlocked.classList.remove('hidden');
-    } else {
-      // Normal view: blur remaining
-      blurredMatches.innerHTML = remaining.map(m => renderMatchCard(m)).join('');
-      matchesLocked.classList.remove('hidden');
-      matchesUnlocked.innerHTML = remaining.map(m => renderMatchCard(m)).join('');
-    }
+    // Hide new sections
+    unlockGate.classList.add('hidden');
+    skillMatrixSection.classList.add('hidden');
+    caseStudiesSection.classList.add('hidden');
 
     showState('results');
   }
 
-  function renderMatchCard(match: Match): string {
+  function renderLegacyMatchCard(match: LegacyMatch): string {
     const categoryLabel = match.category === 'skillset' ? 'Skillset' : 'Mindset';
     const confidenceClass = match.confidence === 'high'
       ? 'bg-text-accent text-white'
@@ -466,4 +730,3 @@ import CTA from '@/components/CTA.astro';
     showState('error');
   }
 </script>
-

@@ -1,3 +1,38 @@
+export type Relevance = 'primary' | 'supporting' | 'noted';
+
+export interface SkillMatrixEntry {
+  aicdDomain: string;
+  skillArea: string;
+  relevance: Relevance;
+  matchReason: string;
+  evidence: string;
+  evidenceQualitative: string;
+  confidence: 'high' | 'medium' | 'low';
+}
+
+export interface CaseStudyMatch {
+  company: string;
+  role: string;
+  descriptor: string;
+  relevanceReason: string;
+  fullContent: string;
+}
+
+export interface FitResponse {
+  skillMatrix: SkillMatrixEntry[];
+  topMatches: {
+    skillset: string;
+    mindset: string;
+  };
+  roleTitle: string | null;
+  summary: string;
+  relevantCaseStudies: CaseStudyMatch[];
+  token: string;
+  analysedAt: string;
+}
+
+// Deprecated: kept for backwards compatibility with shared URL tokens
+// containing the old format. Remove after old tokens expire (30 days).
 export interface MatchResult {
   rank: number;
   category: 'skillset' | 'mindset';
@@ -6,14 +41,6 @@ export interface MatchResult {
   matchReason: string;
   evidence: string;
   confidence: 'high' | 'medium' | 'low';
-}
-
-export interface FitResponse {
-  matches: MatchResult[];
-  roleTitle: string | null;
-  summary: string;
-  token: string;
-  analysedAt: string;
 }
 
 export interface Env {

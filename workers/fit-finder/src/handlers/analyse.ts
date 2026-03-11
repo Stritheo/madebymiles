@@ -45,9 +45,10 @@ export async function handleAnalyse(
   const token = await sign(payload, env.JWT_SECRET);
 
   // Notify Discord (count only, no document content)
+  const primaryCount = fitData.skillMatrix.filter(e => e.relevance === 'primary').length;
   await postReport(
     env.DISCORD_WEBHOOK_REPORTS,
-    `Analysis completed. Role: ${fitData.roleTitle ?? 'unlabelled'}. Matches: ${fitData.matches.length}.`,
+    `Analysis completed. Role: ${fitData.roleTitle ?? 'unlabelled'}. Primary alignments: ${primaryCount}/10. Case studies: ${fitData.relevantCaseStudies.length}.`,
   );
 
   const response: FitResponse = { ...payload, token };

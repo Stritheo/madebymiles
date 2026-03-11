@@ -6,10 +6,11 @@ Read this file first, then read `PRD.md` and `ROADMAP.md` for full context.
 
 ## Current state
 
-**Branch:** `claude/review-website-roadmap-rst4k`
+**Branch:** `claude/fit-finder-redesign`
 **Phase 1:** Complete and live at madebymiles.ai.
 **Phase 2 (Credibility Engine):** Complete (core). Skill matrix, experience page, case study pages, prev/next nav, Lighthouse CI all shipped.
 **Phase 3 (Discoverability):** Complete (core). llms.txt, llms-full.txt, RSS feed, Article JSON-LD, robots.txt LLM refs all shipped.
+**Phase 4 (Fit Finder):** Complete. Redesigned with three-tier structure, complete AICD skill matrix, case study matching, brand voice enforcement.
 **PVT:** All checks passed. Site live, HTTPS, DNS, sitemap, Discord notifications all working.
 **Security headers:** A+ on securityheaders.com. Cloudflare Transform Rules configured.
 
@@ -21,7 +22,7 @@ Read this file first, then read `PRD.md` and `ROADMAP.md` for full context.
 ### Homepage features
 - Hero with headshot (desktop: right column, mobile: above CTAs)
 - "What I bring" section: 4 capability blocks (Strategic Leadership, Business Transformation, People and Culture, Technology and AI)
-- "Work and impact" section: 6 cards in 3x2 grid (SCI, CBA, Hollard, Suncorp, Westpac, Agentic Engineering). First 5 cards link to /work/ case study pages.
+- "Work and impact" section: 6 cards in 3x2 grid (SCI, CBA, Hollard, Suncorp, Westpac, Agentic Engineering). Cards are non-linking divs (case study detail is surfaced through the Fit Finder instead).
 - Role cards standardised: company name, role/scope subtitle, outcomes paragraph
 - Closing section with Contact CTA
 - Person JSON-LD with credentials, occupations, knowsAbout
@@ -94,40 +95,46 @@ Read this file first, then read `PRD.md` and `ROADMAP.md` for full context.
 
 ---
 
-### Phase 4 progress (Fit Finder) — COMPLETE
+### Phase 4 progress (Fit Finder) — COMPLETE (redesigned)
 
-**Done:**
+**Original build (shipped earlier):**
 - `/fit` page: drag-and-drop PDF upload, text paste, loading state, results with blur/unlock, shareable signed URLs
 - Cloudflare Worker (`fit-finder`): PDF extraction (unpdf), Claude Haiku 4.5 analysis, HMAC-signed JWT tokens, KV rate limiting (100/IP/day), Discord notifications
 - Profile JSON generator (`scripts/generate-profile.ts`): reads content collections, builds structured profile for Claude prompt
 - Worker route: `madebymiles.ai/api/*` → fit-finder Worker
 - Worker secrets: ANTHROPIC_API_KEY, JWT_SECRET, DISCORD_WEBHOOK_REPORTS, DISCORD_WEBHOOK_ALERTS
 - KV namespace: RATE_LIMIT_KV (238b5712c7fe45dcb0c020aa7850036d)
-- Privacy page updated with comprehensive Fit Finder data handling (data in transit, Anthropic terms, IP storage, shared links)
+- Privacy page updated with comprehensive Fit Finder data handling
 - Header nav updated with Fit Finder link (desktop + mobile)
 - Lighthouse CI tests /fit page
 - Worker deploy in GitHub Actions gated behind `vars.WORKER_ENABLED` variable
 - `CLAUDE.md` created with CI/CD quality gate protocol
 
-**Bug fixes (this session):**
-- Fixed unpdf API: changed `getDocumentText` to `extractText` with `mergePages: true` (correct export)
-- Fixed API key: secrets were stored as names not values in wrangler. All 4 secrets re-set correctly.
-- Surfaced actual Claude API errors in response (was generic "Analysis failed", now includes error detail)
-- Rate limit increased from 10 to 100/IP/day ($0.01/request, $50/month budget supports ~5,000 requests)
+**Fit Finder Redesign (2026-03-11):**
 
-**Two-step LinkedIn unlock flow:**
-- Replaced single "I've contacted Miles" honour-system button with two-step flow
-- Step 1: "Connect on LinkedIn" opens `linkedin.com/messaging/compose/?recipient=milessowden` in new tab
-- Step 2: "I've sent my intro — show full results" appears, removes blur on click
-- Guides users to LinkedIn messaging before revealing blurred matches
+The Fit Finder was redesigned from a ranked-matches model to a complete AICD skill matrix evaluation with case study matching. Key changes:
 
-**Privacy policy rewrite:**
-- Inline notice on `/fit`: "Your document is sent encrypted to Anthropic's Claude API for analysis. It is not used to train models and is automatically deleted within 30 days."
-- Full privacy page `/privacy#fit-finder` expanded with 4 subsections:
-  - Data in transit (HTTPS, Anthropic API, commercial sensitivity warning)
-  - Anthropic's data handling (not used for training under commercial terms, retained up to 30 days for trust/safety)
-  - What this site stores (IP + count for 24h rate limiting, Discord notification with role title only, no personal data)
-  - Shared result links (encoded in URL via signed token, no server storage, 30-day expiry)
+*Backend (`workers/fit-finder/`):*
+- `types.ts`: New interfaces (SkillMatrixEntry, CaseStudyMatch, FitResponse). Old MatchResult kept for backwards compatibility with existing shared URL tokens (30-day expiry).
+- `claude.ts`: Complete rewrite. System prompt now evaluates all 10 AICD skill areas (was top-6 matches). Includes brand voice rules, qualitative evidence field, case study selection (2-3 most relevant). max_tokens increased from 2048 to 6144, timeout from 28s to 55s. Model remains claude-haiku-4-5-20251001.
+- `analyse.ts`: Discord notification updated from match count to primary alignment count.
+- Estimated cost per analysis: ~$0.006 (was ~$0.002).
+
+*Frontend (`src/pages/fit.astro`):*
+- Three-tier results structure:
+  - Tier 1 (visible): Summary, top matches (skillset + mindset cards), skill matrix with qualitative evidence
+  - Tier 2 (blurred): Complete AICD skill matrix with full quantitative evidence
+  - Tier 3 (blurred): Matched case studies (2-3 most relevant)
+- Dual unlock path: reader clicks LinkedIn or WhatsApp, then chooses "Show the full skill evaluation" or "Show the matched case studies". Second section available via "also" button.
+- Evidence swapping: qualitative evidence shown while blurred, full evidence with figures revealed on unlock (via data attributes).
+- Backwards compatibility: old JWT tokens with `matches[]` format render via legacy path.
+- Loading time updated to "15 to 25 seconds" (was "10 to 15 seconds"). Progress bar slowed accordingly.
+
+*Site consolidation:*
+- Homepage role cards converted from `<a>` links to `<div>` elements (case study detail surfaced through Fit Finder instead).
+- `astro.config.mjs`: Sitemap filter excludes `/work/*` pages.
+- `/llms.txt`: Removed links to case study pages, added Fit Finder section.
+- `/llms-full.txt`: Added Fit Finder section describing capabilities.
 
 **CI Worker deploy:**
 1. Add `CLOUDFLARE_API_TOKEN` to GitHub repo secrets (can use existing `madebymiles-deploy` token)
@@ -135,82 +142,64 @@ Read this file first, then read `PRD.md` and `ROADMAP.md` for full context.
 
 ---
 
-### Phase 4 QA Report (2026-03-04)
+### Phase 4 QA Report (2026-03-04, pre-redesign)
 
 **E2E Testing — All passed:**
 - Text paste (>100 chars): 6 matches returned, high confidence, role title extracted
-- XSS test (`<script>alert(1)</script>`): HTML stripped by sanitiser, valid results returned
+- XSS test: HTML stripped by sanitiser, valid results returned
 - Error paths: short text (400), empty text (400), invalid token (400), unsupported content type (400)
 - All pages return 200 (with expected trailing-slash 301 redirects)
-- All 5 case study pages load correctly
 - Machine-readable files: `/llms.txt`, `/llms-full.txt`, `/rss.xml`, `/sitemap-index.xml` all 200
 - `/api/health` returns `{"status":"ok"}` with 200
 
-**Performance:**
-- Homepage TTFB: 54ms, Privacy: 52ms, Experience: 266ms, Contact: 358ms, Fit: 268ms, Case study: 266ms
-- Worker `/api/health`: 49ms TTFB
-- All page sizes under 20KB HTML
-- No source maps deployed
-- No console errors
+**Security (still current):**
+- Security headers: A+ on securityheaders.com
+- CORS: locked to `https://madebymiles.ai` only
+- No `.env` files or API keys in git history
+- No `any` types or `console.log` in Worker code
 
-**Security:**
-- Security headers: HSTS (max-age=63072000, includeSubDomains, preload), X-Frame-Options: DENY, X-Content-Type-Options: nosniff, CSP (full policy), Referrer-Policy: strict-origin-when-cross-origin, Permissions-Policy: camera=(), microphone=(), geolocation=()
-- CORS: locked to `https://madebymiles.ai` only (verified — other origins get correct CORS headers that browsers will block)
-- HTTP to HTTPS redirect: 301 working
-- No directory listing (404 on `/assets/`)
-- No `.env` files in git history
-- No actual API keys or webhook URLs in git history (only instruction text mentioning `sk-ant-` format)
-- No `any` types in Worker code
-- No `console.log` in Worker code
-- npm audit (root): 0 vulnerabilities
-- npm audit (Worker): 6 vulnerabilities in dev deps only (wrangler/miniflare/undici — not in deployed bundle)
-
-**Known issues (low risk, documented for Phase 5):**
-1. JWT signature comparison uses `!==` (not constant-time). Low risk: tokens are for sharing results, not authentication. Fix: use `crypto.subtle.verify()` with `['sign', 'verify']` key usage.
-2. `cf-cache-status: DYNAMIC` on HTML pages. Expected for GitHub Pages through Cloudflare proxy. Could add Page Rules for caching if needed.
-3. CSP `connect-src 'self'` works for `/api/fit` (same origin) but may need updating if Cloudflare Web Analytics JS beacon is added (would need `static.cloudflareinsights.com`).
-4. `@astrojs/check` not installed — can't run Astro-specific type checking. Low priority.
-
-**UAT (for Miles):**
-- [ ] Visit madebymiles.ai/fit on iPhone and Mac
-- [ ] Paste a real role description
-- [ ] Upload a real PDF
-- [ ] Review 6 match results for accuracy
-- [ ] Test LinkedIn unlock: opens messaging, confirm reveals results
-- [ ] Share a result link with someone — verify it works for them
-- [ ] Check Discord for notifications
-
-**Persona testing (manual):**
-- Board Chair (iPad): scan `/experience` in 30 seconds — does it convey credibility?
-- Search Consultant (Chrome): find P&L figures and team sizes within 60 seconds in case studies
-- CEO Peer (iPhone Safari): mobile Fit Finder — is upload easy, are results readable?
-- AI Agent: fetch `/llms.txt` and ask for summary — is it accurate?
-
-**Legal notes:**
-- Privacy page accurately reflects current data handling
-- Anthropic commercial API terms confirmed: inputs not used for training, retained up to 30 days
-- IP address stored 24h for rate limiting — low risk under Australian Privacy Act (no names, emails, accounts)
-- Role descriptions are employer-owned documents — privacy page warns about commercial sensitivity
-- "Twenty years" career claim accurate (Westpac 2005 to 2026 = 21 years)
-- GAICD credential is legitimate
-- "AICD-aligned skill matrix" phrasing is accurate (aligned to, not certified by)
+**Known issues (low risk):**
+1. JWT signature comparison uses `!==` (not constant-time). Low risk: tokens are for sharing results, not authentication.
+2. CSP `connect-src 'self'` may need updating if Cloudflare Web Analytics JS beacon is added.
+3. `@astrojs/check` not installed.
 
 ---
 
-### Carry forward to Phase 5
+### UAT (for Miles, post-redesign)
 
-**Sprint 1 — Should do (low effort, improves quality):**
-- JWT constant-time comparison fix — `jwt.ts:35` uses `!==`. Change `importKey` to include `['sign', 'verify']` and use `crypto.subtle.verify()` instead of sign-then-compare. ~10 lines.
-- Verify Anthropic retention policy — privacy page says "up to 30 days". Anthropic may have changed to 7 days from Sept 2025. Check current policy and update if needed.
+- [ ] Visit madebymiles.ai/fit on iPhone and Mac
+- [ ] Paste a real role description
+- [ ] Upload a real PDF
+- [ ] Review complete 10-skill AICD matrix for accuracy
+- [ ] Verify three-tier structure: summary visible, matrix and case studies blurred
+- [ ] Test LinkedIn unlock: opens messaging, choice appears, section unblurs
+- [ ] Test WhatsApp unlock: opens WhatsApp, choice appears, section unblurs
+- [ ] Test "also available" button reveals second section
+- [ ] Verify evidence swaps from qualitative to full on unlock
+- [ ] Share a result link — verify it works for recipients
+- [ ] Test an old shared link (if any exist) — verify legacy rendering works
+- [ ] Check Discord for notifications (should show primary alignment count)
+- [ ] Verify homepage role cards are not clickable
+- [ ] Verify /llms.txt includes Fit Finder section and no broken links
+- [ ] Check /sitemap-index.xml excludes /work/* pages
 
-**Sprint 2 — Nice to have:**
+---
+
+### Carry forward
+
+**Should do (low effort):**
+- JWT constant-time comparison fix
+- Verify Anthropic retention policy (privacy page says "up to 30 days", may have changed)
+- Post-redesign QA: re-run full E2E test suite with new response format
+
+**Nice to have:**
 - Sentry SDK integration (JS error tracking)
 - SRI hashes on Google Fonts
 - Cloudflare AI Crawl Control (dashboard config)
 - Supabase analytics beacon (deferred from Phase 2)
-- Anthropic billing alert ($5/month)
+- Anthropic billing alert ($5/month, budget ~$0.006/analysis)
 - Install `@astrojs/check` for Astro type checking
-- Update Worker dev deps to clear npm audit findings (wrangler/undici)
+- Update Worker dev deps to clear npm audit findings
 
 ### Next: Phase 5 — Voice and Depth
 
