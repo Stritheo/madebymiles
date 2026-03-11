@@ -3,7 +3,7 @@ import { handleAnalyse } from './handlers/analyse';
 import { handleVerify } from './handlers/verify';
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
     // CORS preflight
@@ -12,7 +12,7 @@ export default {
     }
 
     if (url.pathname === '/api/fit' && request.method === 'POST') {
-      return handleAnalyse(request, env);
+      return handleAnalyse(request, env, ctx);
     }
 
     if (url.pathname === '/api/fit/verify' && request.method === 'GET') {

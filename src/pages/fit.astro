@@ -50,25 +50,25 @@ import Base from '@/layouts/Base.astro';
           </div>
         </div>
 
-        <p class="text-sm text-text-secondary mb-6">
-          Your document is sent encrypted to Anthropic's Claude API for analysis. It is not used to train models and is automatically deleted within 30 days.
-          <a href="/privacy#fit-finder" class="text-text-accent hover:underline">Full privacy details</a>
-        </p>
-
         <button
           id="analyse-btn"
           disabled
-          class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-10 py-4.5 text-base bg-bg-dark text-white border-[1.5px] border-bg-dark hover:bg-[#151A26] hover:border-[#151A26] hover:-translate-y-px disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+          class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-10 py-4.5 text-base bg-bg-dark text-white border-[1.5px] border-bg-dark hover:bg-[#151A26] hover:border-[#151A26] hover:-translate-y-px disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 mb-6"
         >
           Analyse fit
         </button>
+
+        <p class="text-sm text-text-secondary">
+          Your document is sent encrypted to Anthropic's Claude API for analysis. It is not used to train models and is automatically deleted within 30 days.
+          <a href="/privacy#fit-finder" class="text-text-accent hover:underline">Full privacy details</a>
+        </p>
       </div>
 
       <!-- State: Loading -->
       <div id="state-loading" class="hidden" aria-live="polite">
         <div class="flex flex-col items-center justify-center py-20">
           <p class="text-xl text-text-primary font-medium mb-2">Analysing role fit...</p>
-          <p class="text-base text-text-secondary mb-6">This usually takes 15 to 25 seconds</p>
+          <p class="text-base text-text-secondary mb-6">This usually takes 7 to 10 seconds</p>
           <div class="w-full max-w-[400px] h-1.5 bg-border-light rounded-full overflow-hidden">
             <div id="progress-bar" class="h-full bg-text-accent rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
           </div>
@@ -248,7 +248,7 @@ import Base from '@/layouts/Base.astro';
     progressBar.style.width = '0%';
     progressPercent.textContent = '0%';
     progressInterval = setInterval(() => {
-      progress += (90 - progress) * 0.025;
+      progress += (90 - progress) * 0.06;
       const rounded = Math.min(Math.round(progress), 90);
       progressBar.style.width = `${rounded}%`;
       progressPercent.textContent = `${rounded}%`;

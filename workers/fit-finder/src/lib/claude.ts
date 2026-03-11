@@ -3,12 +3,33 @@ import profile from '../profile.json';
 
 const typedProfile = profile as Profile;
 
-interface ClaudeResponse {
+/** What Claude returns (lightweight, no verbatim evidence copying). */
+interface ClaudeCompactEntry {
+  skillArea: string;
+  relevance: 'primary' | 'supporting' | 'noted';
+  matchReason: string;
+  evidenceQualitative: string;
+  confidence: 'high' | 'medium' | 'low';
+}
+
+interface ClaudeCompactCaseStudy {
+  company: string;
+  descriptor: string;
+  relevanceReason: string;
+}
+
+interface ClaudeCompactResponse {
+  skillMatrix: ClaudeCompactEntry[];
+  topMatches: { skillset: string; mindset: string };
+  roleTitle: string | null;
+  summary: string;
+  relevantCaseStudies: ClaudeCompactCaseStudy[];
+}
+
+/** What callClaude returns after hydration. */
+export interface HydratedResponse {
   skillMatrix: SkillMatrixEntry[];
-  topMatches: {
-    skillset: string;
-    mindset: string;
-  };
+  topMatches: { skillset: string; mindset: string };
   roleTitle: string | null;
   summary: string;
   relevantCaseStudies: CaseStudyMatch[];
@@ -17,7 +38,7 @@ interface ClaudeResponse {
 export async function callClaude(
   roleText: string,
   apiKey: string,
-): Promise<ClaudeResponse> {
+): Promise<HydratedResponse> {
   const systemPrompt = buildSystemPrompt(typedProfile);
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -29,11 +50,11 @@ export async function callClaude(
     },
     body: JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 6144,
+      max_tokens: 2048,
       system: systemPrompt,
       messages: [{ role: 'user', content: `Role description:\n\n${roleText}` }],
     }),
-    signal: AbortSignal.timeout(55_000),
+    signal: AbortSignal.timeout(30_000),
   });
 
   if (!response.ok) {
@@ -54,20 +75,82 @@ export async function callClaude(
     jsonText = jsonText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
   }
 
-  const parsed = JSON.parse(jsonText) as ClaudeResponse;
+  const parsed = JSON.parse(jsonText) as ClaudeCompactResponse;
 
   // Validate structure
   if (!Array.isArray(parsed.skillMatrix) || parsed.skillMatrix.length !== 10) {
     throw new Error('Incomplete skill matrix. Try a more detailed role description.');
   }
 
-  return parsed;
+  // Hydrate from profile data
+  return hydrate(parsed, typedProfile);
+}
+
+/** Merge Claude's analysis with static profile data. */
+function hydrate(compact: ClaudeCompactResponse, p: Profile): HydratedResponse {
+  // Build lookup maps
+  const skillMap = new Map<string, { domain: string; evidence: string; rating: string }>();
+  for (const domain of p.domains) {
+    for (const skill of domain.skills) {
+      skillMap.set(skill.skillArea, {
+        domain: domain.domain,
+        evidence: skill.evidence,
+        rating: skill.rating,
+      });
+    }
+  }
+
+  const caseStudyMap = new Map<string, { role: string; summary: string; outcomes: string[] }>();
+  for (const cs of p.caseStudies) {
+    caseStudyMap.set(cs.company, {
+      role: cs.role,
+      summary: cs.summary,
+      outcomes: cs.outcomes,
+    });
+  }
+
+  // Hydrate skill matrix
+  const skillMatrix: SkillMatrixEntry[] = compact.skillMatrix.map((entry) => {
+    const profileData = skillMap.get(entry.skillArea);
+    return {
+      aicdDomain: profileData?.domain ?? 'Unknown',
+      skillArea: entry.skillArea,
+      relevance: entry.relevance,
+      matchReason: entry.matchReason,
+      evidence: profileData?.evidence ?? '',
+      evidenceQualitative: entry.evidenceQualitative,
+      confidence: entry.confidence,
+    };
+  });
+
+  // Hydrate case studies
+  const relevantCaseStudies: CaseStudyMatch[] = compact.relevantCaseStudies.map((cs) => {
+    const profileData = caseStudyMap.get(cs.company);
+    const fullContent = profileData
+      ? `${profileData.summary}\n\nKey outcomes:\n${profileData.outcomes.map((o) => `- ${o}`).join('\n')}`
+      : '';
+    return {
+      company: cs.company,
+      role: profileData?.role ?? '',
+      descriptor: cs.descriptor,
+      relevanceReason: cs.relevanceReason,
+      fullContent,
+    };
+  });
+
+  return {
+    skillMatrix,
+    topMatches: compact.topMatches,
+    roleTitle: compact.roleTitle,
+    summary: compact.summary,
+    relevantCaseStudies,
+  };
 }
 
 function buildSystemPrompt(p: Profile): string {
   let prompt = `You are a role-fit analyst for ${p.name}, an Australian insurance executive with twenty years of experience.
 
-Your task: read a role description and evaluate every skill area in ${p.name}'s AICD-aligned profile against that role. Return a complete skill matrix, fit summary, top matches, and relevant case studies.
+Your task: read a role description and evaluate every skill area in ${p.name}'s AICD-aligned profile against that role. Return a compact skill matrix, fit summary, top matches, and relevant case studies.
 
 ## Voice Rules
 
@@ -111,56 +194,53 @@ ${p.philosophy}
 
 1. Read the role description carefully. Identify what the role actually requires.
 
-2. Evaluate EVERY skill area in the profile against this role description. For each of the 10 skill areas across the 4 AICD domains, assess relevance to this specific role. Assign one of three relevance levels:
-   - primary: the skill area directly addresses a stated requirement in the role description. Provide detailed matchReason and full evidence.
-   - supporting: the skill area is relevant to the role but not a core requirement. Provide a concise matchReason and full evidence.
-   - noted: the skill area exists in the profile but is not central to this role. Provide a brief matchReason explaining why it is peripheral. Still include evidence.
+2. Evaluate EVERY skill area in the profile against this role description. For each of the 10 skill areas across the 4 AICD domains, assign one relevance level:
+   - primary: the skill area directly addresses a stated requirement. Provide a detailed matchReason.
+   - supporting: the skill area is relevant but not a core requirement. Provide a concise matchReason.
+   - noted: the skill area is peripheral. Provide a brief matchReason.
 
-3. Return the complete matrix in AICD domain order (Governance and Accountability, Strategy and Risk, Finance and Operations, People and Culture). Do not omit any skill area. The output must contain exactly 10 entries in the skillMatrix array.
+3. Return the matrix in AICD domain order. Exactly 10 entries.
 
 4. For each skill area, provide:
-   - matchReason: specifically why this skill answers (or does not directly answer) a stated requirement in THIS role description. Quote or paraphrase the role requirement for primary matches.
-   - evidence: copied verbatim from the profile above.
-   - evidenceQualitative: a rewritten version of the evidence that names organisations and describes outcomes without specific financial figures. Figures like combined ratios, NPS scores, premium volumes, and headcount numbers belong only in the evidence field. Example: "Motor profitable within 15 months, a first for the book" not "combined ratio from 101.5% to 89.2%."
+   - skillArea: exact name from the profile.
+   - matchReason: specifically why this skill answers (or does not answer) a stated requirement in THIS role description. Quote or paraphrase the role requirement for primary matches.
+   - evidenceQualitative: a rewritten version of the profile evidence that names organisations and describes outcomes without specific financial figures. Example: "Motor profitable within 15 months, a first for the book" not "combined ratio from 101.5% to 89.2%."
    - confidence: high (direct match with metric evidence), medium (strong inference), low (reasonable but not direct).
+   DO NOT include aicdDomain or evidence fields. These are hydrated from the profile.
 
-5. Identify the single strongest skillset match (technical, strategic, operational capability) and single strongest mindset match (leadership philosophy, cultural approach, character traits implied by the evidence). Return these as topMatches using the exact skillArea name.
+5. Identify the single strongest skillset match and single strongest mindset match. Return as topMatches using exact skillArea names.
 
-6. Extract the role title if it appears in the document.
+6. Extract the role title if present.
 
-7. Write a 3-5 sentence fit summary. Name specific organisations and roles from the profile. Describe outcomes qualitatively, not with figures. The summary should read like how a senior executive would describe their fit in the first two minutes of a conversation: direct, specific, calm. No superlatives. No "exceptional" or "outstanding." Short sentences. Active voice. Evidence over assertion. End the summary by noting how many primary capability areas are covered in the full evaluation.
+7. Write a 3-5 sentence fit summary. Name specific organisations and roles from the profile. Describe outcomes qualitatively, not with figures. The summary should read like how a senior executive would describe their fit in the first two minutes of a conversation: direct, specific, calm. No superlatives. Short sentences. Active voice. End by noting how many primary capability areas are covered in the full evaluation.
 
-8. Select the 2-3 case studies from the profile that are most relevant to this role's requirements. For each, provide: company, role title, a one-line descriptor (company, title, and one qualitative outcome), a relevance reason (why this case study matters for this role), and the full case study content from the profile. Order by relevance, most relevant first.
+8. Select the 2-3 most relevant case studies. For each, provide only: company (exact name from profile), a one-line descriptor (qualitative outcome), and a relevance reason. DO NOT include role or fullContent. These are hydrated from the profile.
 
 ## Output Format
 
-Respond with valid JSON only. No markdown fences, no explanation, no preamble.
+Respond with valid JSON only. No markdown fences, no explanation.
 
 {
   "skillMatrix": [
     {
-      "aicdDomain": "<AICD domain>",
-      "skillArea": "<exact skill area from profile>",
+      "skillArea": "<exact skill area name>",
       "relevance": "primary" | "supporting" | "noted",
-      "matchReason": "<specific reason referencing the role>",
-      "evidence": "<exact evidence text from profile>",
+      "matchReason": "<reason referencing the role>",
       "evidenceQualitative": "<rewritten evidence without figures>",
       "confidence": "high" | "medium" | "low"
     }
   ],
   "topMatches": {
-    "skillset": "<skillArea name of strongest technical match>",
-    "mindset": "<skillArea name of strongest leadership/culture match>"
+    "skillset": "<skillArea name>",
+    "mindset": "<skillArea name>"
   },
   "roleTitle": "<extracted title or null>",
   "summary": "<3-5 sentences>",
   "relevantCaseStudies": [
     {
-      "company": "<company name>",
-      "role": "<role title>",
-      "descriptor": "<one-line descriptor with qualitative outcome>",
-      "relevanceReason": "<why this case study matters for this role>",
-      "fullContent": "<full case study content from profile>"
+      "company": "<exact company name from profile>",
+      "descriptor": "<one-line qualitative outcome>",
+      "relevanceReason": "<why this case study matters>"
     }
   ]
 }`;
