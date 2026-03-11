@@ -1,27 +1,32 @@
 # Databricks notebook: Ingest GitHub Actions data
 # Schedule: Daily
-# Requires: Unity Catalog connection 'github_api' (run setup_connections.py first)
+# Paste your GitHub token into the GITHUB_TOKEN widget at the top
 
 import json
-from datetime import datetime, timedelta
+import requests
+from datetime import datetime, timedelta, timezone
 
 # -- Config --
+dbutils.widgets.text("GITHUB_TOKEN", "", "GitHub Personal Access Token")
 REPO = "Stritheo/madebymiles"
+TOKEN = dbutils.widgets.get("GITHUB_TOKEN")
+if not TOKEN:
+    raise ValueError("Please paste your GitHub token into the GITHUB_TOKEN widget at the top of the notebook")
 
-# -- Fetch workflow runs via Unity Catalog connection --
-since = (datetime.utcnow() - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
-path = f"/repos/{REPO}/actions/runs?created=>={since}&per_page=100"
+# -- Fetch workflow runs (last 7 days) --
+since = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-result = spark.sql(f"""
-SELECT http_request(
-  conn => 'github_api',
-  method => 'GET',
-  path => '{path}',
-  headers => map('Accept', 'application/vnd.github+json')
+resp = requests.get(
+    f"https://api.github.com/repos/{REPO}/actions/runs",
+    headers={
+        "Authorization": f"Bearer {TOKEN}",
+        "Accept": "application/vnd.github+json",
+    },
+    params={"created": f">={since}", "per_page": "100"},
+    timeout=30,
 )
-""").collect()[0][0]
-
-response_data = json.loads(result.text)
+resp.raise_for_status()
+response_data = resp.json()
 
 rows = []
 for run in response_data.get("workflow_runs", []):

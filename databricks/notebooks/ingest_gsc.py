@@ -1,15 +1,13 @@
 # Databricks notebook: Ingest Google Search Console data
 # Schedule: Daily (GSC data has 2-3 day lag)
 # Note: GSC uses OAuth service accounts, not bearer tokens.
-# This notebook uses direct requests with the service account JSON
-# because Unity Catalog HTTP connections only support bearer tokens.
-# The service account JSON is provided via a widget.
+# The service account JSON is provided via a Databricks secret or widget.
 
 # %pip install google-api-python-client google-auth
 
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import json
 
 # -- Config --
@@ -41,8 +39,8 @@ credentials = service_account.Credentials.from_service_account_info(
 service = build("searchconsole", "v1", credentials=credentials)
 
 # -- Query last 7 days (with 3-day lag) --
-end_date = (datetime.utcnow() - timedelta(days=3)).strftime("%Y-%m-%d")
-start_date = (datetime.utcnow() - timedelta(days=10)).strftime("%Y-%m-%d")
+end_date = (datetime.now(timezone.utc) - timedelta(days=3)).strftime("%Y-%m-%d")
+start_date = (datetime.now(timezone.utc) - timedelta(days=10)).strftime("%Y-%m-%d")
 
 response = service.searchanalytics().query(
     siteUrl=SITE_URL,

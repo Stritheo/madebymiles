@@ -1,30 +1,36 @@
 # Databricks notebook: Ingest Lighthouse CI results from GitHub Actions logs
 # Schedule: After each deploy (triggered by workflow or daily catch-up)
-# Requires: Unity Catalog connection 'github_api' (run setup_connections.py first)
-# Note: Artifact binary downloads are not supported via Unity Catalog HTTP connections.
-# Instead, this notebook reads Lighthouse scores from the workflow run annotations/checks.
+# Paste your GitHub token into the GITHUB_TOKEN widget at the top
+# Note: This notebook reads Lighthouse scores from workflow run check annotations.
 
 import json
 import re
-from datetime import datetime, timedelta
+import requests
+from datetime import datetime, timedelta, timezone
 
 # -- Config --
+dbutils.widgets.text("GITHUB_TOKEN", "", "GitHub Personal Access Token")
 REPO = "Stritheo/madebymiles"
+TOKEN = dbutils.widgets.get("GITHUB_TOKEN")
+if not TOKEN:
+    raise ValueError("Please paste your GitHub token into the GITHUB_TOKEN widget at the top of the notebook")
+
+headers = {
+    "Authorization": f"Bearer {TOKEN}",
+    "Accept": "application/vnd.github+json",
+}
 
 # -- Fetch recent workflow runs --
-since = (datetime.utcnow() - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
-path = f"/repos/{REPO}/actions/runs?created=>={since}&per_page=20"
+since = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-result = spark.sql(f"""
-SELECT http_request(
-  conn => 'github_api',
-  method => 'GET',
-  path => '{path}',
-  headers => map('Accept', 'application/vnd.github+json')
+resp = requests.get(
+    f"https://api.github.com/repos/{REPO}/actions/runs",
+    headers=headers,
+    params={"created": f">={since}", "per_page": "20"},
+    timeout=30,
 )
-""").collect()[0][0]
-
-runs_data = json.loads(result.text)
+resp.raise_for_status()
+runs_data = resp.json()
 
 def _extract_score(text, pattern):
     """Extract a numeric score from text using a regex pattern."""
@@ -37,30 +43,23 @@ for run in runs_data.get("workflow_runs", []):
         continue
 
     # Fetch check runs for this commit to find Lighthouse annotations
-    checks_path = f"/repos/{REPO}/commits/{run['head_sha']}/check-runs"
-    checks_result = spark.sql(f"""
-    SELECT http_request(
-      conn => 'github_api',
-      method => 'GET',
-      path => '{checks_path}',
-      headers => map('Accept', 'application/vnd.github+json')
+    checks_resp = requests.get(
+        f"https://api.github.com/repos/{REPO}/commits/{run['head_sha']}/check-runs",
+        headers=headers,
+        timeout=30,
     )
-    """).collect()[0][0]
-
-    checks_data = json.loads(checks_result.text)
+    checks_resp.raise_for_status()
+    checks_data = checks_resp.json()
 
     for check in checks_data.get("check_runs", []):
         output = check.get("output", {})
         summary = output.get("summary", "") or ""
         text = output.get("text", "") or ""
-        name = check.get("name", "").lower()
 
-        # Look for Lighthouse-related check runs or annotations with scores
         combined = summary + " " + text
         if not combined.strip():
             continue
 
-        # Try to extract scores from common Lighthouse CI output patterns
         perf = _extract_score(combined, r"performance[:\s]+(\d+)")
         a11y = _extract_score(combined, r"accessibility[:\s]+(\d+)")
         bp = _extract_score(combined, r"best.practices[:\s]+(\d+)")
