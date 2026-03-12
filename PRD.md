@@ -1,8 +1,8 @@
 # Product Requirements Document — madebymiles.ai
 
 **Owner:** Miles Sowden
-**Last updated:** 11 March 2026
-**Status:** Draft for review
+**Last updated:** 12 March 2026
+**Status:** Phases 1-4 complete and live. Observability (Epic 11) partially built.
 
 ---
 
@@ -150,8 +150,23 @@ Migrate from static HTML to **Astro** — a content-focused static site generato
 ┌──────────────────────────────────────────────────────────────────┐
 │                  OBSERVABILITY → DISCORD (Free)                   │
 │                                                                  │
-│  Browser beacon ──→ Worker ──→ Supabase ──→ Cron ──→ Discord     │
-│  (sendBeacon)       (/api/beacon) (Postgres)  (daily)            │
+│  Databricks Free Edition (observability dashboard)               │
+│  ├── Ingestion notebooks (Python requests, widget tokens)        │
+│  │   ├── Cloudflare analytics (confirmed working)                │
+│  │   ├── GitHub Actions runs (confirmed working)                 │
+│  │   ├── Sentry issues (notebook ready, not yet run)             │
+│  │   ├── Lighthouse scores (notebook ready, not yet run)         │
+│  │   └── GSC search data (notebook ready, needs service account) │
+│  ├── AI/BI Dashboard (4 tabs, not yet built)                     │
+│  ├── Genie natural language queries                              │
+│  └── Weekly GenAI report (GitHub Actions → Claude Sonnet →       │
+│      Discord #reports) -- workflow built, soft-fail, needs secrets│
+│                                                                  │
+│  Browser beacon ──→ Worker ──→ TBD ──→ Discord                   │
+│  (sendBeacon)       (/api/beacon)                                │
+│  NOTE: Supabase pauses after 7 days inactivity on free tier.     │
+│  Beacon database decision needed. See Epic 11 implementation     │
+│  notes. Cloudflare Web Analytics covers basics in the meantime.  │
 │                                                                  │
 │  UptimeRobot ─────────────────────────────────→ #uptime-alerts   │
 │  GitHub Actions ──────────────────────────────→ #build-deploys   │
@@ -178,10 +193,11 @@ Migrate from static HTML to **Astro** — a content-focused static site generato
 - **AI API:** Claude Haiku via Anthropic API (role matching in Fit Finder)
 - **DNS & CDN:** Cloudflare free plan (security headers, Web Analytics, edge caching)
 - **Analytics:** Cloudflare Web Analytics (free, cookie-free, privacy-respecting)
-- **Monitoring:** UptimeRobot free tier + Lighthouse CI in GitHub Actions + custom analytics beacon (Workers KV)
-- **Ops dashboard:** Discord server with webhook integrations — all alerts, reports, and metrics push to Discord channels
-- **Funnel tracking:** Lightweight `sendBeacon` → Cloudflare Worker → Supabase Postgres → scheduled Discord reports
-- **Analytics database:** Supabase free tier (500MB Postgres) — proper SQL for funnel queries, historical retention, no write limits
+- **Monitoring:** UptimeRobot free tier + Lighthouse CI in GitHub Actions
+- **Ops dashboard:** Discord server with webhook integrations -- all alerts, reports, and metrics push to Discord channels
+- **Observability platform:** Databricks Free Edition -- ingestion notebooks, AI/BI dashboards, Genie natural language queries, weekly GenAI improvement reports via Claude Sonnet
+- **Funnel tracking:** Custom `sendBeacon` beacon planned (see Epic 11 implementation notes -- Supabase pausing issue requires architecture decision)
+- **Analytics database:** Decision pending. Supabase free tier pauses after 7 days of inactivity, making it unreliable for a low-traffic personal site. Cloudflare Web Analytics covers page views and referrers passively. Options under evaluation: Cloudflare Analytics Engine, keep-alive cron, or defer custom beacon entirely.
 - **Contact:** LinkedIn deep-link messaging + WhatsApp `wa.me` link (no email forms)
 - **Security:** CSP headers, SRI, no cookies, no PII, HSTS
 
@@ -196,9 +212,11 @@ Miles has access to the following services. The PRD uses only the subset needed 
 | Service | Role in project | Tier | Notes |
 |---|---|---|---|
 | **GitHub** | Repo, CI/CD, Pages hosting | Free (with Copilot Pro) | 2,000 Actions mins/month (public repos), 500 (private) |
-| **Cloudflare** | DNS, CDN, Workers, Web Analytics | Free | Domain will point from Squarespace to Cloudflare nameservers |
-| **Supabase** | Analytics database (Postgres) | Free (500MB, 50k MAU) | Replaces Workers KV for funnel tracking — proper SQL, no write limits |
-| **Claude API** | Fit Finder LLM (Haiku) | Pay-per-use | ~$0.002/analysis. Also available: Claude Max subscription for Claude Code |
+| **Cloudflare** | DNS, CDN, Workers, Web Analytics | Free | Domain points from Squarespace to Cloudflare nameservers |
+| **Databricks** | Observability dashboard, Genie, GenAI reports | Free Edition | Workspace: `dbc-0caa5555-b747.cloud.databricks.com`. Ingestion notebooks + AI/BI dashboards. See `docs/PRD-observability-and-design-integration.md` |
+| **Supabase** | Analytics database (Postgres) -- STATUS: ON HOLD | Free (500MB, 50k MAU) | BLOCKER: Free tier pauses projects after 7 days of inactivity. Unreliable for low-traffic personal site. Decision needed on whether to keep, add keep-alive, or replace. |
+| **Penpot** | Design tool (open source, cloud-hosted) | Free | Account at design.penpot.app. MCP server setup script at `scripts/setup-penpot-mcp.sh`. Not yet activated (needs Mac terminal). |
+| **Claude API** | Fit Finder LLM (Haiku) + weekly report (Sonnet) | Pay-per-use | Fit Finder: ~$0.006/analysis. Weekly report: ~$0.01-0.05/week. |
 | **Discord** | Ops dashboard (webhooks) | Free | Server already created. 7 channels for observability |
 | **UptimeRobot** | Uptime monitoring | Free (5 monitors) | Native Discord webhook integration |
 | **Sentry** | JS error tracking | Free (5k events/month) | Native Discord integration |
@@ -562,15 +580,17 @@ A lightweight PIA for the Fit Finder feature (the only data-processing component
 - `Permissions-Policy: camera=(), microphone=(), geolocation=()`
 - HSTS with `includeSubDomains` and `preload`
 
-**Fit Finder security:**
-- File upload validation: accept only PDF and DOCX, max 5MB, validate MIME type AND file header bytes (magic numbers) on both client and server
-- Document processing in Cloudflare Worker isolate — sandboxed V8 runtime, no filesystem access, no persistent state
-- Input sanitisation: strip any embedded scripts/macros from uploaded documents before text extraction
-- Rate limiting: 10 requests per IP per day (prevents abuse and controls API costs)
-- API key for Claude never exposed to the client — stored as Cloudflare Worker secret (encrypted at rest)
-- No logging of document content — only aggregate operational metadata (request count, response time, error rate)
-- Timeout: Worker terminates after 30 seconds to prevent resource exhaustion
-- Uploaded file names are never read or stored — only the extracted text content is processed
+**Fit Finder security (implemented):**
+- **Cloudflare Turnstile** bot protection on the upload form. Client-side widget renders a challenge; server-side verification via `challenges.cloudflare.com/turnstile/v0/siteverify`. Secret key stored as Worker secret (`TURNSTILE_SECRET_KEY`).
+- File upload validation: accept only PDF, max 5MB, validate MIME type on client and server
+- Document processing in Cloudflare Worker isolate -- sandboxed V8 runtime, no filesystem access, no persistent state
+- Input sanitisation: text extraction only, no script/macro execution
+- Rate limiting: 100 requests per IP per day (KV-based). Based on cost math: $0.006/request, $50/month budget = ~8,000 requests. 100/IP/day is invisible to legitimate users.
+- API key for Claude never exposed to the client -- stored as Cloudflare Worker secret (encrypted at rest)
+- No logging of document content -- only aggregate operational metadata (role title, primary alignment count, case study count) posted to Discord
+- Timeout: Worker terminates after 55 seconds (Phase 2 detail calls are slower)
+- Uploaded file names are never read or stored -- only the extracted text content is processed
+- **CSP** delivered via Cloudflare Response Header Transform Rule at the edge. Includes `challenges.cloudflare.com` for Turnstile widget loading.
 
 **Data protection:**
 - No cookies (no cookie banner needed — and that absence is itself a signal)
@@ -587,7 +607,9 @@ A lightweight PIA for the Fit Finder feature (the only data-processing component
 - Lock files committed to git (`package-lock.json`)
 
 **Secrets management:**
-- Claude API key stored as GitHub Actions secret (for build-time) and Cloudflare Worker secret (for runtime)
+- Cloudflare Worker secrets (set via `npx wrangler secret put`): `ANTHROPIC_API_KEY`, `JWT_SECRET`, `DISCORD_WEBHOOK_REPORTS`, `DISCORD_WEBHOOK_ALERTS`, `TURNSTILE_SECRET_KEY`
+- GitHub Actions secrets: `CLOUDFLARE_API_TOKEN` (for Worker deploys, gated behind `vars.WORKER_ENABLED`)
+- Databricks secrets: pending setup (tokens currently pasted via widgets -- see `docs/PRD-observability-and-design-integration.md`)
 - No secrets in client-side code, environment files committed to git, or build output
 - `.env` in `.gitignore` with `.env.example` documenting required variables (without values)
 
@@ -607,8 +629,9 @@ A lightweight PIA for the Fit Finder feature (the only data-processing component
 | GitHub Pages | Static site hosting + CDN | Free | $0 |
 | Cloudflare (free plan) | DNS, CDN, security headers, Web Analytics | Free | $0 |
 | Cloudflare Workers | Fit Finder serverless function | Free (100k req/day) | $0 |
-| Claude API (Haiku) | Role description analysis | Pay-per-use | ~$0.10 (est. 50 analyses) |
-| Supabase | Analytics database (Postgres) | Free (500MB, 50k MAU) | $0 |
+| Claude API (Haiku + Sonnet) | Fit Finder + weekly GenAI report | Pay-per-use | ~$0.30 (Fit Finder) + ~$0.20 (reports) |
+| Databricks | Observability dashboard, Genie, GenAI reports | Free Edition | $0 |
+| Supabase | Analytics database -- ON HOLD (pauses after 7 days inactivity) | Free (500MB) | $0 |
 | Google Fonts | Typography (DM Serif Display, IBM Plex Sans) | Free | $0 |
 | Domain (madebymiles.ai) | `.ai` TLD — already paid (Squarespace) | Paid | $0 (pre-paid) |
 | **Total** | | | **< $1/month** |
@@ -642,10 +665,54 @@ The domain is registered and paid for at Squarespace. To use Cloudflare's free C
 ---
 
 ### Epic 11 — Observability & Discord Ops Dashboard
-> Know exactly who's visiting, where they drop off, when the site is down, what threats are blocked, and how fast it loads — all reported to a Discord channel for free.
+> Know exactly who's visiting, where they drop off, when the site is down, what threats are blocked, and how fast it loads -- all reported to a Discord channel for free.
+
+**Implementation status (12 March 2026):**
+
+| Component | Status | Notes |
+|---|---|---|
+| Discord server + 7 channels | DONE | All channels created and working |
+| Fit Finder Discord alerts | DONE | Usage and error webhooks working |
+| Build/deploy Discord alerts | DONE | deploy.yml posts success/failure to Discord |
+| Lighthouse CI | DONE | 4 URLs tested, budgets defined, artifacts uploaded |
+| Databricks workspace | DONE | `dbc-0caa5555-b747.cloud.databricks.com`, Unity Catalog schemas defined |
+| Databricks ingestion: Cloudflare | DONE | 7 days of analytics confirmed ingested |
+| Databricks ingestion: GitHub Actions | DONE | Workflow runs confirmed ingested |
+| Databricks ingestion: Sentry | READY | Notebook written, not yet run |
+| Databricks ingestion: Lighthouse | READY | Notebook written, not yet run |
+| Databricks ingestion: GSC | READY | Notebook written, needs Google Cloud service account |
+| Databricks ingestion: Supabase | ON HOLD | See Supabase pausing issue below |
+| Weekly GenAI report workflow | BUILT | `.github/workflows/weekly-report.yml`, soft-fail mode, needs secrets |
+| AI/BI Dashboard | NOT STARTED | 4 tabs designed, SQL queries documented |
+| Genie | NOT STARTED | Requires published dashboard |
+| Databricks MCP for Claude Code | NOT TESTED | May not be available on Free Edition |
+| Custom analytics beacon | NOT STARTED | Blocked by Supabase pausing decision |
+| Daily visitor report (cron) | NOT STARTED | Depends on beacon data source |
+| Weekly funnel report (cron) | NOT STARTED | Depends on beacon data source |
+| Security threat report (cron) | NOT STARTED | Needs Cloudflare GraphQL query |
+| UptimeRobot | NOT STARTED | Manual configuration task |
+
+**BLOCKER: Supabase free tier pauses after 7 days of inactivity.** The original beacon architecture (`sendBeacon` to Worker to Supabase Postgres) is unreliable for a low-traffic personal site. Options:
+1. Keep Supabase + add keep-alive cron (adds complexity and a failure mode)
+2. Replace with Cloudflare Analytics Engine (free, 25M data points/month, no pausing)
+3. Defer custom beacon -- Cloudflare Web Analytics (already active, free) covers page views, referrers, and Core Web Vitals without custom code
+4. Route beacon data to Databricks directly (needs testing)
+
+**Recommendation:** Defer the custom beacon. Cloudflare Web Analytics covers the basics. Revisit when traffic justifies funnel tracking. If needed sooner, Cloudflare Analytics Engine is the cleanest replacement.
+
+**Databricks Free Edition: platform constraints (discovered 11 March 2026).** See full retro in `docs/PRD-observability-and-design-integration.md`. Key findings:
+- `dbutils.secrets` API not available in notebooks (must use UI for scope creation)
+- SQL `http_request()` function corrupts JSON payloads -- use Python `requests` instead
+- Widget-based tokens are the working credential pattern (paste token into widget, run notebook)
+- Outbound internet from notebooks works (confirmed)
+- Unity Catalog connections work for credential storage
+- Personal access tokens and MCP not yet tested
+
+**Why Databricks over Grafana:**
+Evaluated Grafana Cloud Free vs Databricks Free Edition (see `docs/PRD-observability-and-design-integration.md`). Selected Databricks because its GenAI layer (Genie + Claude MCP) can read both observability data and the codebase to propose specific improvements with file paths. Grafana provides dashboards and alerts but not GenAI analysis.
 
 **Why Discord as the ops dashboard:**
-Discord webhooks are free, unlimited, and support rich embeds (colour-coded, structured, with fields). Instead of paying for Datadog, PagerDuty, or checking five different dashboards, every signal routes to a single Discord server with channels for each concern. Miles checks one place. Everything is push-based — no dashboards to log into.
+Discord webhooks are free, unlimited, and support rich embeds (colour-coded, structured, with fields). Instead of paying for Datadog, PagerDuty, or checking five different dashboards, every signal routes to a single Discord server with channels for each concern. Miles checks one place. Everything is push-based -- no dashboards to log into.
 
 **Discord server structure:**
 
@@ -864,12 +931,12 @@ Discord embed format example (daily summary):
 ## 9. Phasing
 
 ```
-Phase 0 — Cross-Cutting              Epics 9 + 10 + 11    Security, Cost, Observability & Discord (woven into every phase)
-Phase 1 — Replatform & Core          Epics 1 + 2           Foundation + Contact
-Phase 2 — Credibility Engine         Epics 3 + 4           Skill Matrix + Case Studies
-Phase 3 — Discoverability            Epic 5                LLM Readability + Structured Data
-Phase 4 — AI Differentiator          Epic 8                Fit Finder (Role Matching)
-Phase 5 — Voice & Depth              Epics 6 + 7           Reflections + Projects
+Phase 0 — Cross-Cutting              Epics 9 + 10 + 11    Security, Cost, Observability & Discord    PARTIAL (security done, observability in progress)
+Phase 1 — Replatform & Core          Epics 1 + 2           Foundation + Contact                       COMPLETE
+Phase 2 — Credibility Engine         Epics 3 + 4           Skill Matrix + Case Studies                COMPLETE
+Phase 3 — Discoverability            Epic 5                LLM Readability + Structured Data          COMPLETE
+Phase 4 — AI Differentiator          Epic 8                Fit Finder (Role Matching)                 COMPLETE (redesigned 11 March 2026)
+Phase 5 — Voice & Depth              Epics 6 + 7           Reflections + Projects                     NOT STARTED
 ```
 
 **Phase 0** is not a sequential phase — it is embedded into every other phase. Security headers ship in Phase 1. Cost controls ship with the Fit Finder in Phase 4. Monitoring is configured in Phase 1 and extended as features are added.
@@ -887,7 +954,7 @@ Each phase delivers a working, deployable site. No phase depends on a later phas
 - E-commerce, paid advisory booking, or invoicing
 - CMS or admin interface (content authored in Markdown via Git)
 - Custom domain email (contact flows through LinkedIn/WhatsApp)
-- Server-side data storage beyond analytics (Supabase stores anonymous event counts only — no PII, no user data)
+- Server-side data storage beyond analytics (if beacon is built, it stores anonymous event counts only -- no PII, no user data)
 - Paid services beyond Claude API micro-usage (total budget ≤ $5/month variable cost)
 
 ---

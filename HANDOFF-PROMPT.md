@@ -1,269 +1,309 @@
-# Handoff Prompt — Continue in Claude Code
+# Handoff Prompt -- madebymiles.ai Observability and Infrastructure
 
-Read this file first, then read `PRD.md` and `ROADMAP.md` for full context.
+**Date:** 12 March 2026
+**Context:** This prompt hands over the remaining back-end and observability work for madebymiles.ai. The front-end site is live, the Fit Finder is deployed and working end-to-end. Read this file first, then read `PRD.md` and `docs/PRD-observability-and-design-integration.md` for full context.
 
 ---
 
-## Current state
+## What is madebymiles.ai
 
-**Branch:** `claude/fit-finder-redesign`
-**Phase 1:** Complete and live at madebymiles.ai.
-**Phase 2 (Credibility Engine):** Complete (core). Skill matrix, experience page, case study pages, prev/next nav, Lighthouse CI all shipped.
-**Phase 3 (Discoverability):** Complete (core). llms.txt, llms-full.txt, RSS feed, Article JSON-LD, robots.txt LLM refs all shipped.
-**Phase 4 (Fit Finder):** Complete. Redesigned with three-tier structure, complete AICD skill matrix, case study matching, brand voice enforcement.
-**PVT:** All checks passed. Site live, HTTPS, DNS, sitemap, Discord notifications all working.
-**Security headers:** A+ on securityheaders.com. Cloudflare Transform Rules configured.
+A personal executive site for Miles Sowden, an insurance executive targeting CEO, CXO, and NED roles in Australian insurance and financial services. Built on Astro 5 (static, GitHub Pages), with a Cloudflare Worker powering the AI Fit Finder feature.
 
-### What is live
+---
 
-**Pages:** Homepage, Experience (/experience), Contact (/contact), Privacy (/privacy), 5 case study pages (/work/sci, /work/cba, /work/hollard, /work/suncorp, /work/westpac)
-**Infrastructure:** Cloudflare DNS (proxied), GitHub Pages, Discord (#alerts, #reports), UptimeRobot, Supabase, Sentry, Google Search Console, Dependabot.
+## Current state (what is working)
 
-### Homepage features
-- Hero with headshot (desktop: right column, mobile: above CTAs)
-- "What I bring" section: 4 capability blocks (Strategic Leadership, Business Transformation, People and Culture, Technology and AI)
-- "Work and impact" section: 6 cards in 3x2 grid (SCI, CBA, Hollard, Suncorp, Westpac, Agentic Engineering). Cards are non-linking divs (case study detail is surfaced through the Fit Finder instead).
-- Role cards standardised: company name, role/scope subtitle, outcomes paragraph
-- Closing section with Contact CTA
-- Person JSON-LD with credentials, occupations, knowsAbout
-- OG image set to headshot
+### Site and Fit Finder -- COMPLETE
 
-### Contact page
-- LinkedIn and WhatsApp cards with buttons pinned to bottom (flex/mt-auto)
-- "Role fit" section: CEO/CXO, NED, Advisory
+- Astro 5 site live on madebymiles.ai via GitHub Pages + Cloudflare CDN
+- Pages: Homepage, Experience (/experience), Contact (/contact), Privacy (/privacy), 5 case study pages (/work/*)
+- Fit Finder (two-phase AI role matching) deployed on Cloudflare Workers
+  - Phase 1: `POST /api/fit` returns executive summary + top match cards (~400 tokens, Claude Haiku)
+  - Phase 2: `POST /api/fit/detail` returns complete AICD skill matrix (10 entries) + 2-3 matched case studies (~1800 tokens, Claude Haiku)
+- Cloudflare Turnstile bot protection working end-to-end (client + server verification)
+- CSP headers delivered via Cloudflare Response Header Transform Rule
+- Discord webhook alerts for Fit Finder usage and errors
+- Rate limiting via Workers KV (100/IP/day)
+- Three-tier results structure with LinkedIn/WhatsApp unlock
+- Profile hydration pattern: Claude returns compact JSON, Worker hydrates with full profile data
 
-### Footer
-- "Growth and Transformation. GAICD. GDipAppFin."
-- LinkedIn, WhatsApp, Privacy links
-- "Built for humans. Readable by AI." → links to /llms.txt
+### Discoverability -- COMPLETE
 
-### Discoverability (Phase 3)
-- `/llms.txt` — concise LLM-readable profile (auto-generated from content collections)
-- `/llms-full.txt` — comprehensive LLM-readable profile with full case study bodies
-- `/rss.xml` — RSS feed for case studies
+- `/llms.txt` and `/llms-full.txt` auto-generated from content collections
 - Article JSON-LD on each case study page
-- `link rel="alternate"` for llms.txt and RSS in `<head>`
-- robots.txt references LLM content files
+- RSS feed at `/rss.xml`
+- robots.txt with LLM content references
+- Person JSON-LD with credentials, occupations, knowsAbout
 
-### Technical
-- CSP includes `script-src 'self' 'unsafe-inline'` (needed for Astro inline module scripts)
-- Cloudflare Transform Rule CSP must match (user action: update the CSP value in Cloudflare dashboard)
-- Title tag: "Miles Sowden | Insurance Executive, Growth and Transformation"
-- Sitemap at /sitemap-index.xml, robots.txt references it
-- Favicon: SVG "M" in brand colours
+### CI/CD Pipeline -- COMPLETE
 
----
+- GitHub Actions: build, deploy to GitHub Pages, Lighthouse CI, Worker deploy
+- Lighthouse CI tests 4 URLs with budget file (`.github/lighthouse-budget.json`)
+- Worker deploy gated behind `vars.WORKER_ENABLED`
+- Discord notifications: build success to #reports, failures to #alerts, Lighthouse scores to #reports
+- `npm audit` in CI
 
-## Pending user action
+### Databricks Observability -- PARTIALLY COMPLETE
 
-- **Update Cloudflare Transform Rule:** Change the Content-Security-Policy header value to add `script-src 'self' 'unsafe-inline'` so the hamburger menu works. See SECURITY-HEADERS.md for the exact value.
+- Databricks Free Edition workspace: `https://dbc-0caa5555-b747.cloud.databricks.com` (mlfsowden@gmail.com)
+- 6 ingestion notebook templates in `databricks/notebooks/`
+- Unity Catalog schemas defined for 6 tables (see PRD-observability doc for full schemas)
+- Weekly GenAI report workflow: `.github/workflows/weekly-report.yml` (soft-fail, needs secrets)
+- **Confirmed working:** Cloudflare ingestion (7 days), GitHub Actions ingestion, outbound internet from notebooks
+- **Confirmed working pattern:** Python `requests` with widget-based tokens (not SQL `http_request()`, not `dbutils.secrets`)
+- Setup guide: `databricks/setup-databricks.md`
+- Full PRD: `docs/PRD-observability-and-design-integration.md`
 
----
+### Penpot Design Integration -- READY TO ACTIVATE
 
-### Phase 2 progress (Credibility Engine) — COMPLETE (core)
-
-**Done:**
-- AICD-aligned skill matrix: 13 skill JSON files across 4 domains in `src/content/skills/`
-- Experience page (`/experience`): skill matrix grid with rating badges, career timeline, credentials
-- 5 case study pages (`/work/[slug]`): SCI, CBA, Hollard, Suncorp, Westpac with Context/What I did/Results
-- Prev/next navigation between case studies
-- Homepage cards linked to case study pages (first 5 are clickable)
-- Skill cards with `caseStudySlug` link through to case studies
-- Header nav updated: Experience link points to `/experience`
-- @tailwindcss/typography installed for prose styling on case study pages
-- Credentials: GAICD, GDipAppFin, BBus on experience page and JSON-LD
-- Lighthouse CI added to GitHub Actions (`.github/lighthouse-budget.json`)
-- Skill ratings: 8 Expert, 5 Practised
-
-**Deferred (requires infrastructure setup):**
-1. **Supabase analytics beacon** — Cloudflare Worker `/api/beacon`, sendBeacon on page_view, scroll_50, CTA clicks.
-2. **Discord reporting cron Worker** — Daily visitor summary to #reports, weekly funnel to #reports.
-
-### Phase 3 progress (Discoverability) — COMPLETE (core)
-
-**Done:**
-- `/llms.txt` and `/llms-full.txt` — Astro API routes auto-generated from content collections
-- Article JSON-LD on each case study page (schema.org Article)
-- RSS feed at `/rss.xml` via @astrojs/rss
-- `link rel="alternate"` for llms.txt and RSS in Base.astro `<head>`
-- robots.txt updated with LLM content references
-- Footer: "Built for humans. Readable by AI." linked to /llms.txt
-- LLM validation: fetched /llms.txt, produced accurate 200-word summary
-
-**Deferred (manual Cloudflare step):**
-- **Cloudflare AI Crawl Control** — Allow Google, Anthropic, OpenAI; block unwanted scrapers. Configure in Cloudflare dashboard.
+- Setup script: `scripts/setup-penpot-mcp.sh`
+- MCP server config added to Claude Code (`http://localhost:4401/mcp`)
+- Requires running setup script from Mac terminal (not done yet)
 
 ---
 
-### Phase 4 progress (Fit Finder) — COMPLETE (redesigned)
+## Known issues and blockers
 
-**Original build (shipped earlier):**
-- `/fit` page: drag-and-drop PDF upload, text paste, loading state, results with blur/unlock, shareable signed URLs
-- Cloudflare Worker (`fit-finder`): PDF extraction (unpdf), Claude Haiku 4.5 analysis, HMAC-signed JWT tokens, KV rate limiting (100/IP/day), Discord notifications
-- Profile JSON generator (`scripts/generate-profile.ts`): reads content collections, builds structured profile for Claude prompt
-- Worker route: `madebymiles.ai/api/*` → fit-finder Worker
-- Worker secrets: ANTHROPIC_API_KEY, JWT_SECRET, DISCORD_WEBHOOK_REPORTS, DISCORD_WEBHOOK_ALERTS
-- KV namespace: RATE_LIMIT_KV (238b5712c7fe45dcb0c020aa7850036d)
-- Privacy page updated with comprehensive Fit Finder data handling
-- Header nav updated with Fit Finder link (desktop + mobile)
-- Lighthouse CI tests /fit page
-- Worker deploy in GitHub Actions gated behind `vars.WORKER_ENABLED` variable
-- `CLAUDE.md` created with CI/CD quality gate protocol
+### CRITICAL: Supabase free tier pausing
 
-**Fit Finder Redesign (2026-03-11):**
+Supabase pauses inactive projects on the free tier after 7 days of inactivity. This is a known limitation of Supabase Free. The PRD (Epic 11, Section 1) specifies Supabase as the analytics beacon database:
 
-The Fit Finder was redesigned from a ranked-matches model to a complete AICD skill matrix evaluation with case study matching. Key changes:
+```
+Browser (sendBeacon) --> Cloudflare Worker (/api/beacon) --> Supabase Postgres
+```
 
-*Backend (`workers/fit-finder/`):*
-- `types.ts`: New interfaces (SkillMatrixEntry, CaseStudyMatch, FitResponse). Old MatchResult kept for backwards compatibility with existing shared URL tokens (30-day expiry).
-- `claude.ts`: Complete rewrite. System prompt now evaluates all 10 AICD skill areas (was top-6 matches). Includes brand voice rules, qualitative evidence field, case study selection (2-3 most relevant). max_tokens increased from 2048 to 6144, timeout from 28s to 55s. Model remains claude-haiku-4-5-20251001.
-- `analyse.ts`: Discord notification updated from match count to primary alignment count.
-- Estimated cost per analysis: ~$0.006 (was ~$0.002).
+**Impact:** If the beacon Worker is built as specified in the PRD, the Supabase project will pause unless:
+- The site generates enough beacon traffic to keep it active (unlikely for a personal site in early months)
+- Miles manually unpauses it regularly (bad UX, defeats the purpose)
+- A keep-alive cron pings the Supabase API daily (adds complexity)
 
-*Frontend (`src/pages/fit.astro`):*
-- Three-tier results structure:
-  - Tier 1 (visible): Summary, top matches (skillset + mindset cards), skill matrix with qualitative evidence
-  - Tier 2 (blurred): Complete AICD skill matrix with full quantitative evidence
-  - Tier 3 (blurred): Matched case studies (2-3 most relevant)
-- Dual unlock path: reader clicks LinkedIn or WhatsApp, then chooses "Show the full skill evaluation" or "Show the matched case studies". Second section available via "also" button.
-- Evidence swapping: qualitative evidence shown while blurred, full evidence with figures revealed on unlock (via data attributes).
-- Backwards compatibility: old JWT tokens with `matches[]` format render via legacy path.
-- Loading time updated to "15 to 25 seconds" (was "10 to 15 seconds"). Progress bar slowed accordingly.
+**Decision needed:** The PRD's Supabase beacon architecture may need to be reconsidered. Options:
 
-*Site consolidation:*
-- Homepage role cards converted from `<a>` links to `<div>` elements (case study detail surfaced through Fit Finder instead).
-- `astro.config.mjs`: Sitemap filter excludes `/work/*` pages.
-- `/llms.txt`: Removed links to case study pages, added Fit Finder section.
-- `/llms-full.txt`: Added Fit Finder section describing capabilities.
+1. **Keep Supabase, add keep-alive cron** -- A scheduled GitHub Actions job or Cloudflare Worker pings the Supabase REST API daily to prevent pausing. Simplest to implement, but adds a dependency and a failure mode.
 
-**CI Worker deploy:**
-1. Add `CLOUDFLARE_API_TOKEN` to GitHub repo secrets (can use existing `madebymiles-deploy` token)
-2. Set repo variable `WORKER_ENABLED` = `true`
+2. **Replace Supabase with Cloudflare Analytics Engine** -- Cloudflare's free Analytics Engine (25M data points/month) accepts write events from Workers and supports SQL-like queries. No pausing risk, no external dependency, already in the Cloudflare ecosystem. The beacon Worker writes directly to Analytics Engine instead of Supabase.
 
----
+3. **Replace Supabase with Databricks directly** -- Since Databricks is already the observability platform, route beacon data there. But Databricks Free Edition may not accept real-time writes from a Worker (needs testing).
 
-### Phase 4 QA Report (2026-03-04, pre-redesign)
+4. **Defer the beacon entirely** -- Cloudflare Web Analytics (already active, free, passive) provides page views, top pages, referrers, and Core Web Vitals without any custom code. The custom beacon adds funnel tracking (scroll_50, skill_matrix_view, cta_click_*) which is valuable but not critical yet.
 
-**E2E Testing — All passed:**
-- Text paste (>100 chars): 6 matches returned, high confidence, role title extracted
-- XSS test: HTML stripped by sanitiser, valid results returned
-- Error paths: short text (400), empty text (400), invalid token (400), unsupported content type (400)
-- All pages return 200 (with expected trailing-slash 301 redirects)
-- Machine-readable files: `/llms.txt`, `/llms-full.txt`, `/rss.xml`, `/sitemap-index.xml` all 200
-- `/api/health` returns `{"status":"ok"}` with 200
+**Recommendation:** Option 4 (defer) for now -- Cloudflare Web Analytics covers the basics. Revisit when the site has enough traffic to justify funnel tracking. If funnel tracking is needed sooner, Option 2 (Cloudflare Analytics Engine) is the cleanest path.
 
-**Security (still current):**
-- Security headers: A+ on securityheaders.com
-- CORS: locked to `https://madebymiles.ai` only
-- No `.env` files or API keys in git history
-- No `any` types or `console.log` in Worker code
+### Databricks Free Edition limitations (hard-won lessons)
 
-**Known issues (low risk):**
-1. JWT signature comparison uses `!==` (not constant-time). Low risk: tokens are for sharing results, not authentication.
-2. CSP `connect-src 'self'` may need updating if Cloudflare Web Analytics JS beacon is added.
-3. `@astrojs/check` not installed.
+These were discovered through painful trial and error (see retro in `docs/PRD-observability-and-design-integration.md`):
+
+| Feature | Status on Free Edition |
+|---|---|
+| `dbutils.secrets.createScope` | Must use UI, not notebooks |
+| `dbutils.secrets.put` | Not available in notebooks |
+| Secrets REST API | 404 -- not available |
+| `dbutils.secrets.get` | Works (can read if secrets exist in a scope) |
+| Outbound internet from notebooks | Works (confirmed) |
+| `http_request()` SQL function | Works for simple GETs, corrupts JSON for complex payloads |
+| Unity Catalog connections | Works for credential storage |
+| Personal access tokens | Not yet tested |
+| MCP server | Not yet tested |
+
+**The working pattern:** Python `requests` with widget-based tokens. Each notebook has `dbutils.widgets.text()` at the top. You paste the API token into the widget, then run. For scheduled jobs, tokens need Databricks secrets or environment variables.
+
+**Widget quirk:** Databricks widgets ignore default values if the widget was previously created empty. Fix: run `dbutils.widgets.removeAll()` before first run.
+
+### Supabase ingestion notebook may be moot
+
+`databricks/notebooks/ingest_supabase.py` was written to pull Supabase project health metrics into Databricks. If Supabase is dropped as the beacon database, this notebook has limited value (it only checks db_healthy, db_size, storage, bandwidth). It can be removed or deprioritised.
 
 ---
 
-### UAT (for Miles, post-redesign)
+## What needs to be done
 
-- [ ] Visit madebymiles.ai/fit on iPhone and Mac
-- [ ] Paste a real role description
-- [ ] Upload a real PDF
-- [ ] Review complete 10-skill AICD matrix for accuracy
-- [ ] Verify three-tier structure: summary visible, matrix and case studies blurred
-- [ ] Test LinkedIn unlock: opens messaging, choice appears, section unblurs
-- [ ] Test WhatsApp unlock: opens WhatsApp, choice appears, section unblurs
-- [ ] Test "also available" button reveals second section
-- [ ] Verify evidence swaps from qualitative to full on unlock
-- [ ] Share a result link — verify it works for recipients
-- [ ] Test an old shared link (if any exist) — verify legacy rendering works
-- [ ] Check Discord for notifications (should show primary alignment count)
-- [ ] Verify homepage role cards are not clickable
-- [ ] Verify /llms.txt includes Fit Finder section and no broken links
-- [ ] Check /sitemap-index.xml excludes /work/* pages
+### 1. Finish Databricks setup (partially done)
+
+**Reference:** `docs/PRD-observability-and-design-integration.md` and `databricks/setup-databricks.md`
+
+**Already done:**
+- Workspace created, catalog/schema defined
+- Cloudflare and GitHub Actions ingestion confirmed working
+- 6 notebook templates written and in repo
+- Weekly report workflow in GitHub Actions (soft-fail mode)
+
+**Still to do:**
+- Run remaining ingestion notebooks: Sentry, Lighthouse, GSC (and Supabase if kept)
+- Collect API tokens for each service (see Browser Session 3 in the PRD-observability doc for where to get each one)
+- Build the AI/BI Dashboard (4 tabs: Performance, Security, Deployment, Search/Traffic -- SQL queries documented in PRD-observability doc)
+- Test Genie natural language queries on published dashboard
+- Generate Databricks personal access token (if available on Free Edition)
+- Add GitHub repo secrets: `DATABRICKS_HOST`, `DATABRICKS_TOKEN`, `ANTHROPIC_API_KEY`
+- Add GitHub repo variables: `DATABRICKS_REFRESH_JOB_ID`, `DATABRICKS_WAREHOUSE_ID`
+- Schedule daily ingestion job in Databricks Workflows
+- Trigger weekly report manually, verify it posts to Discord #reports
+- Remove `continue-on-error: true` from weekly-report.yml after it passes green
+
+### 2. Resolve Supabase beacon architecture (decision needed)
+
+**Reference:** PRD.md Epic 11 Section 1
+
+The PRD specifies a custom analytics beacon writing to Supabase. Given the pausing issue, decide whether to:
+- Build it as specified with a keep-alive mechanism
+- Switch to Cloudflare Analytics Engine
+- Defer and rely on Cloudflare Web Analytics for now
+
+If building the beacon:
+- New Cloudflare Worker endpoint: `/api/beacon`
+- Client-side sendBeacon script in `src/layouts/Base.astro`
+- 8 tracked funnel events (page_view through cta_click_whatsapp -- see PRD)
+- Update CSP `connect-src` to allow the beacon endpoint
+- Update `SECURITY-HEADERS.md` and Cloudflare Transform Rule
+
+### 3. Scheduled Discord reports (partially done)
+
+**Reference:** PRD.md Epic 11 Section 2
+
+The weekly GenAI report is built (`.github/workflows/weekly-report.yml`) but not yet active. It queries Databricks and uses Claude Sonnet to generate improvement proposals.
+
+**Still to do:**
+- Daily summary report (08:00 AEST to #site-visitors) -- not built yet. If beacon is deferred, this depends on Cloudflare Web Analytics data instead of Supabase.
+- Weekly funnel report (Monday 08:00 to #funnel-tracking) -- depends on beacon data
+- Weekly security report (Monday 08:00 to #security-threats) -- not built yet. Needs Cloudflare GraphQL Analytics API query.
+- Monthly Fit Finder report (1st of month to #fit-finder) -- not built yet. Data available from existing Worker Discord webhooks.
+
+**Discord channels already created:**
+`#site-visitors`, `#funnel-tracking`, `#uptime-alerts`, `#build-deploys`, `#security-threats`, `#fit-finder`, `#dependency-alerts`
+
+### 4. Security and threat monitoring (not started)
+
+**Reference:** PRD.md Epic 11 Section 6
+
+- Scheduled Worker or GitHub Actions job querying Cloudflare GraphQL Analytics API for firewall events, bot scores, threat countries
+- Weekly summary posted to `#security-threats`
+- Rate limit alerts already in place via Fit Finder Worker
+
+### 5. Uptime monitoring (not started)
+
+**Reference:** PRD.md Epic 11 Section 4
+
+- UptimeRobot free tier: 3 monitors (homepage, llms.txt, /api/health)
+- UptimeRobot native Discord webhook to `#uptime-alerts`
+- This is a manual configuration task, not code
+
+### 6. Penpot design system setup (ready to activate)
+
+**Reference:** `docs/PRD-observability-and-design-integration.md` Stream 1
+
+- Run `bash scripts/setup-penpot-mcp.sh` from Mac terminal
+- Create design system in Penpot with tokens from `tailwind.config.mjs`
+- Connect Claude Code MCP
+- This is a Mac-only task (needs terminal and VS Code)
 
 ---
 
-### Carry forward
+## Cloudflare Worker secrets (already set)
 
-**Should do (low effort):**
-- JWT constant-time comparison fix
-- Verify Anthropic retention policy (privacy page says "up to 30 days", may have changed)
-- Post-redesign QA: re-run full E2E test suite with new response format
+Set via `npx wrangler secret put`:
+- `ANTHROPIC_API_KEY`
+- `JWT_SECRET`
+- `DISCORD_WEBHOOK_REPORTS`
+- `DISCORD_WEBHOOK_ALERTS`
+- `TURNSTILE_SECRET_KEY`
 
-**Nice to have:**
-- Sentry SDK integration (JS error tracking)
-- SRI hashes on Google Fonts
-- Cloudflare AI Crawl Control (dashboard config)
-- Supabase analytics beacon (deferred from Phase 2)
-- Anthropic billing alert ($5/month, budget ~$0.006/analysis)
-- Install `@astrojs/check` for Astro type checking
-- Update Worker dev deps to clear npm audit findings
-
-### Next: Phase 5 — Voice and Depth
-
-See ROADMAP.md. Reflections (short-form writing), projects section, RSS expansion.
-
-**Phase 5.1 — Reflections:**
-- Content collection `src/content/reflections/` (Markdown)
-- `/reflections` listing page + individual pages
-- 3-5 initial pieces (culture, transformation lessons, AI adoption, leadership)
-- "Latest thinking" section on homepage
-- Add to RSS feed and `/llms-full.txt`
-
-**Phase 5.2 — Projects:**
-- Content collection `src/content/projects/` (Markdown)
-- `/projects` listing page + individual pages
-- 2-3 initial pieces (this website as meta case study, other AI/automation projects)
-- "Building things" teaser on homepage
+KV namespace: `RATE_LIMIT_KV` (238b5712c7fe45dcb0c020aa7850036d)
 
 ---
 
-## Lessons learned
+## Key files and locations
 
-### Lighthouse CI thresholds (Phase 2)
-**Issue:** Lighthouse CI was added with FCP budget of 1500ms and interactive budget of 3000ms. These passed locally but failed on every GitHub Actions run (actual FCP ~2700ms, interactive ~3368ms). Google Fonts are render-blocking, and CI runners are ~2x slower than real users.
+| File | Purpose |
+|---|---|
+| `PRD.md` | Full product requirements (Epic 11 has observability specs) |
+| `docs/PRD-observability-and-design-integration.md` | Databricks + Penpot detailed PRD with retro and lessons |
+| `databricks/setup-databricks.md` | Step-by-step Databricks setup guide |
+| `databricks/notebooks/` | 6 ingestion notebooks + 1 connections setup |
+| `.github/workflows/deploy.yml` | Main CI/CD pipeline |
+| `.github/workflows/weekly-report.yml` | Weekly GenAI report (soft-fail, needs secrets) |
+| `CLAUDE.md` | Project rules and CI/CD quality gate protocol |
+| `SECURITY-HEADERS.md` | CSP and header configuration |
+| `src/layouts/Base.astro` | Base layout (beacon script would go here) |
+| `src/pages/fit.astro` | Fit Finder front-end |
+| `workers/fit-finder/` | Fit Finder Worker (index.ts, handlers/, lib/) |
+| `workers/fit-finder/wrangler.toml` | Worker config, routes, KV bindings |
+| `workers/fit-finder/src/lib/claude.ts` | Prompt engineering, VOICE_RULES, ACCURACY_RULES |
+| `workers/fit-finder/src/profile.json` | Structured profile for AI matching |
+| `scripts/setup-penpot-mcp.sh` | Penpot MCP setup script |
+| `scripts/generate-profile.ts` | Profile JSON generator from content collections |
+| `tailwind.config.mjs` | Design tokens (colours, fonts, spacing) |
 
-**Root cause:** Untested quality gate. Thresholds were committed without running them in the target CI environment first.
+---
 
-**Fix:** Relaxed to FCP 3500ms, interactive 5000ms (2x real-world baseline accounts for CI runner overhead).
+## Architecture decisions already made
 
-**Protocol added:** See `CLAUDE.md` "CI/CD quality gate protocol" section. Key rules: baseline before budget, soft-fail first, CI environment awareness, test the test.
-
-### Wrangler secrets stored as names (Phase 4)
-**Issue:** `wrangler secret put` prompts for the secret value interactively. User pasted API keys as the secret **name** (command argument) instead of the **value** (interactive prompt). Result: `wrangler secret list` showed `sk-ant-api03-...` as a secret name, and the actual value was empty/wrong. Two API keys were compromised (visible in terminal history/logs) and needed rotation.
-
-**Root cause:** Confusing UX of `wrangler secret put NAME` where NAME is the variable name, not the value. The value is entered at the "Enter a secret value:" prompt.
-
-**Fix:** Deleted all malformed secrets, created new API key (`madebymiles-fit-finder`), re-set all 4 secrets correctly. Rotated compromised keys on Anthropic console.
-
-**Lesson:** Always verify secrets with `wrangler secret list` after setting them. If a secret name looks like a key value, it was set wrong.
-
-### Rate limiting for executive tools (Phase 4)
-**Issue:** Initial rate limit of 10/IP/day hit during development testing. User correctly challenged: "why limit enquiries? this is for a CEO role."
-
-**Fix:** Math-based limit: $0.01/request, $50/month budget = ~5,000 requests. 100/IP/day is invisible to legitimate users and still prevents abuse.
-
-**Lesson:** Rate limits should be based on cost math and user experience, not arbitrary low numbers.
+| Decision | Choice | Rationale |
+|---|---|---|
+| Observability platform | Databricks Free Edition (not Grafana) | GenAI layer (Genie + Claude MCP) reads both data and code to propose improvements |
+| Design tool | Penpot (not Figma) | Free, open source, official MCP server |
+| Alert channel | Discord | Already working, unlimited webhooks, unlimited history, free |
+| Report delivery | Discord via GitHub Actions | No new tools, fits existing workflow |
+| Report model | Claude Sonnet (not Opus) | Keeps weekly API cost under $0.05 |
+| Notebook HTTP pattern | Python `requests` (not SQL `http_request()`) | SQL function corrupts JSON escaping. Learned the hard way. |
+| Credential pattern | Widget-based tokens | `dbutils.secrets` API not available on Free Edition |
+| Fit Finder architecture | Two-phase (summary then detail) | Keeps Phase 1 under 3 seconds |
+| Profile hydration | Claude returns names, Worker hydrates data | Keeps token usage low |
+| CSP delivery | Cloudflare Transform Rules | HTTP headers take precedence over meta tags |
+| Static-first | No servers, no containers | Supabase free tier is the only database (if kept) |
 
 ---
 
 ## Design and content rules
 
-- No emdashes, en-dashes, or ampersands
-- No "me" in CTAs
+- AU/UK spelling throughout (analyse, recognise, organisation)
+- No em dashes, en dashes, or ampersands (exception: P&L)
+- No "me" in CTAs. No desperate positioning.
 - CTA text: direct and confident ("Contact", "Connect on LinkedIn", "Open WhatsApp")
-- No desperate positioning ("Open to opportunities")
-- "Growth" is contextualised: structural/strategic growth (alliances, channels, pricing), not pure revenue growth
 - CEO-first lens: strategy, leadership, people first; AI is a capability not the identity
+- Evidence over adjectives, outcomes over technology
+- State final position only, never growth trajectories
+- Every generated metric names the specific organisation
+- Total variable cost under $5/month
 - Apple x Tom Ford aesthetic: whitespace, restraint, typography
-- All text content must be responsive (no hard max-w that breaks alignment with card grids)
-- Footer tagline: post-nominals in abbreviated form (GAICD, GDipAppFin)
-- Scannable in 10 seconds, expandable to 1 minute
+
+---
+
+## Priority order for next session
+
+1. **Decide on Supabase/beacon** -- Quick conversation, no code needed yet
+2. **Finish Databricks ingestion** -- Run Sentry and Lighthouse notebooks, collect remaining API tokens
+3. **Build Databricks dashboard** -- 4 tabs, SQL queries are documented
+4. **Activate weekly report** -- Add secrets/variables to GitHub repo, trigger manually
+5. **Configure UptimeRobot** -- Manual setup, 10 minutes
+6. **Build security report** -- Cloudflare GraphQL query, post to Discord
+7. **Build beacon** (if decided to proceed) -- Worker + client script + CSP update
+8. **Penpot setup** -- Mac-only, when at home
+
+---
+
+## Lessons learned (carry forward)
+
+### Databricks Free Edition (2026-03-11)
+
+The ingestion notebooks went through 3 complete architectures before finding one that worked. See the full retro in `docs/PRD-observability-and-design-integration.md`. Key takeaway: **test one thing end-to-end before scaling to six.** When integrating with any unfamiliar platform:
+
+1. Smoke test first, code second
+2. One notebook fully tested, then clone
+3. Pivot on first failure, do not patch
+4. Document platform constraints before building on them
+
+### Lighthouse CI thresholds
+
+Thresholds committed without CI baseline testing. GitHub Actions runners are 2x slower than real users. Fixed: FCP 3500ms, interactive 5000ms. Protocol added to `CLAUDE.md`.
+
+### Wrangler secrets UX
+
+`wrangler secret put NAME` prompts for the value interactively. User pasted API keys as the name argument. Two keys were compromised and rotated. Always verify with `wrangler secret list`.
+
+---
 
 ## User preferences
-- Limited technical knowledge, explain in plain English
+
+- Limited technical knowledge -- explain in plain English
 - Values design discipline and brand consistency
-- LinkedIn: "Led $1bn insurer | Growth and Transformation | MIT | GAICD"
-- Profile data: `.claude/projects/-Users-milessowden-Projects-madebymiles/memory/miles-profile.md`
+- Prefers direct action over lengthy proposals
+- Wants persona-based review of significant content changes (board chair, search consultant, CEO peer)
