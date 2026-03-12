@@ -276,6 +276,7 @@ import Base from '@/layouts/Base.astro';
     matchReason: string;
     evidence: string;
     evidenceQualitative: string;
+    headline: string;
     confidence: 'high' | 'medium' | 'low';
   }
 
@@ -612,8 +613,11 @@ import Base from '@/layouts/Base.astro';
 
     const relevanceLabel = entry.relevance.charAt(0).toUpperCase() + entry.relevance.slice(1);
 
-    // Use qualitative evidence when blurred, full evidence when unblurred
-    const evidenceText = blurred ? entry.evidenceQualitative : entry.evidence;
+    // Primary: show full evidence when unblurred, qualitative when blurred
+    // Supporting/noted: show headline (curated one-liner from profile)
+    const evidenceText = blurred
+      ? (entry.evidenceQualitative || entry.headline)
+      : entry.evidence;
 
     return `
       <div class="p-4 ${relevanceClass} bg-bg-card rounded">
@@ -621,7 +625,7 @@ import Base from '@/layouts/Base.astro';
           <span class="text-base text-text-primary font-medium">${entry.skillArea}</span>
           <span class="text-sm text-text-secondary uppercase tracking-wider">${relevanceLabel}${topMatchNote}</span>
         </div>
-        <div class="${blurred ? 'blur-md select-none pointer-events-none' : ''} transition-all duration-500" data-evidence-full="${escapeAttr(entry.evidence)}" data-evidence-qual="${escapeAttr(entry.evidenceQualitative)}">
+        <div class="${blurred ? 'blur-md select-none pointer-events-none' : ''} transition-all duration-500" data-evidence-full="${escapeAttr(entry.evidence)}" data-evidence-qual="${escapeAttr(entry.evidenceQualitative || entry.headline)}">
           <p class="text-sm text-text-secondary mb-1">${entry.matchReason}</p>
           <p class="text-base text-text-secondary">${evidenceText}</p>
         </div>

@@ -7,6 +7,7 @@ export interface SkillMatrixEntry {
   matchReason: string;
   evidence: string;
   evidenceQualitative: string;
+  headline: string;
   confidence: 'high' | 'medium' | 'low';
 }
 
@@ -58,6 +59,7 @@ export interface ProfileDomain {
     category: string;
     rating: string;
     evidence: string;
+    headline: string;
   }[];
 }
 

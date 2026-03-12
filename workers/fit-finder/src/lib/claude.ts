@@ -8,7 +8,7 @@ interface ClaudeCompactEntry {
   skillArea: string;
   relevance: 'primary' | 'supporting' | 'noted';
   matchReason: string;
-  evidenceQualitative: string;
+  evidenceQualitative?: string; // Only returned for primary matches
   confidence: 'high' | 'medium' | 'low';
 }
 
@@ -50,7 +50,7 @@ export async function callClaude(
     },
     body: JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 4096,
+      max_tokens: 2048,
       system: systemPrompt,
       messages: [{ role: 'user', content: `Role description:\n\n${roleText}` }],
     }),
@@ -104,13 +104,14 @@ export async function callClaude(
 /** Merge Claude's analysis with static profile data. */
 function hydrate(compact: ClaudeCompactResponse, p: Profile): HydratedResponse {
   // Build lookup maps
-  const skillMap = new Map<string, { domain: string; evidence: string; rating: string }>();
+  const skillMap = new Map<string, { domain: string; evidence: string; rating: string; headline: string }>();
   for (const domain of p.domains) {
     for (const skill of domain.skills) {
       skillMap.set(skill.skillArea, {
         domain: domain.domain,
         evidence: skill.evidence,
         rating: skill.rating,
+        headline: skill.headline,
       });
     }
   }
@@ -124,7 +125,8 @@ function hydrate(compact: ClaudeCompactResponse, p: Profile): HydratedResponse {
     });
   }
 
-  // Hydrate skill matrix
+  // Hydrate skill matrix — use Claude's evidenceQualitative for primary,
+  // fall back to curated headline for supporting/noted
   const skillMatrix: SkillMatrixEntry[] = compact.skillMatrix.map((entry) => {
     const profileData = skillMap.get(entry.skillArea);
     return {
@@ -133,7 +135,8 @@ function hydrate(compact: ClaudeCompactResponse, p: Profile): HydratedResponse {
       relevance: entry.relevance,
       matchReason: entry.matchReason,
       evidence: profileData?.evidence ?? '',
-      evidenceQualitative: entry.evidenceQualitative,
+      evidenceQualitative: entry.evidenceQualitative ?? profileData?.headline ?? '',
+      headline: profileData?.headline ?? '',
       confidence: entry.confidence,
     };
   });
@@ -218,8 +221,8 @@ ${p.philosophy}
 
 4. For each skill area, provide:
    - skillArea: exact name from the profile.
-   - matchReason: specifically why this skill answers (or does not answer) a stated requirement in THIS role description. Quote or paraphrase the role requirement for primary matches.
-   - evidenceQualitative: a rewritten version of the profile evidence that names organisations and describes outcomes without specific financial figures. Example: "Motor profitable within 15 months, a first for the book" not "combined ratio from 101.5% to 89.2%."
+   - matchReason: specifically why this skill answers (or does not answer) a stated requirement in THIS role description. Quote or paraphrase the role requirement for primary matches. Keep supporting/noted matchReasons to one sentence.
+   - evidenceQualitative: ONLY for primary relevance entries. A rewritten version of the profile evidence that names organisations and describes outcomes without specific financial figures. Example: "Motor profitable within 15 months, a first for the book" not "combined ratio from 101.5% to 89.2%." OMIT this field entirely for supporting and noted entries.
    - confidence: high (direct match with metric evidence), medium (strong inference), low (reasonable but not direct).
    DO NOT include aicdDomain or evidence fields. These are hydrated from the profile.
 
@@ -241,7 +244,7 @@ Respond with valid JSON only. No markdown fences, no explanation.
       "skillArea": "<exact skill area name>",
       "relevance": "primary" | "supporting" | "noted",
       "matchReason": "<reason referencing the role>",
-      "evidenceQualitative": "<rewritten evidence without figures>",
+      "evidenceQualitative": "<ONLY for primary. Omit for supporting/noted>",
       "confidence": "high" | "medium" | "low"
     }
   ],
