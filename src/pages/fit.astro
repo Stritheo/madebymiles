@@ -225,6 +225,9 @@ import Base from '@/layouts/Base.astro';
       </div>
     </div>
   </section>
+
+  <!-- Turnstile script loaded explicitly outside Astro's bundled scripts -->
+  <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 </Base>
 
 <script>
@@ -236,17 +239,18 @@ import Base from '@/layouts/Base.astro';
   let turnstileToken: string | null = null;
   let turnstileWidgetId: string | null = null;
 
-  function initTurnstile() {
-    if (typeof (window as any).turnstile !== 'undefined') {
-      turnstileWidgetId = (window as any).turnstile.render('#turnstile-widget', {
-        sitekey: TURNSTILE_SITE_KEY,
-        callback: (token: string) => { turnstileToken = token; },
-        'expired-callback': () => { turnstileToken = null; },
-        'error-callback': () => { turnstileToken = null; },
-        theme: 'light',
-        size: 'flexible',
-      });
-    }
+  function renderTurnstileWidget() {
+    if (turnstileWidgetId !== null) return; // Already rendered
+    const ts = (window as any).turnstile;
+    if (!ts) return;
+    turnstileWidgetId = ts.render('#turnstile-widget', {
+      sitekey: TURNSTILE_SITE_KEY,
+      callback: (token: string) => { turnstileToken = token; },
+      'expired-callback': () => { turnstileToken = null; },
+      'error-callback': () => { turnstileToken = null; },
+      theme: 'light',
+      size: 'flexible',
+    });
   }
 
   function resetTurnstile() {
@@ -256,13 +260,13 @@ import Base from '@/layouts/Base.astro';
     }
   }
 
-  // Load Turnstile script
-  const tsScript = document.createElement('script');
-  tsScript.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad';
-  tsScript.async = true;
-  tsScript.defer = true;
-  (window as any).onTurnstileLoad = initTurnstile;
-  document.head.appendChild(tsScript);
+  // Poll for Turnstile API readiness (loaded via HTML script tag)
+  const tsReadyCheck = setInterval(() => {
+    if (typeof (window as any).turnstile !== 'undefined') {
+      clearInterval(tsReadyCheck);
+      renderTurnstileWidget();
+    }
+  }, 100);
 
   // --- Element references ---
 
