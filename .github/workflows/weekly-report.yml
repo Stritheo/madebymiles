@@ -1,0 +1,135 @@
+name: Weekly Observability Report
+
+on:
+  schedule:
+    - cron: '0 22 * * 0'  # Sunday 8am AEST (UTC+10)
+  workflow_dispatch:
+
+jobs:
+  trigger-databricks:
+    runs-on: ubuntu-latest
+    continue-on-error: true  # Soft-fail first (per CI quality gate protocol)
+    steps:
+      - name: Trigger Databricks ingestion refresh
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: |
+          # Trigger the ingestion job in Databricks
+          # Replace JOB_ID with your actual Databricks job ID after setup
+          JOB_ID="${{ vars.DATABRICKS_REFRESH_JOB_ID }}"
+          if [ -z "$JOB_ID" ]; then
+            echo "DATABRICKS_REFRESH_JOB_ID not set, skipping refresh trigger"
+            exit 0
+          fi
+          curl -s -X POST \
+            "${DATABRICKS_HOST}/api/2.1/jobs/run-now" \
+            -H "Authorization: Bearer ${DATABRICKS_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"job_id\": ${JOB_ID}}" \
+            -o /dev/null -w "%{http_code}" | grep -q "200"
+          echo "Databricks refresh triggered"
+
+      - name: Wait for data refresh
+        run: sleep 60
+
+  generate-report:
+    needs: trigger-databricks
+    runs-on: ubuntu-latest
+    continue-on-error: true  # Soft-fail first (per CI quality gate protocol)
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Query Databricks for weekly metrics
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: |
+          # Query each observability table for this week's summary
+          query_databricks() {
+            local sql="$1"
+            curl -s -X POST \
+              "${DATABRICKS_HOST}/api/2.0/sql/statements" \
+              -H "Authorization: Bearer ${DATABRICKS_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "{\"statement\": \"${sql}\", \"warehouse_id\": \"${DATABRICKS_WAREHOUSE_ID}\"}"
+          }
+
+          # Lighthouse scores
+          LH=$(query_databricks "SELECT url, performance, accessibility, seo, best_practices, run_date FROM madebymiles.observability.lighthouse_scores WHERE run_date >= date_sub(current_date(), 7) ORDER BY run_date DESC")
+
+          # GitHub Actions
+          GHA=$(query_databricks "SELECT conclusion, count(*) as cnt FROM madebymiles.observability.github_actions_runs WHERE created_at >= date_sub(current_date(), 7) GROUP BY conclusion")
+
+          # Cloudflare
+          CF=$(query_databricks "SELECT date, requests, unique_visitors, cache_hit_rate, threats FROM madebymiles.observability.cloudflare_analytics ORDER BY date DESC LIMIT 7")
+
+          # Sentry
+          SENTRY=$(query_databricks "SELECT title, level, count, last_seen FROM madebymiles.observability.sentry_issues ORDER BY count DESC LIMIT 5")
+
+          # GSC
+          GSC=$(query_databricks "SELECT date, SUM(clicks) as clicks, SUM(impressions) as impressions, ROUND(AVG(ctr),2) as avg_ctr, ROUND(AVG(position),1) as avg_position FROM madebymiles.observability.gsc_search_data GROUP BY date ORDER BY date DESC LIMIT 7")
+
+          # Write all data to a file for the report generator
+          echo "{\"lighthouse\": ${LH}, \"github_actions\": ${GHA}, \"cloudflare\": ${CF}, \"sentry\": ${SENTRY}, \"gsc\": ${GSC}}" > /tmp/metrics.json
+
+      - name: Generate improvement report
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          METRICS=$(cat /tmp/metrics.json)
+
+          # Call Claude API to analyze metrics and repo, propose improvements
+          REPORT=$(curl -s https://api.anthropic.com/v1/messages \
+            -H "x-api-key: ${ANTHROPIC_API_KEY}" \
+            -H "anthropic-version: 2023-06-01" \
+            -H "content-type: application/json" \
+            -d "$(cat <<PAYLOAD
+          {
+            "model": "claude-sonnet-4-20250514",
+            "max_tokens": 2048,
+            "messages": [{
+              "role": "user",
+              "content": "You are a DevSecOps advisor for madebymiles.ai, an Astro static site on GitHub Pages with Cloudflare DNS proxy.\n\nHere is this week's observability data:\n${METRICS}\n\nAnalyze the data and produce a weekly report with:\n1. **Metrics Summary** - Key numbers for Lighthouse scores, traffic, errors, deploy success rate\n2. **Top 3 Risks** - Security, performance, or reliability concerns ranked by severity\n3. **Top 5 Improvements** - Specific, actionable changes ranked by impact. Reference file paths where relevant.\n\nFormat your response as a single Discord embed JSON object with title, description (markdown), and color (green=3066993 if healthy, amber=16776960 if warnings, red=15158332 if critical). Keep description under 4000 characters."
+            }]
+          }
+          PAYLOAD
+          )")
+
+          # Extract the text content from Claude's response
+          EMBED_JSON=$(echo "$REPORT" | python3 -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          text = data['content'][0]['text']
+          # Try to extract JSON from the response
+          start = text.find('{')
+          end = text.rfind('}') + 1
+          if start >= 0 and end > start:
+              embed = json.loads(text[start:end])
+              print(json.dumps({'embeds': [embed]}))
+          else:
+              print(json.dumps({'embeds': [{'title': 'Weekly Report', 'description': text[:4000], 'color': 3447003}]}))
+          ")
+
+          echo "$EMBED_JSON" > /tmp/report.json
+
+      - name: Post to Discord
+        run: |
+          curl -s -H "Content-Type: application/json" \
+            -d @/tmp/report.json \
+            "${{ secrets.DISCORD_WEBHOOK_REPORTS }}"
+
+  notify-failure:
+    needs: [trigger-databricks, generate-report]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Discord (report failed)
+        run: |
+          curl -s -H "Content-Type: application/json" \
+            -d "{\"embeds\":[{\"title\":\"Weekly Report FAILED\",\"description\":\"**Details:** ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}\",\"color\":15158332}]}" \
+            "${{ secrets.DISCORD_WEBHOOK_ALERTS }}"
