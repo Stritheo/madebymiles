@@ -64,7 +64,7 @@ import Base from '@/layouts/Base.astro';
         </p>
       </div>
 
-      <!-- State: Loading -->
+      <!-- State: Loading (Phase 1) -->
       <div id="state-loading" class="hidden" aria-live="polite">
         <div class="flex flex-col items-center justify-center py-20">
           <p class="text-xl text-text-primary font-medium mb-2">Analysing role fit...</p>
@@ -92,18 +92,24 @@ import Base from '@/layouts/Base.astro';
 
       <!-- State: Results -->
       <div id="state-results" class="hidden">
-        <!-- Tier 1: Summary -->
+
+        <!-- Phase 1: Executive Summary -->
         <div id="result-summary" class="p-8 bg-bg-card border-t-[3px] border-text-accent mb-8">
           <p id="result-role-title" class="text-sm text-text-secondary uppercase tracking-wider mb-2 hidden"></p>
           <p id="result-summary-text" class="text-lg text-text-primary leading-relaxed"></p>
         </div>
 
-        <!-- Tier 1: Top match cards (visible) -->
+        <!-- Phase 1: Top match cards -->
         <div id="matches-visible" class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8"></div>
 
+        <!-- Phase 1: Evaluation preview -->
+        <div id="evaluation-preview" class="mb-8 p-6 bg-bg-card border border-border-light rounded-lg">
+          <p id="preview-text" class="text-base text-text-secondary text-center"></p>
+        </div>
+
         <!-- Unlock Gate -->
-        <div id="unlock-gate" class="mb-8">
-          <div id="unlock-cta" class="flex flex-col items-center py-10 mb-8 border border-border-light rounded-lg bg-bg-card">
+        <div id="unlock-gate" class="mb-12">
+          <div class="flex flex-col items-center py-10 border border-border-light rounded-lg bg-bg-card">
             <p class="text-lg text-text-primary leading-relaxed mb-2 max-w-[560px] text-center">
               The full evaluation and matched case studies are shared in conversation. The depth is there. It belongs in a discussion, not on a screen.
             </p>
@@ -124,8 +130,8 @@ import Base from '@/layouts/Base.astro';
                 Open WhatsApp
               </a>
             </div>
-            <!-- Post-connect choice (hidden until LinkedIn/WhatsApp clicked) -->
-            <div id="unlock-choice" class="hidden mt-6">
+            <!-- Post-connect section choices -->
+            <div id="unlock-choice" class="hidden mt-6 w-full max-w-[560px]">
               <p class="text-base text-text-secondary mb-4 text-center">I've connected. Show me:</p>
               <div class="flex flex-wrap gap-4 justify-center">
                 <button
@@ -145,26 +151,43 @@ import Base from '@/layouts/Base.astro';
           </div>
         </div>
 
-        <!-- Tier 2: AICD Skill Matrix -->
-        <div id="skill-matrix-section" class="mb-8">
-          <h2 class="font-display text-2xl text-text-primary mb-6">AICD Skill Matrix Evaluation</h2>
-          <div id="skill-matrix" class="space-y-6"></div>
-          <button id="also-matrix-btn" class="hidden text-sm text-text-accent hover:underline mt-4">
-            Also available: full skill evaluation
-          </button>
+        <!-- Phase 2: Loading (inline, appears when unlocking) -->
+        <div id="detail-loading" class="hidden mb-8" aria-live="polite">
+          <div class="flex flex-col items-center justify-center py-12 bg-bg-card border border-border-light rounded-lg">
+            <p id="detail-loading-title" class="text-lg text-text-primary font-medium mb-2">Building full evaluation...</p>
+            <p class="text-base text-text-secondary mb-6">This takes 30 to 45 seconds. The depth is worth the wait.</p>
+            <div class="w-full max-w-[400px] h-1.5 bg-border-light rounded-full overflow-hidden mx-6">
+              <div id="detail-progress-bar" class="h-full bg-text-accent rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+            </div>
+            <p id="detail-progress-percent" class="text-sm text-text-secondary mt-3">0%</p>
+          </div>
         </div>
 
-        <!-- Tier 3: Matched Case Studies -->
-        <div id="case-studies-section" class="mb-8">
-          <h2 class="font-display text-2xl text-text-primary mb-6">Matched Case Studies</h2>
+        <!-- Phase 2: AICD Skill Matrix -->
+        <div id="skill-matrix-section" class="hidden mb-12">
+          <h2 class="font-display text-3xl text-text-primary mb-2">AICD Skill Matrix Evaluation</h2>
+          <p class="text-base text-text-secondary mb-8">All 13 skill areas evaluated against the role requirements across four AICD governance domains.</p>
+          <div id="skill-matrix" class="space-y-10"></div>
+        </div>
+
+        <!-- Phase 2: Matched Case Studies -->
+        <div id="case-studies-section" class="hidden mb-12">
+          <h2 class="font-display text-3xl text-text-primary mb-2">Matched Case Studies</h2>
+          <p class="text-base text-text-secondary mb-8">Career evidence matched to the role requirements.</p>
           <div id="case-studies" class="space-y-6"></div>
-          <button id="also-cases-btn" class="hidden text-sm text-text-accent hover:underline mt-4">
-            Also available: matched case studies
+        </div>
+
+        <!-- Also-available buttons (after one section unlocked) -->
+        <div id="also-available" class="hidden mb-8 flex justify-center">
+          <button
+            id="also-btn"
+            class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-6 py-3 text-base bg-transparent text-text-accent border-[1.5px] border-text-accent hover:bg-text-accent hover:text-white"
+          >
           </button>
         </div>
 
         <!-- Post-unlock footer -->
-        <div class="flex flex-col items-center py-8 mb-8">
+        <div id="results-footer" class="flex flex-col items-center py-8 mb-8">
           <p class="text-lg text-text-primary mb-6">Good outcomes start with good conversations.</p>
           <div class="flex flex-wrap gap-4">
             <a
@@ -187,7 +210,7 @@ import Base from '@/layouts/Base.astro';
         </div>
 
         <!-- Share link -->
-        <div class="flex items-center gap-3">
+        <div id="share-section" class="hidden flex items-center gap-3">
           <button
             id="share-btn"
             class="text-sm text-text-secondary hover:text-text-primary transition-colors"
@@ -204,7 +227,8 @@ import Base from '@/layouts/Base.astro';
 <script>
   const API_BASE = '/api/fit';
 
-  // Elements
+  // --- Element references ---
+
   const stateUpload = document.getElementById('state-upload')!;
   const stateLoading = document.getElementById('state-loading')!;
   const stateError = document.getElementById('state-error')!;
@@ -219,55 +243,65 @@ import Base from '@/layouts/Base.astro';
   const resultRoleTitle = document.getElementById('result-role-title')!;
   const resultSummary = document.getElementById('result-summary-text')!;
   const matchesVisible = document.getElementById('matches-visible')!;
+  const evaluationPreview = document.getElementById('evaluation-preview')!;
+  const previewText = document.getElementById('preview-text')!;
   const unlockGate = document.getElementById('unlock-gate')!;
   const unlockButtons = document.getElementById('unlock-buttons')!;
   const unlockChoice = document.getElementById('unlock-choice')!;
   const linkedinUnlockBtn = document.getElementById('linkedin-unlock-btn')!;
   const showMatrixBtn = document.getElementById('show-matrix-btn')!;
   const showCasesBtn = document.getElementById('show-cases-btn')!;
+  const detailLoading = document.getElementById('detail-loading')!;
+  const detailLoadingTitle = document.getElementById('detail-loading-title')!;
   const skillMatrixSection = document.getElementById('skill-matrix-section')!;
   const skillMatrixContainer = document.getElementById('skill-matrix')!;
   const caseStudiesSection = document.getElementById('case-studies-section')!;
   const caseStudiesContainer = document.getElementById('case-studies')!;
-  const alsoMatrixBtn = document.getElementById('also-matrix-btn')!;
-  const alsoCasesBtn = document.getElementById('also-cases-btn')!;
+  const alsoAvailable = document.getElementById('also-available')!;
+  const alsoBtn = document.getElementById('also-btn')!;
+  const shareSection = document.getElementById('share-section')!;
   const shareBtn = document.getElementById('share-btn')!;
   const shareConfirmation = document.getElementById('share-confirmation')!;
   const charHint = document.getElementById('char-hint')!;
   const charCount = document.getElementById('char-count')!;
+  const progressBar = document.getElementById('progress-bar')!;
+  const progressPercent = document.getElementById('progress-percent')!;
+  const detailProgressBar = document.getElementById('detail-progress-bar')!;
+  const detailProgressPercent = document.getElementById('detail-progress-percent')!;
+
+  // --- State ---
 
   let selectedFile: File | null = null;
   let currentToken: string | null = null;
+  let currentSessionId: string | null = null;
+  let detailData: DetailData | null = null;
+  let detailLoaded = false;
+  let detailLoadingInProgress = false;
   let progressInterval: ReturnType<typeof setInterval> | null = null;
-
-  const progressBar = document.getElementById('progress-bar')!;
-  const progressPercent = document.getElementById('progress-percent')!;
-
-  function startProgress() {
-    let progress = 0;
-    progressBar.style.width = '0%';
-    progressPercent.textContent = '0%';
-    progressInterval = setInterval(() => {
-      progress += (90 - progress) * 0.06;
-      const rounded = Math.min(Math.round(progress), 90);
-      progressBar.style.width = `${rounded}%`;
-      progressPercent.textContent = `${rounded}%`;
-    }, 200);
-  }
-
-  function finishProgress() {
-    if (progressInterval) clearInterval(progressInterval);
-    progressBar.style.width = '100%';
-    progressPercent.textContent = '100%';
-  }
-
-  // Check for shared URL token
-  const urlToken = new URLSearchParams(window.location.search).get('token');
-  if (urlToken) {
-    loadSharedResult(urlToken);
-  }
+  let detailProgressInterval: ReturnType<typeof setInterval> | null = null;
+  let firstUnlockedSection: 'matrix' | 'cases' | null = null;
 
   // --- Interfaces ---
+
+  interface HydratedTopMatch {
+    skillArea: string;
+    aicdDomain: string;
+    matchReason: string;
+    evidenceQualitative: string;
+    evidence: string;
+    headline: string;
+    confidence: 'high' | 'medium' | 'low';
+  }
+
+  interface SummaryData {
+    roleTitle: string | null;
+    summary: string;
+    topMatches: {
+      skillset: HydratedTopMatch;
+      mindset: HydratedTopMatch;
+    };
+    sessionId: string;
+  }
 
   interface SkillMatrixEntry {
     aicdDomain: string;
@@ -288,7 +322,14 @@ import Base from '@/layouts/Base.astro';
     fullContent: string;
   }
 
-  // Legacy format for backwards compatibility
+  interface DetailData {
+    skillMatrix: SkillMatrixEntry[];
+    relevantCaseStudies: CaseStudyMatch[];
+    token: string;
+    analysedAt: string;
+  }
+
+  // Legacy format for old shared URLs
   interface LegacyMatch {
     rank: number;
     category: 'skillset' | 'mindset';
@@ -299,9 +340,43 @@ import Base from '@/layouts/Base.astro';
     confidence: 'high' | 'medium' | 'low';
   }
 
+  // --- Progress bar helpers ---
+
+  function startProgress(target: 'phase1' | 'phase2' = 'phase1') {
+    const bar = target === 'phase1' ? progressBar : detailProgressBar;
+    const pct = target === 'phase1' ? progressPercent : detailProgressPercent;
+    const rate = target === 'phase1' ? 0.06 : 0.02; // Phase 2 is slower
+    let progress = 0;
+    bar.style.width = '0%';
+    pct.textContent = '0%';
+    const interval = setInterval(() => {
+      progress += (90 - progress) * rate;
+      const rounded = Math.min(Math.round(progress), 90);
+      bar.style.width = `${rounded}%`;
+      pct.textContent = `${rounded}%`;
+    }, 200);
+    if (target === 'phase1') progressInterval = interval;
+    else detailProgressInterval = interval;
+  }
+
+  function finishProgress(target: 'phase1' | 'phase2' = 'phase1') {
+    const interval = target === 'phase1' ? progressInterval : detailProgressInterval;
+    const bar = target === 'phase1' ? progressBar : detailProgressBar;
+    const pct = target === 'phase1' ? progressPercent : detailProgressPercent;
+    if (interval) clearInterval(interval);
+    bar.style.width = '100%';
+    pct.textContent = '100%';
+  }
+
+  // --- Check for shared URL token ---
+
+  const urlToken = new URLSearchParams(window.location.search).get('token');
+  if (urlToken) {
+    loadSharedResult(urlToken);
+  }
+
   // --- Event listeners ---
 
-  // Drag and drop
   dropZone.addEventListener('dragover', (e) => {
     e.preventDefault();
     dropZone.classList.add('border-text-accent', 'bg-bg-primary');
@@ -331,16 +406,9 @@ import Base from '@/layouts/Base.astro';
     if (file) handleFileSelect(file);
   });
 
-  // Text input
   textInput.addEventListener('input', updateButtonState);
-
-  // Analyse
   analyseBtn.addEventListener('click', analyse);
-
-  // Retry
-  retryBtn.addEventListener('click', () => {
-    showState('upload');
-  });
+  retryBtn.addEventListener('click', () => showState('upload'));
 
   // Unlock flow
   linkedinUnlockBtn.addEventListener('click', () => {
@@ -349,7 +417,6 @@ import Base from '@/layouts/Base.astro';
     unlockChoice.classList.remove('hidden');
   });
 
-  // WhatsApp click also shows choice
   document.getElementById('whatsapp-btn')!.addEventListener('click', () => {
     setTimeout(() => {
       unlockButtons.classList.add('hidden');
@@ -357,37 +424,16 @@ import Base from '@/layouts/Base.astro';
     }, 500);
   });
 
-  showMatrixBtn.addEventListener('click', () => {
-    unblurSection('skill-matrix-section');
-    alsoMatrixBtn.classList.add('hidden');
-    alsoCasesBtn.classList.remove('hidden');
-    unlockGate.classList.add('hidden');
-    skillMatrixSection.scrollIntoView({ behavior: 'smooth' });
+  showMatrixBtn.addEventListener('click', () => unlockSection('matrix'));
+  showCasesBtn.addEventListener('click', () => unlockSection('cases'));
+
+  alsoBtn.addEventListener('click', () => {
+    if (!detailData) return;
+    const otherSection = firstUnlockedSection === 'matrix' ? 'cases' : 'matrix';
+    revealSection(otherSection);
+    alsoAvailable.classList.add('hidden');
   });
 
-  showCasesBtn.addEventListener('click', () => {
-    unblurSection('case-studies-section');
-    alsoCasesBtn.classList.add('hidden');
-    alsoMatrixBtn.classList.remove('hidden');
-    unlockGate.classList.add('hidden');
-    caseStudiesSection.scrollIntoView({ behavior: 'smooth' });
-  });
-
-  alsoMatrixBtn.addEventListener('click', () => {
-    unblurSection('skill-matrix-section');
-    alsoMatrixBtn.classList.add('hidden');
-    // Also swap evidence from qualitative to full
-    swapEvidence('skill-matrix-section');
-    skillMatrixSection.scrollIntoView({ behavior: 'smooth' });
-  });
-
-  alsoCasesBtn.addEventListener('click', () => {
-    unblurSection('case-studies-section');
-    alsoCasesBtn.classList.add('hidden');
-    caseStudiesSection.scrollIntoView({ behavior: 'smooth' });
-  });
-
-  // Share
   shareBtn.addEventListener('click', () => {
     if (!currentToken) return;
     const url = new URL('/fit', window.location.origin);
@@ -398,7 +444,7 @@ import Base from '@/layouts/Base.astro';
     });
   });
 
-  // --- Functions ---
+  // --- Core functions ---
 
   function handleFileSelect(file: File) {
     if (file.type !== 'application/pdf' && !file.name.endsWith('.pdf')) {
@@ -435,7 +481,7 @@ import Base from '@/layouts/Base.astro';
 
   async function analyse() {
     showState('loading');
-    startProgress();
+    startProgress('phase1');
 
     try {
       let response: Response;
@@ -443,10 +489,7 @@ import Base from '@/layouts/Base.astro';
       if (selectedFile) {
         const formData = new FormData();
         formData.append('file', selectedFile);
-        response = await fetch(API_BASE, {
-          method: 'POST',
-          body: formData,
-        });
+        response = await fetch(API_BASE, { method: 'POST', body: formData });
       } else {
         response = await fetch(API_BASE, {
           method: 'POST',
@@ -459,67 +502,23 @@ import Base from '@/layouts/Base.astro';
         const err = await response.json() as { error?: string; limitType?: string };
         if (err.limitType === 'global') {
           showGlobalLimitError();
-          finishProgress();
+          finishProgress('phase1');
           return;
         }
         throw new Error(err.error ?? `Request failed (${response.status})`);
       }
 
-      const data = await response.json();
-
-      finishProgress();
-
-      // Handle new format
-      if ('skillMatrix' in data) {
-        renderResults(data, false);
-      } else if ('matches' in data) {
-        // Legacy format
-        renderLegacyResults(data.matches, data.roleTitle, data.summary, data.token, false);
-      }
+      const data = await response.json() as SummaryData;
+      finishProgress('phase1');
+      renderSummary(data);
     } catch (err) {
-      finishProgress();
+      finishProgress('phase1');
       showError(err instanceof Error ? err.message : 'Analysis failed. Please try again.');
     }
   }
 
-  async function loadSharedResult(token: string) {
-    showState('loading');
-    startProgress();
-
-    try {
-      const response = await fetch(`${API_BASE}/verify?token=${encodeURIComponent(token)}`);
-      if (!response.ok) {
-        throw new Error('This result link has expired or is invalid.');
-      }
-
-      const data = await response.json();
-
-      finishProgress();
-
-      // Handle both formats for backwards compatibility
-      if ('skillMatrix' in data) {
-        renderResults({ ...data, token }, true);
-      } else if ('matches' in data) {
-        renderLegacyResults(data.matches, data.roleTitle, data.summary, token, true);
-      }
-    } catch (err) {
-      finishProgress();
-      showError(err instanceof Error ? err.message : 'Could not load shared result.');
-    }
-  }
-
-  function renderResults(
-    data: {
-      skillMatrix: SkillMatrixEntry[];
-      topMatches: { skillset: string; mindset: string };
-      roleTitle: string | null;
-      summary: string;
-      relevantCaseStudies: CaseStudyMatch[];
-      token: string;
-    },
-    isShared: boolean,
-  ) {
-    currentToken = data.token;
+  function renderSummary(data: SummaryData) {
+    currentSessionId = data.sessionId;
 
     // Summary
     if (data.roleTitle) {
@@ -528,61 +527,281 @@ import Base from '@/layouts/Base.astro';
     }
     resultSummary.textContent = data.summary;
 
-    // Top match cards (Tier 1)
-    const topSkillset = data.skillMatrix.find(e => e.skillArea === data.topMatches.skillset);
-    const topMindset = data.skillMatrix.find(e => e.skillArea === data.topMatches.mindset);
-    const topCards = [topSkillset, topMindset].filter(Boolean) as SkillMatrixEntry[];
-    matchesVisible.innerHTML = topCards.map((entry, i) =>
-      renderTopMatchCard(entry, i === 0 ? 'Skillset' : 'Mindset')
-    ).join('');
+    // Top match cards
+    matchesVisible.innerHTML = [
+      renderTopMatchCard(data.topMatches.skillset, 'Skillset'),
+      renderTopMatchCard(data.topMatches.mindset, 'Mindset'),
+    ].join('');
 
-    // Skill matrix (Tier 2)
-    renderSkillMatrix(data.skillMatrix, data.topMatches, !isShared);
+    // Preview text
+    previewText.textContent = '13 skill areas evaluated across 4 AICD governance domains. Unlock the full evaluation below.';
+    evaluationPreview.classList.remove('hidden');
 
-    // Case studies (Tier 3)
-    caseStudiesContainer.innerHTML = data.relevantCaseStudies
-      .map(cs => renderCaseStudyCard(cs, !isShared))
-      .join('');
+    // Show gate, hide detail sections
+    unlockGate.classList.remove('hidden');
+    skillMatrixSection.classList.add('hidden');
+    caseStudiesSection.classList.add('hidden');
+    detailLoading.classList.add('hidden');
+    alsoAvailable.classList.add('hidden');
+    shareSection.classList.add('hidden');
 
-    if (isShared) {
-      // Shared view: everything visible, no gate
-      unlockGate.classList.add('hidden');
-      alsoMatrixBtn.classList.add('hidden');
-      alsoCasesBtn.classList.add('hidden');
-    } else {
-      // Normal view: gate visible, tiers blurred
-      unlockGate.classList.remove('hidden');
-    }
+    // Reset state
+    detailData = null;
+    detailLoaded = false;
+    currentToken = null;
+    firstUnlockedSection = null;
 
     showState('results');
   }
 
-  function renderTopMatchCard(entry: SkillMatrixEntry, categoryLabel: string): string {
-    const confidenceClass = entry.confidence === 'high'
-      ? 'bg-text-accent text-white'
-      : entry.confidence === 'medium'
-        ? 'bg-bg-dark text-white'
-        : 'bg-border-light text-text-primary';
+  async function loadDetail(): Promise<boolean> {
+    if (detailLoaded && detailData) return true;
+    if (detailLoadingInProgress) return false;
+    if (!currentSessionId) return false;
 
+    detailLoadingInProgress = true;
+
+    try {
+      const response = await fetch(`${API_BASE}/detail`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: currentSessionId }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json() as { error?: string };
+        throw new Error(err.error ?? `Detail request failed (${response.status})`);
+      }
+
+      detailData = await response.json() as DetailData;
+      currentToken = detailData.token;
+      detailLoaded = true;
+      return true;
+    } catch (err) {
+      showDetailError(err instanceof Error ? err.message : 'Could not load full evaluation.');
+      return false;
+    } finally {
+      detailLoadingInProgress = false;
+    }
+  }
+
+  async function unlockSection(section: 'matrix' | 'cases') {
+    // Hide gate, show loading
+    unlockGate.classList.add('hidden');
+    evaluationPreview.classList.add('hidden');
+    detailLoading.classList.remove('hidden');
+    detailLoadingTitle.textContent = section === 'matrix'
+      ? 'Building full skill evaluation...'
+      : 'Loading matched case studies...';
+    startProgress('phase2');
+
+    const success = await loadDetail();
+    finishProgress('phase2');
+
+    if (!success || !detailData) {
+      detailLoading.classList.add('hidden');
+      return;
+    }
+
+    // Hide loading
+    setTimeout(() => {
+      detailLoading.classList.add('hidden');
+
+      // Render both sections (data is ready)
+      renderSkillMatrix(detailData!.skillMatrix);
+      renderCaseStudies(detailData!.relevantCaseStudies);
+
+      // Show the requested section
+      firstUnlockedSection = section;
+      revealSection(section);
+
+      // Show "also available" button for the other section
+      const otherLabel = section === 'matrix' ? 'Also show: matched case studies' : 'Also show: full skill evaluation';
+      alsoBtn.textContent = otherLabel;
+      alsoAvailable.classList.remove('hidden');
+
+      // Enable sharing
+      shareSection.classList.remove('hidden');
+    }, 300);
+  }
+
+  function revealSection(section: 'matrix' | 'cases') {
+    if (section === 'matrix') {
+      skillMatrixSection.classList.remove('hidden');
+      skillMatrixSection.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      caseStudiesSection.classList.remove('hidden');
+      caseStudiesSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  function showDetailError(message: string) {
+    detailLoading.classList.add('hidden');
+    // Re-show the gate with an error
+    unlockGate.classList.remove('hidden');
+    unlockButtons.classList.add('hidden');
+    unlockChoice.classList.remove('hidden');
+    // Show a temporary error
+    const errDiv = document.createElement('p');
+    errDiv.className = 'text-sm text-red-500 mt-4 text-center';
+    errDiv.textContent = message + ' Please try again.';
+    unlockChoice.appendChild(errDiv);
+    setTimeout(() => errDiv.remove(), 8000);
+  }
+
+  // --- Shared URL loading ---
+
+  async function loadSharedResult(token: string) {
+    showState('loading');
+    startProgress('phase1');
+
+    try {
+      const response = await fetch(`${API_BASE}/verify?token=${encodeURIComponent(token)}`);
+      if (!response.ok) {
+        throw new Error('This result link has expired or is invalid.');
+      }
+
+      const data = await response.json();
+      finishProgress('phase1');
+      currentToken = token;
+
+      // Handle new combined format (has topMatches as objects)
+      if (data.skillMatrix && data.topMatches?.skillset?.skillArea) {
+        renderSharedResult(data);
+      }
+      // Handle legacy format (topMatches as strings or matches array)
+      else if ('matches' in data) {
+        renderLegacyResults(data.matches, data.roleTitle, data.summary, token);
+      }
+      // Handle old format where topMatches are strings
+      else if (data.skillMatrix) {
+        renderOldSharedResult(data, token);
+      }
+    } catch (err) {
+      finishProgress('phase1');
+      showError(err instanceof Error ? err.message : 'Could not load shared result.');
+    }
+  }
+
+  function renderSharedResult(data: {
+    roleTitle: string | null;
+    summary: string;
+    topMatches: { skillset: HydratedTopMatch; mindset: HydratedTopMatch };
+    skillMatrix: SkillMatrixEntry[];
+    relevantCaseStudies: CaseStudyMatch[];
+  }) {
+    // Summary
+    if (data.roleTitle) {
+      resultRoleTitle.textContent = data.roleTitle;
+      resultRoleTitle.classList.remove('hidden');
+    }
+    resultSummary.textContent = data.summary;
+
+    // Top match cards
+    matchesVisible.innerHTML = [
+      renderTopMatchCard(data.topMatches.skillset, 'Skillset'),
+      renderTopMatchCard(data.topMatches.mindset, 'Mindset'),
+    ].join('');
+
+    // Full sections (no gate for shared view)
+    renderSkillMatrix(data.skillMatrix);
+    renderCaseStudies(data.relevantCaseStudies);
+
+    evaluationPreview.classList.add('hidden');
+    unlockGate.classList.add('hidden');
+    detailLoading.classList.add('hidden');
+    skillMatrixSection.classList.remove('hidden');
+    caseStudiesSection.classList.remove('hidden');
+    alsoAvailable.classList.add('hidden');
+    shareSection.classList.remove('hidden');
+
+    showState('results');
+  }
+
+  // Handle old shared format where topMatches were string skill names
+  function renderOldSharedResult(data: {
+    roleTitle: string | null;
+    summary: string;
+    topMatches: { skillset: string; mindset: string };
+    skillMatrix: SkillMatrixEntry[];
+    relevantCaseStudies: CaseStudyMatch[];
+  }, token: string) {
+    if (data.roleTitle) {
+      resultRoleTitle.textContent = data.roleTitle;
+      resultRoleTitle.classList.remove('hidden');
+    }
+    resultSummary.textContent = data.summary;
+
+    // Find top match entries from matrix
+    const topSkillset = data.skillMatrix.find(e => e.skillArea === data.topMatches.skillset);
+    const topMindset = data.skillMatrix.find(e => e.skillArea === data.topMatches.mindset);
+
+    if (topSkillset && topMindset) {
+      matchesVisible.innerHTML = [
+        renderTopMatchCardFromEntry(topSkillset, 'Skillset'),
+        renderTopMatchCardFromEntry(topMindset, 'Mindset'),
+      ].join('');
+    }
+
+    renderSkillMatrix(data.skillMatrix);
+    renderCaseStudies(data.relevantCaseStudies);
+
+    evaluationPreview.classList.add('hidden');
+    unlockGate.classList.add('hidden');
+    detailLoading.classList.add('hidden');
+    skillMatrixSection.classList.remove('hidden');
+    caseStudiesSection.classList.remove('hidden');
+    alsoAvailable.classList.add('hidden');
+    shareSection.classList.remove('hidden');
+
+    showState('results');
+  }
+
+  // --- Rendering functions ---
+
+  function renderTopMatchCard(entry: HydratedTopMatch, categoryLabel: string): string {
     return `
       <div class="p-8 bg-bg-card border-t-[3px] border-text-accent">
         <div class="flex items-center justify-between mb-4">
           <span class="text-sm text-text-secondary uppercase tracking-wider">${entry.aicdDomain}</span>
-          <span class="text-xs font-medium px-3 py-1 rounded ${confidenceClass}">${entry.confidence}</span>
+          <span class="text-xs font-medium px-3 py-1 rounded ${confidenceClass(entry.confidence)}">${entry.confidence}</span>
         </div>
         <p class="text-xs text-text-accent uppercase tracking-wider font-medium mb-1">${categoryLabel} match</p>
         <h3 class="font-display text-xl text-text-primary mb-4">${entry.skillArea}</h3>
-        <p class="text-base text-text-secondary mb-4"><strong class="text-text-primary">Why this matches:</strong> ${entry.matchReason}</p>
-        <p class="text-base text-text-secondary"><strong class="text-text-primary">Evidence:</strong> ${entry.evidenceQualitative}</p>
+        <div class="mb-4">
+          <p class="text-sm font-medium text-text-primary mb-1">Why this matches</p>
+          <p class="text-base text-text-secondary">${entry.matchReason}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-text-primary mb-1">Evidence</p>
+          <p class="text-base text-text-secondary">${entry.evidenceQualitative}</p>
+        </div>
       </div>
     `;
   }
 
-  function renderSkillMatrix(
-    matrix: SkillMatrixEntry[],
-    topMatches: { skillset: string; mindset: string },
-    blurred: boolean,
-  ) {
+  function renderTopMatchCardFromEntry(entry: SkillMatrixEntry, categoryLabel: string): string {
+    return `
+      <div class="p-8 bg-bg-card border-t-[3px] border-text-accent">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-sm text-text-secondary uppercase tracking-wider">${entry.aicdDomain}</span>
+          <span class="text-xs font-medium px-3 py-1 rounded ${confidenceClass(entry.confidence)}">${entry.confidence}</span>
+        </div>
+        <p class="text-xs text-text-accent uppercase tracking-wider font-medium mb-1">${categoryLabel} match</p>
+        <h3 class="font-display text-xl text-text-primary mb-4">${entry.skillArea}</h3>
+        <div class="mb-4">
+          <p class="text-sm font-medium text-text-primary mb-1">Why this matches</p>
+          <p class="text-base text-text-secondary">${entry.matchReason}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-text-primary mb-1">Evidence</p>
+          <p class="text-base text-text-secondary">${entry.evidenceQualitative}</p>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderSkillMatrix(matrix: SkillMatrixEntry[]) {
     // Group by domain
     const domains = new Map<string, SkillMatrixEntry[]>();
     for (const entry of matrix) {
@@ -593,12 +812,17 @@ import Base from '@/layouts/Base.astro';
 
     let html = '';
     for (const [domain, entries] of domains) {
+      const primaryCount = entries.filter(e => e.relevance === 'primary').length;
+      const supportingCount = entries.filter(e => e.relevance === 'supporting').length;
+
+      html += `<div class="mb-2">`;
       html += `<div class="mb-4">`;
-      html += `<h3 class="text-sm text-text-secondary uppercase tracking-wider font-medium mb-3 px-4">${domain}</h3>`;
-      html += `<div class="space-y-2">`;
+      html += `<h3 class="font-display text-2xl text-text-primary mb-1">${domain}</h3>`;
+      html += `<p class="text-sm text-text-secondary">${primaryCount} primary, ${supportingCount} supporting, ${entries.length - primaryCount - supportingCount} noted</p>`;
+      html += `</div>`;
+      html += `<div class="space-y-4">`;
       for (const entry of entries) {
-        const isTop = entry.skillArea === topMatches.skillset || entry.skillArea === topMatches.mindset;
-        html += renderSkillMatrixRow(entry, blurred, isTop);
+        html += renderSkillMatrixRow(entry);
       }
       html += `</div></div>`;
     }
@@ -606,75 +830,57 @@ import Base from '@/layouts/Base.astro';
     skillMatrixContainer.innerHTML = html;
   }
 
-  function renderSkillMatrixRow(entry: SkillMatrixEntry, blurred: boolean, isTopMatch: boolean): string {
+  function renderSkillMatrixRow(entry: SkillMatrixEntry): string {
     const isPrimary = entry.relevance === 'primary';
-    const relevanceClass = isPrimary ? 'border-l-2 border-text-accent bg-bg-card/50' : '';
-    const topMatchNote = isTopMatch ? ' (detailed above)' : '';
+    const isSupporting = entry.relevance === 'supporting';
+    const borderClass = isPrimary
+      ? 'border-l-[3px] border-text-accent'
+      : isSupporting
+        ? 'border-l-[3px] border-border-light'
+        : '';
 
     const relevanceLabel = entry.relevance.charAt(0).toUpperCase() + entry.relevance.slice(1);
 
-    // Primary: show full evidence when unblurred, qualitative when blurred
-    // Supporting/noted: show headline (curated one-liner from profile)
-    const evidenceText = blurred
-      ? (entry.evidenceQualitative || entry.headline)
-      : entry.evidence;
-
     return `
-      <div class="p-4 ${relevanceClass} bg-bg-card rounded">
-        <div class="flex justify-between items-baseline mb-2">
-          <span class="text-base text-text-primary font-medium">${entry.skillArea}</span>
-          <span class="text-sm text-text-secondary uppercase tracking-wider">${relevanceLabel}${topMatchNote}</span>
+      <div class="p-6 bg-bg-card rounded-lg ${borderClass}">
+        <div class="flex justify-between items-baseline mb-3">
+          <h4 class="text-lg font-medium text-text-primary">${entry.skillArea}</h4>
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-medium px-2.5 py-1 rounded ${confidenceClass(entry.confidence)}">${entry.confidence}</span>
+            <span class="text-sm text-text-secondary uppercase tracking-wider">${relevanceLabel}</span>
+          </div>
         </div>
-        <div class="${blurred ? 'blur-md select-none pointer-events-none' : ''} transition-all duration-500" data-evidence-full="${escapeAttr(entry.evidence)}" data-evidence-qual="${escapeAttr(entry.evidenceQualitative || entry.headline)}">
-          <p class="text-sm text-text-secondary mb-1">${entry.matchReason}</p>
-          <p class="text-base text-text-secondary">${evidenceText}</p>
+        <div class="mb-3">
+          <p class="text-sm font-medium text-text-primary mb-1">Why this matches</p>
+          <p class="text-base text-text-secondary leading-relaxed">${entry.matchReason}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-text-primary mb-1">Evidence</p>
+          <p class="text-base text-text-secondary leading-relaxed">${entry.evidenceQualitative}</p>
         </div>
       </div>
     `;
   }
 
-  function renderCaseStudyCard(cs: CaseStudyMatch, blurred: boolean): string {
+  function renderCaseStudies(caseStudies: CaseStudyMatch[]) {
+    caseStudiesContainer.innerHTML = caseStudies
+      .map(cs => renderCaseStudyCard(cs))
+      .join('');
+  }
+
+  function renderCaseStudyCard(cs: CaseStudyMatch): string {
     return `
       <div class="p-8 bg-bg-card border-t-[3px] border-text-accent">
         <p class="text-sm text-text-secondary uppercase tracking-wider mb-2">${cs.company}</p>
         <h3 class="font-display text-xl text-text-primary mb-2">${cs.role}</h3>
         <p class="text-base text-text-secondary mb-4">${cs.descriptor}</p>
-        <p class="text-sm text-text-accent mb-4">${cs.relevanceReason}</p>
-        <div class="${blurred ? 'blur-md select-none pointer-events-none' : ''} transition-all duration-500">
-          <div class="text-base text-text-secondary leading-relaxed whitespace-pre-line">${cs.fullContent}</div>
+        <div class="mb-4">
+          <p class="text-sm font-medium text-text-accent mb-1">Relevance to this role</p>
+          <p class="text-base text-text-secondary">${cs.relevanceReason}</p>
         </div>
+        <div class="text-base text-text-secondary leading-relaxed whitespace-pre-line">${cs.fullContent}</div>
       </div>
     `;
-  }
-
-  function escapeAttr(str: string): string {
-    return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
-
-  function unblurSection(sectionId: string) {
-    const section = document.getElementById(sectionId);
-    if (!section) return;
-    const blurredElements = section.querySelectorAll('.blur-md');
-    blurredElements.forEach(el => {
-      el.classList.remove('blur-md', 'select-none', 'pointer-events-none');
-    });
-    // Swap qualitative evidence to full evidence for skill matrix
-    if (sectionId === 'skill-matrix-section') {
-      swapEvidence(sectionId);
-    }
-  }
-
-  function swapEvidence(sectionId: string) {
-    const section = document.getElementById(sectionId);
-    if (!section) return;
-    const rows = section.querySelectorAll('[data-evidence-full]');
-    rows.forEach(el => {
-      const fullEvidence = el.getAttribute('data-evidence-full') ?? '';
-      const paragraphs = el.querySelectorAll('p');
-      if (paragraphs.length >= 2) {
-        paragraphs[1].textContent = fullEvidence;
-      }
-    });
   }
 
   // --- Legacy rendering for old shared URLs ---
@@ -684,7 +890,6 @@ import Base from '@/layouts/Base.astro';
     roleTitle: string | null,
     summary: string,
     token: string,
-    isShared: boolean,
   ) {
     currentToken = token;
 
@@ -694,37 +899,49 @@ import Base from '@/layouts/Base.astro';
     }
     resultSummary.textContent = summary;
 
-    // Show all matches as visible cards
     matchesVisible.innerHTML = matches.map(m => renderLegacyMatchCard(m)).join('');
 
-    // Hide new sections
+    evaluationPreview.classList.add('hidden');
     unlockGate.classList.add('hidden');
     skillMatrixSection.classList.add('hidden');
     caseStudiesSection.classList.add('hidden');
+    detailLoading.classList.add('hidden');
+    alsoAvailable.classList.add('hidden');
+    shareSection.classList.remove('hidden');
 
     showState('results');
   }
 
   function renderLegacyMatchCard(match: LegacyMatch): string {
     const categoryLabel = match.category === 'skillset' ? 'Skillset' : 'Mindset';
-    const confidenceClass = match.confidence === 'high'
-      ? 'bg-text-accent text-white'
-      : match.confidence === 'medium'
-        ? 'bg-bg-dark text-white'
-        : 'bg-border-light text-text-primary';
-
     return `
       <div class="p-8 bg-bg-card border-t-[3px] border-text-accent">
         <div class="flex items-center justify-between mb-4">
           <span class="text-sm text-text-secondary uppercase tracking-wider">${match.aicdDomain}</span>
-          <span class="text-xs font-medium px-3 py-1 rounded ${confidenceClass}">${match.confidence}</span>
+          <span class="text-xs font-medium px-3 py-1 rounded ${confidenceClass(match.confidence)}">${match.confidence}</span>
         </div>
         <p class="text-xs text-text-accent uppercase tracking-wider font-medium mb-1">${categoryLabel} match</p>
         <h3 class="font-display text-xl text-text-primary mb-4">${match.skillArea}</h3>
-        <p class="text-base text-text-secondary mb-4"><strong class="text-text-primary">Why this matches:</strong> ${match.matchReason}</p>
-        <p class="text-base text-text-secondary"><strong class="text-text-primary">Evidence:</strong> ${match.evidence}</p>
+        <div class="mb-4">
+          <p class="text-sm font-medium text-text-primary mb-1">Why this matches</p>
+          <p class="text-base text-text-secondary">${match.matchReason}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-text-primary mb-1">Evidence</p>
+          <p class="text-base text-text-secondary">${match.evidence}</p>
+        </div>
       </div>
     `;
+  }
+
+  // --- Helpers ---
+
+  function confidenceClass(level: string): string {
+    return level === 'high'
+      ? 'bg-text-accent text-white'
+      : level === 'medium'
+        ? 'bg-bg-dark text-white'
+        : 'bg-border-light text-text-primary';
   }
 
   function showState(state: 'upload' | 'loading' | 'error' | 'results') {

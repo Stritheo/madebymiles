@@ -1,5 +1,6 @@
 import type { Env } from './types';
 import { handleAnalyse } from './handlers/analyse';
+import { handleDetail } from './handlers/detail';
 import { handleVerify } from './handlers/verify';
 
 export default {
@@ -11,10 +12,17 @@ export default {
       return new Response(null, { headers: corsHeaders() });
     }
 
+    // Phase 1: Executive summary (fast)
     if (url.pathname === '/api/fit' && request.method === 'POST') {
       return handleAnalyse(request, env, ctx);
     }
 
+    // Phase 2: Full skill matrix + case studies (on-demand)
+    if (url.pathname === '/api/fit/detail' && request.method === 'POST') {
+      return handleDetail(request, env, ctx);
+    }
+
+    // Shared URL verification
     if (url.pathname === '/api/fit/verify' && request.method === 'GET') {
       return handleVerify(request, env);
     }
