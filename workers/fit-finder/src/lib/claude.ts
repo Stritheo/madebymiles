@@ -89,9 +89,12 @@ export async function callClaude(
     throw new Error('Could not parse analysis results. Please try again with a different role description.');
   }
 
-  // Validate structure
-  if (!Array.isArray(parsed.skillMatrix) || parsed.skillMatrix.length !== 10) {
-    throw new Error('Incomplete skill matrix. Try a more detailed role description.');
+  // Validate structure — count must match actual profile skills
+  const expectedCount = typedProfile.domains.reduce((sum, d) => sum + d.skills.length, 0);
+  if (!Array.isArray(parsed.skillMatrix) || parsed.skillMatrix.length !== expectedCount) {
+    throw new Error(
+      `Incomplete skill matrix (got ${parsed.skillMatrix?.length ?? 0}, expected ${expectedCount}). Please try again.`,
+    );
   }
 
   // Hydrate from profile data
@@ -206,12 +209,12 @@ ${p.philosophy}
 
 1. Read the role description carefully. Identify what the role actually requires.
 
-2. Evaluate EVERY skill area in the profile against this role description. For each of the 10 skill areas across the 4 AICD domains, assign one relevance level:
+2. Evaluate EVERY skill area in the profile against this role description. For each of the ${p.domains.reduce((s, d) => s + d.skills.length, 0)} skill areas across the ${p.domains.length} AICD domains, assign one relevance level:
    - primary: the skill area directly addresses a stated requirement. Provide a detailed matchReason.
    - supporting: the skill area is relevant but not a core requirement. Provide a concise matchReason.
    - noted: the skill area is peripheral. Provide a brief matchReason.
 
-3. Return the matrix in AICD domain order. Exactly 10 entries.
+3. Return the matrix in AICD domain order. Exactly ${p.domains.reduce((s, d) => s + d.skills.length, 0)} entries — one per skill area, no more, no fewer.
 
 4. For each skill area, provide:
    - skillArea: exact name from the profile.
