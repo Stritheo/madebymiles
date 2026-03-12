@@ -1,3 +1,39 @@
+export type Relevance = 'primary' | 'supporting' | 'noted';
+
+export interface SkillMatrixEntry {
+  aicdDomain: string;
+  skillArea: string;
+  relevance: Relevance;
+  matchReason: string;
+  evidence: string;
+  evidenceQualitative: string;
+  headline: string;
+  confidence: 'high' | 'medium' | 'low';
+}
+
+export interface CaseStudyMatch {
+  company: string;
+  role: string;
+  descriptor: string;
+  relevanceReason: string;
+  fullContent: string;
+}
+
+export interface FitResponse {
+  skillMatrix: SkillMatrixEntry[];
+  topMatches: {
+    skillset: string;
+    mindset: string;
+  };
+  roleTitle: string | null;
+  summary: string;
+  relevantCaseStudies: CaseStudyMatch[];
+  token: string;
+  analysedAt: string;
+}
+
+// Deprecated: kept for backwards compatibility with shared URL tokens
+// containing the old format. Remove after old tokens expire (30 days).
 export interface MatchResult {
   rank: number;
   category: 'skillset' | 'mindset';
@@ -8,19 +44,12 @@ export interface MatchResult {
   confidence: 'high' | 'medium' | 'low';
 }
 
-export interface FitResponse {
-  matches: MatchResult[];
-  roleTitle: string | null;
-  summary: string;
-  token: string;
-  analysedAt: string;
-}
-
 export interface Env {
   ANTHROPIC_API_KEY: string;
   JWT_SECRET: string;
   DISCORD_WEBHOOK_REPORTS: string;
   DISCORD_WEBHOOK_ALERTS: string;
+  TURNSTILE_SECRET_KEY: string;
   RATE_LIMIT_KV: KVNamespace;
 }
 
@@ -31,6 +60,7 @@ export interface ProfileDomain {
     category: string;
     rating: string;
     evidence: string;
+    headline: string;
   }[];
 }
 

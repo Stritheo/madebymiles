@@ -20,9 +20,9 @@ Full P&L and balance sheet accountability including budgeting, forecasting, capi
 
 **Phase 3: Claims and operations.** Redesigned from customer outcome backward. RPA for billing, admin, data entry, correspondence. Sophisticated workforce planning model forecasting attritional losses a year out and for catastrophe surges. Tiered supplier model measuring outcomes, cost, timeframes, and rework rates. Attritional and catastrophe claims settled faster and at lower cost than industry average.
 
-**Royal Commission.** Two witness statements prepared. Took full accountability as the accountable executive. Called off 36 hours before testimony. Zero enforceable undertakings, zero fines, zero capital consequences. Delegated accountability for running the business to my customer operations leader during preparation, briefing the entity board directors on her strengths and where she would need support.
+**Royal Commission.** Two witness statements prepared. Took full accountability as the accountable executive. Called off 36 hours before testimony. Zero enforceable undertakings, zero fines, zero capital consequences. Delegated accountability for running the business to my customer operations leader during preparation, briefing the entity board directors on her strengths and where she would need support. She ran the operation without missing a beat.
 
-**Board engagement.** Presented quarterly to the APRA-regulated entity board and monthly to its Risk and Audit Committees. Joint papers with the CRO on risk culture and with the Chief Actuary on FCR. Ran a strategic review on claims operations for the Board, earning trust to retain in-house control through transparent due diligence.
+**Board engagement.** Presented quarterly to the entity board and monthly to its Risk and Audit Committees. Joint papers with the CRO on risk culture and with the Chief Actuary on FCR. Ran a strategic review on claims operations for the Board, earning trust to retain in-house control through transparent due diligence.
 
 **Leadership team.** Designed a 10-person executive team across the full functional span. External hires from other insurers and industries, internal promotions, cross-functional moves, and exits. Weekly leadership team meetings, monthly business reviews, quarterly strategy sessions, set-cadence 1:1s. The team stayed in place after divestment.
 

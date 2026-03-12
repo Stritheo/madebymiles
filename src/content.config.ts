@@ -8,6 +8,7 @@ const skills = defineCollection({
     skillArea: z.string(),
     rating: z.enum(['Expert', 'Practised', 'Awareness']),
     evidence: z.string(),
+    headline: z.string(),
     caseStudySlug: z.string().optional(),
   }),
 });

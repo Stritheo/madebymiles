@@ -1,7 +1,7 @@
 # Product Requirements Document — madebymiles.ai
 
 **Owner:** Miles Sowden
-**Last updated:** 2 March 2026
+**Last updated:** 11 March 2026
 **Status:** Draft for review
 
 ---
@@ -432,75 +432,83 @@ The Australian Institute of Company Directors (AICD) publishes the standard fram
 ---
 
 ### Epic 8 — AI Role Matcher ("Fit Finder")
-> Let a potential hirer upload a role description or SOW and instantly see how Miles's skillset and mindset align — then invite them to start a conversation.
+> Let a potential hirer upload a role description and instantly see a complete AICD-aligned skill evaluation, matched case studies, and a clear path to conversation.
 
 **Concept:**
-A hiring manager, board chair, or search consultant visits `/fit` and uploads a role description (PDF, DOCX, or pasted text). A serverless function sends the document to Claude Haiku alongside Miles's structured skill and experience data. The system returns a personalised fit report:
+A hiring manager, board chair, or search consultant visits `/fit` and uploads a role description (PDF or pasted text). A serverless function sends the document to Claude Haiku alongside Miles's structured skill and experience data. The system returns a three-tier fit report:
 
-- **Top skillset match** — The strongest alignment between the role's requirements and Miles's demonstrated capabilities, with evidence from case studies
-- **Top mindset match** — The strongest alignment between the role's leadership culture/values and Miles's leadership philosophy, with evidence from reflections
-- **Remaining matches** — Shown blurred/redacted with a clear CTA: *"Want to see the full picture? Let's talk."* → routes to LinkedIn message or WhatsApp
+- **Tier 1 (visible):** A 3-5 sentence fit summary naming specific organisations, roles, and qualitative outcomes. Two top match cards (strongest skillset match + strongest mindset match) with qualitative evidence. Enough for a senior reader to see "he has done this before, at this scale, in this sector."
+- **Tier 2 (blurred):** Complete AICD skill matrix evaluation. All 10 skill areas across 4 governance domains, each assessed for relevance (primary, supporting, or noted). Domain headers and relevance indicators visible through the blur. Primary alignment rows visually distinguished.
+- **Tier 3 (blurred):** 2-3 case studies selected for relevance to the specific role. Company, role title, and one-line descriptor visible. Full case study content blurred.
 
-This is both a conversion mechanism and a demonstration of AI fluency — Miles walking the talk.
+The unlock gate sits between Tier 1 and Tiers 2/3. After connecting on LinkedIn or WhatsApp, the reader chooses which section to see first: the full skill evaluation or the matched case studies. Both can be unlocked. This respects different reader types: chairs want the structured matrix, search consultants want narrative case studies.
+
+This is both a conversion mechanism and a demonstration of AI fluency.
 
 **Architecture:**
 
 ```
 Browser (static Astro page)
-    │
-    ├── Upload / paste role description
-    │
-    ▼
+    |
+    +-- Upload / paste role description
+    |
+    v
 Cloudflare Worker (serverless function)
-    │
-    ├── Parse document (PDF.js / mammoth.js for DOCX, or plain text)
-    ├── Load Miles's structured profile (JSON, stored in Worker KV or bundled)
-    ├── Call Claude Haiku API with role description + profile
-    ├── Return structured match response
-    │
-    ▼
-Browser renders fit report (top 2 visible, rest blurred, CTA)
+    |
+    +-- Parse document (PDF.js or plain text)
+    +-- Load Miles's structured profile (JSON bundled in Worker)
+    +-- Call Claude Haiku API with role description + profile
+    +-- Return structured evaluation response
+    |
+    v
+Browser renders three-tier fit report
+    Tier 1: summary + 2 top match cards (visible)
+    Gate: LinkedIn / WhatsApp connect + content choice
+    Tier 2: complete AICD skill matrix (blurred until unlock)
+    Tier 3: matched case studies (blurred until unlock)
 ```
 
 **Scope:**
-- Build `/fit` page with file upload (PDF, DOCX) and text paste input
+- Build `/fit` page with file upload (PDF) and text paste input
 - Build Cloudflare Worker serverless function:
-  - Document parsing (extract text from uploaded files)
-  - Structured prompt to Claude Haiku: compare role requirements against Miles's AICD-aligned skill matrix (14 domains across 4 competency areas), case study outcomes, and leadership philosophy
-  - The prompt includes Miles's structured profile as a cached system prompt (JSON derived from the same Content Collection that powers the `/experience` page) — single source of truth
-  - Return JSON: array of matches ranked by strength, each with category (skillset/mindset), AICD domain, evidence snippet, and confidence
-- Build match result UI:
-  - Top skillset match: fully visible with evidence
-  - Top mindset match: fully visible with evidence
-  - Remaining matches: blurred with CSS blur filter
-  - "I've contacted Miles" button (honour system) — clicking reveals the remaining matches. Trust-based, feels generous, and still drives the initial CTA interaction
-  - CTA buttons: "Message me on LinkedIn" / "WhatsApp me"
-- **Shareable results URL:** Each analysis generates a short-lived signed URL (e.g. `/fit/results?token=<signed-jwt>`) with the match result embedded in the token. A search consultant can share this link with their client board. No server-side storage — the result is encoded in the URL itself (signed to prevent tampering, expires after 30 days).
-- Miles's structured profile data as a JSON file (single source of truth, derived from content collections)
-- Rate limiting: max 10 analyses per IP per day (prevent abuse, control cost)
+  - Document parsing (extract text from uploaded PDF or accept plain text)
+  - Structured prompt to Claude Haiku: evaluate ALL 10 skill areas across 4 AICD domains against the role description, select 2-3 relevant case studies, produce a fit summary
+  - Brand voice rules enforced in the system prompt: short sentences, active voice, AU/UK spelling, no em dashes, no superlatives, evidence over assertion
+  - The prompt includes Miles's structured profile as a cached system prompt (JSON derived from `profile.json`) with complete career evidence and case studies
+  - Return JSON with: `skillMatrix` (10 entries), `topMatches` (skillset + mindset), `roleTitle`, `summary`, `relevantCaseStudies` (2-3 entries)
+  - `max_tokens: 6144` to accommodate complete matrix evaluation
+- Build three-tier result UI:
+  - Tier 1: fit summary (3-5 sentences), two top match cards using `evidenceQualitative` (no figures in public content)
+  - Tier 2: complete AICD skill matrix grouped by domain. Domain headers, skill area names, and relevance indicators (Primary/Supporting/Noted) always visible. Match reasoning and evidence blurred. Primary rows get accent styling.
+  - Tier 3: matched case studies. Company, role, one-line descriptor visible. Full content blurred.
+  - Unlock gate: LinkedIn connect or WhatsApp opens messaging. Post-connect choice: "Show the full skill evaluation" or "Show the matched case studies." Each unblurs its section. Secondary button unlocks the remaining section.
+  - On unlock, skill matrix swaps from qualitative evidence to full evidence with figures.
+- **Shareable results URL:** Each analysis generates a signed JWT URL (`/fit?token=<jwt>`). Shared view shows all content unlocked (no gate). Backwards compatible with old token format (`matches[]` array renders via legacy path). Tokens expire after 30 days. No server-side storage.
+- Rate limiting: max 100 analyses per IP per day (KV-based, prevent abuse, control cost)
 
 **SHREK Team Integration:**
 Search firms and hiring teams use platforms like Invenias, Bullhorn, FileFinder (CRM/ATS), LinkedIn Recruiter, BoardEx, RelSci (sourcing), and increasingly AI-powered talent intelligence tools like Eightfold and SeekOut. The Fit Finder positions madebymiles.ai as compatible with these workflows:
 - Search consultants can paste a role brief directly from their ATS
 - The structured JSON-LD on the site (Person schema, `hasOccupationExperience`) is consumable by talent intelligence crawlers
 - The skill matrix and case studies mirror the structured data these platforms index
-- The match report can be shared via a unique results URL (optional) — giving the search consultant something to attach to a candidate profile in their CRM
+- The match report can be shared via a unique results URL giving the search consultant something to attach to a candidate profile in their CRM
 
 **Privacy & data handling:**
-- Uploaded documents are processed in-memory by the Cloudflare Worker — **never persisted to disk, database, or logs**
+- Uploaded documents are processed in-memory by the Cloudflare Worker, never persisted to disk, database, or logs
 - No PII is collected from the uploader (no login, no email capture)
 - The Worker processes the document, calls the API, returns the result, and the document is garbage-collected
-- Clear privacy notice on the upload page: *"Your document is processed in memory and immediately discarded. Nothing is stored."*
-- No analytics on document content — only aggregate usage counts (number of analyses per day)
+- Clear privacy notice on the upload page with link to `/privacy#fit-finder`
+- Discord webhook notifications contain only aggregate metadata (role title, primary alignment count, case study count), never document content
+- No analytics on document content
 
 **Cost estimate:**
 - Cloudflare Workers free tier: 100k requests/day (vastly more than needed)
 - Claude Haiku: ~$0.25/1M input tokens, ~$1.25/1M output tokens
-- A typical role description: ~2-3k tokens input + ~1k tokens output = ~$0.002 per analysis
-- At 50 analyses/month: ~$0.10/month
+- A typical analysis: ~4k tokens input + ~4k tokens output = ~$0.006 per analysis
+- At 50 analyses/month: ~$0.30/month
 - Well within $5/month budget
 
-**Exit criteria:** A search consultant can paste a CEO role description and within 10 seconds see Miles's top skillset and mindset alignment with evidence, with a clear path to start a conversation.
+**Exit criteria:** A board chair can paste a CEO role description and within 25 seconds see a specific fit summary naming organisations and outcomes, two detailed match cards, and the complete AICD skill matrix with relevance ratings for all 10 skill areas. After connecting on LinkedIn or WhatsApp, they can choose to view either the full skill evaluation (with figures) or the matched case studies first.
 
 ---
 

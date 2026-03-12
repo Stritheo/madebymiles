@@ -2,9 +2,10 @@
   "name": "Miles Sowden",
   "title": "Insurance Executive, Growth and Transformation",
   "credentials": [
-    "Graduate, Australian Institute of Company Directors (GAICD)",
-    "Graduate Diploma of Applied Finance (GDipAppFin)",
-    "Bachelor of Business (BBus)"
+    "Company Directors Course, Australian Institute of Company Directors (GAICD)",
+    "Certificate in Applied Generative AI for Transformations, Massachusetts Institute of Technology (CertAppGenAI)",
+    "Graduate Diploma of Applied Finance, Financial Services Institute of Australasia (GDipAppFin)",
+    "Bachelor of Business, University of Technology Sydney (BBus)"
   ],
   "contact": {
     "website": "https://madebymiles.ai",
@@ -18,20 +19,23 @@
         {
           "skillArea": "Board oversight and fiduciary duties",
           "category": "Board Governance",
-          "rating": "Expert",
-          "evidence": "GAICD. Presented directly to an APRA-regulated entity board (quarterly) and its Risk and Audit Committees (monthly) as the accountable executive across the full spectrum of board topics. Prepared joint papers with the CRO and Chief Actuary. Shaped board decisions through transparent strategic reviews. Presented to boards across three organisations."
+          "rating": "Practised",
+          "evidence": "GAICD. Presented directly to an entity board (quarterly) and its Risk and Audit Committees (monthly) as the accountable executive across the full spectrum of board topics. Prepared joint papers with the CRO and Chief Actuary. Shaped board decisions through transparent strategic reviews. Presented to boards across three organisations.",
+          "headline": "GAICD-qualified. Presented quarterly to an entity board across three organisations."
         },
         {
           "skillArea": "Regulatory and compliance management",
           "category": "Regulatory Compliance",
           "rating": "Expert",
-          "evidence": "Led CBA Insurance through the Royal Commission: two witness statements, zero enforceable undertakings, zero fines, zero capital consequences. Signed the ASIC Pricing Promise Review attestation at two separate insurers, neither resulting in regulatory action. Quarterly meetings with ASIC, APRA, AFCA. Engaged Treasury on deferred sales policy; case studies published."
+          "evidence": "Led CBA Insurance through the Royal Commission: two witness statements, zero enforceable undertakings, zero fines, zero capital consequences. Signed the ASIC Pricing Promise Review attestation at two separate insurers, neither resulting in regulatory action. Quarterly meetings with ASIC, APRA, AFCA. Engaged Treasury on deferred sales policy; case studies published.",
+          "headline": "Royal Commission: two witness statements, zero enforceable undertakings, zero fines."
         },
         {
           "skillArea": "Stakeholder and shareholder engagement",
           "category": "Stakeholder Management",
           "rating": "Expert",
-          "evidence": "Presented reinsurance strategy in Singapore, London, and Bermuda (placement growing from $1.1bn to $1.9bn). Engaged Treasury on policy direction. Negotiated with incumbent insurance providers at Westpac. Managed broker networks at Suncorp and SCI (90% intermediated)."
+          "evidence": "Presented reinsurance strategy in Singapore, London, and Bermuda (placement up to $1.9bn). Engaged Treasury on policy direction. Negotiated with incumbent insurance providers at Westpac. Managed broker networks at Suncorp and SCI (90% intermediated).",
+          "headline": "Reinsurance placement up to $1.9bn across Singapore, London, and Bermuda."
         }
       ]
     },
@@ -42,25 +46,29 @@
           "skillArea": "Strategic planning and execution",
           "category": "Business Strategy",
           "rating": "Expert",
-          "evidence": "Diagnosed root causes and designed phased transformations at CBA (combined ratio 101.5% to 89.2%), Suncorp (105% to 98%), and SCI (digital availability less than 5% to 60%). Originated the Westpac-Allianz strategic alliance recommendation. Positioned CBA for divestment at 1.8x PCA with a three-year funded roadmap."
+          "evidence": "Diagnosed root causes and designed phased transformations at CBA (combined ratio 101.5% to 89.2%), Suncorp (105% to 98%), and SCI (digital availability less than 5% to 60%). Originated the Westpac-Allianz strategic alliance recommendation. Positioned CBA for divestment at 1.8x PCA with a three-year funded roadmap.",
+          "headline": "Combined ratio from 101.5% to 89.2% at CBA. Turnarounds delivered at Suncorp and SCI."
         },
         {
           "skillArea": "Technology strategy and AI adoption",
           "category": "Innovation",
-          "rating": "Expert",
-          "evidence": "Deployed agentic AI for underwriting at 97% accuracy (SCI). AI tools to 20% of technical users. Built AI governance framework. Digital sales from 20% to 70% at CBA. End-to-end digital underwriting with real-time pricing at SCI. Qantas workforce planning model for catastrophe surge at CBA."
+          "rating": "Practised",
+          "evidence": "Deployed agentic AI for underwriting at 97% accuracy (SCI). AI tools to 20% of technical users. Built AI governance framework. Digital sales from 20% to 70% at CBA. End-to-end digital underwriting with real-time pricing at SCI. Qantas workforce planning model for catastrophe surge at CBA.",
+          "headline": "Agentic AI at 97% underwriting accuracy. Digital sales from 20% to 70% at CBA."
         },
         {
           "skillArea": "Mergers, alliances and portfolio transitions",
           "category": "Mergers and Partnerships",
           "rating": "Practised",
-          "evidence": "Ran six-month competitive process at Westpac, shortlisting six insurers to two. Allianz selected as strategic alliance partner. Managed Suncorp/Promina post-merger platform integration (best-of-both approach). Led CBA portfolio transition to Hollard including separation of a highly integrated business."
+          "evidence": "Led CBA Insurance through divestment to Hollard: joint strategy, funded roadmap, and separation of a $1bn+ portfolio deeply integrated into the Group. Delivered the Suncorp/Promina post-merger integration for intermediated personal lines, consolidating platforms and teams across two legacy businesses. Ran six-month competitive process at Westpac, shortlisting six insurers to two; Allianz selected as strategic alliance partner with portfolio transfer.",
+          "headline": "Led CBA Insurance divestment to Hollard. Integrated Suncorp/Promina intermediated personal lines post-merger."
         },
         {
           "skillArea": "Enterprise risk and underwriting",
           "category": "Risk Management",
           "rating": "Expert",
-          "evidence": "Delivered first underwriting profit at Suncorp personal lines after four consecutive loss years (105% to 98%). Full P&L and balance sheet accountability at CBA including reinsurance placement ($1.1bn to $1.9bn). Developed novel rating factor reducing premiums 10% while improving loss ratio 1%. Identified and removed inappropriate rating factors from the CBA pricing model."
+          "evidence": "Delivered first underwriting profit at Suncorp personal lines after four consecutive loss years (105% to 98%). Full P&L and balance sheet accountability at CBA including reinsurance placement up to $1.9bn. Built risk cultures and control frameworks that effectively delivered regulatory reforms across multiple institutions. Developed novel rating factor reducing premiums 10% while improving loss ratio 1%. Identified and removed inappropriate rating factors from the CBA pricing model.",
+          "headline": "First underwriting profit at Suncorp personal lines after four consecutive loss years."
         }
       ]
     },
@@ -71,19 +79,22 @@
           "skillArea": "Digital distribution and customer experience",
           "category": "Digital Channels",
           "rating": "Expert",
-          "evidence": "Digital availability from less than 5% to 60% at SCI. Digital sales from 20% to 70% at CBA with headcount held flat. Quote-to-sale conversion 20% to 50% in CBA home buying channel. End-to-end digital underwriting with real-time pricing at SCI. Broker portal redesign with RPA and API integrations eliminating double-keying."
+          "evidence": "Digital availability from less than 5% to 60% at SCI. Digital sales from 20% to 70% at CBA with headcount held flat. Quote-to-sale conversion 20% to 50% in CBA home buying channel. End-to-end digital underwriting with real-time pricing at SCI. Broker portal redesign with RPA and API integrations eliminating double-keying.",
+          "headline": "Digital availability from less than 5% to 60% at SCI. Quote-to-sale conversion doubled at CBA."
         },
         {
           "skillArea": "P&L management and financial oversight",
           "category": "Financial Performance",
           "rating": "Expert",
-          "evidence": "Full P&L and balance sheet accountability for CBA's $1bn+ insurer. Combined ratio 101.5% to 89.2%. Motor profitable within 15 months (never previously profitable). Reinsurance $1.1bn to $1.9bn. Divestment at 1.8x PCA. Portfolio growth $115m to $200m at Westpac."
+          "evidence": "Full P&L and balance sheet accountability for CBA's $1bn+ insurer. Combined ratio 101.5% to 89.2%. Motor profitable within 15 months (never previously profitable). Reinsurance placement up to $1.9bn. Divestment at 1.8x PCA. Portfolio growth $115m to $200m at Westpac.",
+          "headline": "Full P&L and balance sheet for CBA's $1bn+ insurer. Motor profitable within 15 months."
         },
         {
           "skillArea": "Operational efficiency and transformation",
           "category": "Operations",
           "rating": "Expert",
-          "evidence": "Cleared 30,000-task backlog at SCI in two months with unchanged resourcing. Underwriting cycle time reduced 19%. Qantas workforce planning model for catastrophe surge at CBA. Tiered supplier model (outcomes, cost, timeframes, rework rates) for claims. RPA for billing, admin, data entry, correspondence. Headcount held flat across CBA transformation."
+          "evidence": "Cleared 30,000-task backlog at SCI in two months with unchanged resourcing. Underwriting cycle time reduced 19%. Qantas workforce planning model for catastrophe surge at CBA. Tiered supplier model (outcomes, cost, timeframes, rework rates) for claims. RPA for billing, admin, data entry, correspondence. Headcount held flat across CBA transformation.",
+          "headline": "30,000-task backlog cleared in two months with unchanged resourcing at SCI."
         }
       ]
     },
@@ -94,19 +105,22 @@
           "skillArea": "Organisational culture and change management",
           "category": "Culture",
           "rating": "Expert",
-          "evidence": "Staff engagement 50% to 70% at CBA (during Royal Commission, pandemic, divestment). 66% to 92% at Westpac (during outsourcing programme). 76% at SCI. Built succession at SCI where internal promotion led entire operations team after external hire departed."
+          "evidence": "Staff engagement 50% to 70% at CBA (during Royal Commission, pandemic, divestment). 66% to 92% at Westpac (during outsourcing programme). 76% at SCI. Built succession at SCI where internal promotion led entire operations team after external hire departed.",
+          "headline": "Staff engagement 50% to 70% at CBA during Royal Commission, pandemic, and divestment."
         },
         {
           "skillArea": "Customer advocacy and NPS",
           "category": "Customer Outcomes",
           "rating": "Expert",
-          "evidence": "NPS from +15 to +45 at CBA, +25 to +44 at Westpac. CANSTAR Outstanding Value five consecutive years. Novel rating factor reduced premiums 10%, improved loss ratio 1%, no adverse rating on lower economic groups. Significant customer remediations refunded proactively at CBA. Proactive outreach to entitled customers at Westpac."
+          "evidence": "NPS from +15 to +45 at CBA, +25 to +44 at Westpac. CANSTAR Outstanding Value five consecutive years. Novel rating factor reduced premiums 10%, improved loss ratio 1%, no adverse rating on lower economic groups. Significant customer remediations refunded proactively at CBA. Proactive outreach to entitled customers at Westpac.",
+          "headline": "NPS from +15 to +45 at CBA. CANSTAR Outstanding Value five consecutive years."
         },
         {
           "skillArea": "Executive leadership and team building",
           "category": "Leadership",
           "rating": "Expert",
-          "evidence": "Designed 10-person executive team at CBA using four composition levers: external hire, internal promotion, cross-functional moves, exits. Team stayed in place after divestment. Delegated business accountability during Royal Commission. Weekly, monthly, quarterly operating rhythm. Direct reports presented to the entity board."
+          "evidence": "Designed 10-person executive team at CBA using four composition levers: external hire, internal promotion, cross-functional moves, exits. Team stayed in place after divestment. Delegated business accountability during Royal Commission. Weekly, monthly, quarterly operating rhythm. Direct reports presented to the entity board.",
+          "headline": "Built 10-person executive team at CBA. Every one stayed in place through divestment."
         }
       ]
     }
@@ -144,7 +158,7 @@
         "CANSTAR Outstanding Value five consecutive years",
         "Royal Commission: zero enforceable undertakings, zero fines, zero capital consequences",
         "ASIC Pricing Promise Review signed on time, no regulatory action",
-        "Reinsurance $1.1bn to $1.9bn",
+        "Reinsurance placement up to $1.9bn",
         "Divestment at 1.8x PCA with funded roadmap"
       ]
     },

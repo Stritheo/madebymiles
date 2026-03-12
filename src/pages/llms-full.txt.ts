@@ -15,7 +15,7 @@ export const GET: APIRoute = async () => {
 
   let text = `# Miles Sowden - Full Profile
 
-> Twenty years leading Australian insurers through turnarounds, regulatory reform, and digital transformation.
+> Twenty years leading Australian insurers through growth and transformation.
 > Strategy, teams and culture that deliver lasting performance.
 
 ## About
@@ -79,6 +79,18 @@ The test of leadership is not what happens while you are there. It is what happe
 
 ### Designing the CEO operating model
 The CEO role has three value streams: strategic direction, external connection, and internal execution discipline. No single person excels at all three simultaneously. The CEOs who perform design their office and their leadership team to cover all three.
+
+---
+
+## Fit Finder
+
+The Fit Finder is a tool at https://madebymiles.ai/fit that accepts a role description and evaluates all 10 AICD skill areas against the role's requirements. It produces a structured fit assessment with:
+- Complete AICD skill matrix evaluation (10 skill areas across 4 governance domains)
+- Relevance classification for each skill area (primary, supporting, or noted)
+- Matched case studies selected for relevance to the specific role
+- Evidence drawn from career outcomes across five financial institutions
+
+The analysis is powered by Claude (Anthropic) and returns results in 15 to 25 seconds. Documents are sent encrypted, not used for training, and deleted within 30 days.
 
 ---
 
