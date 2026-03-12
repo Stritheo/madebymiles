@@ -212,16 +212,6 @@ import Base from '@/layouts/Base.astro';
           </div>
         </div>
 
-        <!-- Share link -->
-        <div id="share-section" class="hidden flex items-center gap-3">
-          <button
-            id="share-btn"
-            class="text-sm text-text-secondary hover:text-text-primary transition-colors"
-          >
-            Share this result
-          </button>
-          <span id="share-confirmation" class="text-sm text-text-accent hidden">Link copied</span>
-        </div>
       </div>
     </div>
   </section>
@@ -300,9 +290,6 @@ import Base from '@/layouts/Base.astro';
   const caseStudiesContainer = document.getElementById('case-studies')!;
   const alsoAvailable = document.getElementById('also-available')!;
   const alsoBtn = document.getElementById('also-btn')!;
-  const shareSection = document.getElementById('share-section')!;
-  const shareBtn = document.getElementById('share-btn')!;
-  const shareConfirmation = document.getElementById('share-confirmation')!;
   const charHint = document.getElementById('char-hint')!;
   const charCount = document.getElementById('char-count')!;
   const progressBar = document.getElementById('progress-bar')!;
@@ -475,15 +462,6 @@ import Base from '@/layouts/Base.astro';
     alsoAvailable.classList.add('hidden');
   });
 
-  shareBtn.addEventListener('click', () => {
-    if (!currentToken) return;
-    const url = new URL('/fit', window.location.origin);
-    url.searchParams.set('token', currentToken);
-    navigator.clipboard.writeText(url.toString()).then(() => {
-      shareConfirmation.classList.remove('hidden');
-      setTimeout(() => shareConfirmation.classList.add('hidden'), 3000);
-    });
-  });
 
   // --- Core functions ---
 
@@ -616,7 +594,7 @@ import Base from '@/layouts/Base.astro';
     caseStudiesSection.classList.add('hidden');
     detailLoading.classList.add('hidden');
     alsoAvailable.classList.add('hidden');
-    shareSection.classList.add('hidden');
+
 
     // Reset state
     detailData = null;
@@ -694,7 +672,7 @@ import Base from '@/layouts/Base.astro';
       alsoAvailable.classList.remove('hidden');
 
       // Enable sharing
-      shareSection.classList.remove('hidden');
+  
     }, 300);
   }
 
@@ -786,7 +764,7 @@ import Base from '@/layouts/Base.astro';
     skillMatrixSection.classList.remove('hidden');
     caseStudiesSection.classList.remove('hidden');
     alsoAvailable.classList.add('hidden');
-    shareSection.classList.remove('hidden');
+
 
     showState('results');
   }
@@ -825,7 +803,7 @@ import Base from '@/layouts/Base.astro';
     skillMatrixSection.classList.remove('hidden');
     caseStudiesSection.classList.remove('hidden');
     alsoAvailable.classList.add('hidden');
-    shareSection.classList.remove('hidden');
+
 
     showState('results');
   }
@@ -981,7 +959,7 @@ import Base from '@/layouts/Base.astro';
     caseStudiesSection.classList.add('hidden');
     detailLoading.classList.add('hidden');
     alsoAvailable.classList.add('hidden');
-    shareSection.classList.remove('hidden');
+
 
     showState('results');
   }
