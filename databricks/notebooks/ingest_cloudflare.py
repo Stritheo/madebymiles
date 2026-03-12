@@ -1,34 +1,35 @@
 # Databricks notebook: Ingest Cloudflare Analytics data
+# Target: madebymiles.bronze.cloudflare_analytics
 # Schedule: Daily
-# Paste your Cloudflare API token into the CLOUDFLARE_API_TOKEN widget at the top
+# Tokens: via Databricks Secrets (scope: madebymiles)
 
 import json
 import requests
 from datetime import datetime, timedelta, timezone
 
 # -- Config --
-dbutils.widgets.text("CLOUDFLARE_ZONE_ID", "fd6f6b524d5d40110ebb65d504ae827b", "Cloudflare Zone ID")
-dbutils.widgets.text("CLOUDFLARE_API_TOKEN", "", "Cloudflare API Token")
+try:
+    TOKEN = dbutils.secrets.get("madebymiles", "CLOUDFLARE_API_TOKEN")
+    ZONE_ID = dbutils.secrets.get("madebymiles", "CLOUDFLARE_ZONE_ID")
+except Exception:
+    dbutils.widgets.text("CLOUDFLARE_API_TOKEN", "", "Cloudflare API Token (fallback)")
+    dbutils.widgets.text("CLOUDFLARE_ZONE_ID", "", "Cloudflare Zone ID (fallback)")
+    TOKEN = dbutils.widgets.get("CLOUDFLARE_API_TOKEN")
+    ZONE_ID = dbutils.widgets.get("CLOUDFLARE_ZONE_ID")
+    if not TOKEN or not ZONE_ID:
+        raise ValueError("No Cloudflare credentials found in secrets or widgets")
 
-ZONE_ID = dbutils.widgets.get("CLOUDFLARE_ZONE_ID")
-TOKEN = dbutils.widgets.get("CLOUDFLARE_API_TOKEN")
-
-if not ZONE_ID:
-    raise ValueError("Please provide CLOUDFLARE_ZONE_ID via the widget at the top of the notebook")
-if not TOKEN:
-    raise ValueError("Please paste your Cloudflare API token into the CLOUDFLARE_API_TOKEN widget at the top of the notebook")
-
-# -- Fetch zone analytics (last 7 days) --
-since = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
-until = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+# -- Fetch zone analytics (last 14 days) --
+since = (datetime.now(timezone.utc) - timedelta(days=14)).strftime("%Y-%m-%d")
+until = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
 gql_query = (
     'query { viewer { zones(filter: {zoneTag: "%s"}) { '
-    'httpRequests1dGroups(limit: 7, filter: {date_geq: "%s", date_lt: "%s"}) { '
+    'httpRequests1dGroups(limit: 14, filter: {date_geq: "%s", date_lt: "%s"}) { '
     'dimensions { date } '
     'sum { requests cachedRequests bytes cachedBytes threats pageViews } '
     'uniq { uniques } } } } }'
-) % (ZONE_ID, since[:10], until[:10])
+) % (ZONE_ID, since, until)
 
 resp = requests.post(
     "https://api.cloudflare.com/client/v4/graphql",
@@ -42,20 +43,17 @@ resp = requests.post(
 resp.raise_for_status()
 data = resp.json()
 
-# Surface API errors before processing
 if data.get("errors"):
     for err in data["errors"]:
         print(f"Cloudflare API error: {err.get('message', err)}")
-    raise RuntimeError("Cloudflare GraphQL returned errors (check your API token permissions)")
+    raise RuntimeError("Cloudflare GraphQL returned errors")
 
 viewer = (data.get("data") or {}).get("viewer")
 if viewer is None:
-    print(f"Full API response: {json.dumps(data, indent=2)[:500]}")
-    raise RuntimeError("Cloudflare returned viewer=null. The API token likely lacks analytics read permission for this zone.")
+    raise RuntimeError("Cloudflare returned viewer=null. Check API token permissions.")
 
 rows = []
-zones = viewer.get("zones", [])
-for zone in zones:
+for zone in viewer.get("zones", []):
     for group in zone.get("httpRequests1dGroups", []):
         s = group["sum"]
         rows.append({
@@ -70,8 +68,10 @@ for zone in zones:
             "cache_hit_rate": round(s["cachedRequests"] / max(s["requests"], 1) * 100, 2),
         })
 
-# -- Write to Unity Catalog table --
-df = spark.createDataFrame(rows)
-df.write.mode("overwrite").saveAsTable("madebymiles.observability.cloudflare_analytics")
-
-print(f"Ingested {len(rows)} days of Cloudflare analytics")
+# -- Write to bronze table --
+if rows:
+    df = spark.createDataFrame(rows)
+    df.write.mode("overwrite").saveAsTable("madebymiles.bronze.cloudflare_analytics")
+    print(f"Ingested {len(rows)} days of Cloudflare analytics into bronze.cloudflare_analytics")
+else:
+    print("No Cloudflare analytics data found")

@@ -1,30 +1,29 @@
-# Databricks notebook: Ingest Sentry issues and events
+# Databricks notebook: Ingest Sentry issues
+# Target: madebymiles.bronze.sentry_issues
 # Schedule: Daily
-# Paste your Sentry auth token into the SENTRY_TOKEN widget at the top
+# Tokens: via Databricks Secrets (scope: madebymiles)
 
 import json
 import requests
 from datetime import datetime, timezone
 
 # -- Config --
-dbutils.widgets.text("SENTRY_ORG", "stritheo", "Sentry Org Slug")
-dbutils.widgets.text("SENTRY_PROJECT", "madebymiles", "Sentry Project Slug")
-dbutils.widgets.text("SENTRY_TOKEN", "", "Sentry Auth Token")
+try:
+    TOKEN = dbutils.secrets.get("madebymiles", "SENTRY_TOKEN")
+except Exception:
+    dbutils.widgets.text("SENTRY_TOKEN", "", "Sentry Auth Token (fallback)")
+    TOKEN = dbutils.widgets.get("SENTRY_TOKEN")
+    if not TOKEN:
+        raise ValueError("No Sentry token found in secrets or widget")
 
-ORG = dbutils.widgets.get("SENTRY_ORG")
-PROJECT = dbutils.widgets.get("SENTRY_PROJECT")
-TOKEN = dbutils.widgets.get("SENTRY_TOKEN")
-
-if not ORG or not PROJECT:
-    raise ValueError("Please provide SENTRY_ORG and SENTRY_PROJECT via the widgets at the top")
-if not TOKEN:
-    raise ValueError("Please paste your Sentry auth token into the SENTRY_TOKEN widget at the top of the notebook")
+ORG = "stritheo"
+PROJECT = "madebymiles"
 
 # -- Fetch recent issues --
 resp = requests.get(
     f"https://sentry.io/api/0/projects/{ORG}/{PROJECT}/issues/",
     headers={"Authorization": f"Bearer {TOKEN}"},
-    params={"statsPeriod": "7d", "sort": "freq"},
+    params={"statsPeriod": "14d", "sort": "freq"},
     timeout=30,
 )
 resp.raise_for_status()
@@ -46,10 +45,14 @@ for issue in issues:
         "permalink": issue["permalink"],
     })
 
-# -- Write to Unity Catalog table --
+# -- Write to bronze table --
 if rows:
     df = spark.createDataFrame(rows)
-    df.write.mode("overwrite").saveAsTable("madebymiles.observability.sentry_issues")
-    print(f"Ingested {len(rows)} Sentry issues")
+    df.write.mode("overwrite").saveAsTable("madebymiles.bronze.sentry_issues")
+    print(f"Ingested {len(rows)} Sentry issues into bronze.sentry_issues")
 else:
-    print("No Sentry issues found (good news)")
+    print("No Sentry issues found in last 14 days (this is good news)")
+    # Create empty table so downstream transforms do not fail
+    schema = "issue_id STRING, title STRING, culprit STRING, level STRING, status STRING, count INT, first_seen STRING, last_seen STRING, type STRING, platform STRING, permalink STRING"
+    spark.createDataFrame([], schema).write.mode("overwrite").saveAsTable("madebymiles.bronze.sentry_issues")
+    print("Created empty bronze.sentry_issues table")

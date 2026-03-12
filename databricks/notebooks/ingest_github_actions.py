@@ -1,20 +1,25 @@
 # Databricks notebook: Ingest GitHub Actions data
+# Target: madebymiles.bronze.github_actions_runs
 # Schedule: Daily
-# Paste your GitHub token into the GITHUB_TOKEN widget at the top
+# Tokens: via Databricks Secrets (scope: madebymiles)
 
 import json
 import requests
 from datetime import datetime, timedelta, timezone
 
 # -- Config --
-dbutils.widgets.text("GITHUB_TOKEN", "", "GitHub Personal Access Token")
-REPO = "Stritheo/madebymiles"
-TOKEN = dbutils.widgets.get("GITHUB_TOKEN")
-if not TOKEN:
-    raise ValueError("Please paste your GitHub token into the GITHUB_TOKEN widget at the top of the notebook")
+try:
+    TOKEN = dbutils.secrets.get("madebymiles", "GITHUB_TOKEN")
+except Exception:
+    dbutils.widgets.text("GITHUB_TOKEN", "", "GitHub Personal Access Token (fallback)")
+    TOKEN = dbutils.widgets.get("GITHUB_TOKEN")
+    if not TOKEN:
+        raise ValueError("No GitHub token found in secrets or widget")
 
-# -- Fetch workflow runs (last 7 days) --
-since = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
+REPO = "Stritheo/madebymiles"
+
+# -- Fetch workflow runs (last 14 days) --
+since = (datetime.now(timezone.utc) - timedelta(days=14)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 resp = requests.get(
     f"https://api.github.com/repos/{REPO}/actions/runs",
@@ -45,8 +50,10 @@ for run in response_data.get("workflow_runs", []):
         "html_url": run["html_url"],
     })
 
-# -- Write to Unity Catalog table --
-df = spark.createDataFrame(rows)
-df.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("madebymiles.observability.github_actions_runs")
-
-print(f"Ingested {len(rows)} workflow runs")
+# -- Write to bronze table --
+if rows:
+    df = spark.createDataFrame(rows)
+    df.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("madebymiles.bronze.github_actions_runs")
+    print(f"Ingested {len(rows)} workflow runs into bronze.github_actions_runs")
+else:
+    print("No workflow runs found in last 14 days")
