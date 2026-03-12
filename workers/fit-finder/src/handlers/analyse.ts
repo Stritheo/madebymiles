@@ -18,9 +18,10 @@ export async function handleAnalyse(
   if (!turnstileToken) {
     return json({ error: 'Verification required. Please try again.' }, 403);
   }
-  const turnstileValid = await verifyTurnstile(turnstileToken, env.TURNSTILE_SECRET_KEY, ip);
-  if (!turnstileValid) {
-    ctx.waitUntil(postAlert(env.DISCORD_WEBHOOK_ALERTS, `Turnstile failed for IP: ${ip}`));
+  const turnstileResult = await verifyTurnstile(turnstileToken, env.TURNSTILE_SECRET_KEY, ip);
+  if (!turnstileResult.valid) {
+    const codes = turnstileResult.errorCodes?.join(', ') ?? 'none';
+    ctx.waitUntil(postAlert(env.DISCORD_WEBHOOK_ALERTS, `Turnstile failed for IP: ${ip}. Errors: ${codes}`));
     return json({ error: 'Verification failed. Please refresh and try again.' }, 403);
   }
 
