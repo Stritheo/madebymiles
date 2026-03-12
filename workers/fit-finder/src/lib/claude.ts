@@ -293,7 +293,7 @@ function buildCaseStudyMap(p: Profile) {
 /*  Prompts                                                           */
 /* ------------------------------------------------------------------ */
 
-const VOICE_RULES = `All output text must follow these rules: short sentences, active voice, AU/UK spelling (analyse, recognise, organisation). No em dashes. No superlatives or empty adjectives. No corporate jargon (leveraged, best-in-class, synergies). Evidence over assertion: name the organisation, name the outcome. Calm authority: state what was done, not how impressive it was. Write flowing prose, not bullet points strung into sentences. Use "by delivering", "through", "across" to connect clauses.`;
+const VOICE_RULES = `All output text must follow these rules: short sentences, active voice, AU/UK spelling (analyse, recognise, organisation). No em dashes. No superlatives or empty adjectives. No corporate jargon (leveraged, best-in-class, synergies). Evidence over assertion: name the organisation, name the outcome. Calm authority: state what was done, not how impressive it was. Write flowing prose, not bullet points strung into sentences. Use "by delivering", "through", "across" to connect clauses. Never describe growth trajectories or before/after progressions (e.g. "from $X to $Y", "growing from", "increased from"). State the final position only (e.g. "placement up to $1.9bn", "combined ratio of 89.2%"). The signal is capability, not growth.`;
 
 function buildProfileContext(p: Profile): string {
   let prompt = `## ${p.name}'s Profile

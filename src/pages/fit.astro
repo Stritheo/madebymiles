@@ -520,14 +520,14 @@ import Base from '@/layouts/Base.astro';
     }
   }
 
-  async function waitForTurnstile(maxWaitMs = 5000): Promise<string | null> {
+  async function waitForTurnstile(maxWaitMs = 10000): Promise<string | null> {
     if (turnstileToken) return turnstileToken;
     const start = Date.now();
     return new Promise((resolve) => {
       const check = () => {
         if (turnstileToken) return resolve(turnstileToken);
         if (Date.now() - start > maxWaitMs) return resolve(null);
-        setTimeout(check, 200);
+        setTimeout(check, 250);
       };
       check();
     });
@@ -544,7 +544,8 @@ import Base from '@/layouts/Base.astro';
       return;
     }
 
-    resetTurnstile(); // Reset for next use
+    // Reset Turnstile AFTER we have the token safely captured
+    resetTurnstile();
 
     try {
       let response: Response;
@@ -552,6 +553,8 @@ import Base from '@/layouts/Base.astro';
       if (selectedFile) {
         const formData = new FormData();
         formData.append('file', selectedFile);
+        // Do NOT set Content-Type manually for FormData — browser must set
+        // the multipart boundary automatically. Only append the custom header.
         response = await fetch(API_BASE, {
           method: 'POST',
           headers: { 'X-Turnstile-Token': tsToken },
@@ -885,12 +888,12 @@ import Base from '@/layouts/Base.astro';
       const primaryCount = entries.filter(e => e.relevance === 'primary').length;
       const supportingCount = entries.filter(e => e.relevance === 'supporting').length;
 
-      html += `<div class="mb-2">`;
       html += `<div class="mb-4">`;
+      html += `<div class="mb-6">`;
       html += `<h3 class="font-display text-2xl text-text-primary mb-1">${domain}</h3>`;
       html += `<p class="text-sm text-text-secondary">${primaryCount} primary, ${supportingCount} supporting, ${entries.length - primaryCount - supportingCount} noted</p>`;
       html += `</div>`;
-      html += `<div class="space-y-4">`;
+      html += `<div class="grid grid-cols-1 gap-8">`;
       for (const entry of entries) {
         html += renderSkillMatrixRow(entry);
       }
@@ -903,24 +906,25 @@ import Base from '@/layouts/Base.astro';
   function renderSkillMatrixRow(entry: SkillMatrixEntry): string {
     const isPrimary = entry.relevance === 'primary';
     const isSupporting = entry.relevance === 'supporting';
-    const borderClass = isPrimary
-      ? 'border-l-[3px] border-text-accent'
+    const borderColor = isPrimary
+      ? 'border-text-accent'
       : isSupporting
-        ? 'border-l-[3px] border-border-light'
-        : '';
+        ? 'border-bg-dark'
+        : 'border-border-light';
 
-    const relevanceLabel = entry.relevance.charAt(0).toUpperCase() + entry.relevance.slice(1);
+    const relevanceLabel = entry.relevance.toUpperCase();
 
     return `
-      <div class="p-6 bg-bg-card rounded-lg ${borderClass}">
-        <div class="flex justify-between items-baseline mb-3">
-          <h4 class="text-lg font-medium text-text-primary">${entry.skillArea}</h4>
+      <div class="p-8 bg-bg-card border-t-[3px] ${borderColor}">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-sm text-text-secondary uppercase tracking-wider">${entry.aicdDomain}</span>
           <div class="flex items-center gap-3">
-            <span class="text-xs font-medium px-2.5 py-1 rounded ${confidenceClass(entry.confidence)}">${entry.confidence}</span>
-            <span class="text-sm text-text-secondary uppercase tracking-wider">${relevanceLabel}</span>
+            <span class="text-xs font-medium px-3 py-1 rounded ${confidenceClass(entry.confidence)}">${entry.confidence}</span>
+            <span class="text-xs text-text-secondary uppercase tracking-wider">${relevanceLabel}</span>
           </div>
         </div>
-        <div class="mb-3">
+        <h4 class="font-display text-xl text-text-primary mb-4">${entry.skillArea}</h4>
+        <div class="mb-4">
           <p class="text-sm font-medium text-text-primary mb-1">Why this matches</p>
           <p class="text-base text-text-secondary leading-relaxed">${entry.matchReason}</p>
         </div>

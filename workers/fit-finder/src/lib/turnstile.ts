@@ -15,22 +15,43 @@ export async function verifyTurnstile(
   secretKey: string,
   ip: string,
 ): Promise<TurnstileVerification> {
+  // Guard: if secret is missing, fail fast with clear message
+  if (!secretKey) {
+    return { valid: false, errorCodes: ['missing-secret-key'] };
+  }
+  if (!token) {
+    return { valid: false, errorCodes: ['missing-token'] };
+  }
+
   try {
+    const body = new URLSearchParams({
+      secret: secretKey,
+      response: token,
+      remoteip: ip,
+    });
+
     const response = await fetch(VERIFY_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        secret: secretKey,
-        response: token,
-        remoteip: ip,
-      }),
+      body,
     });
 
-    if (!response.ok) {
-      return { valid: false, errorCodes: [`http-${response.status}`] };
+    // Always try to read the body for diagnostics
+    const text = await response.text();
+    let result: TurnstileResult;
+    try {
+      result = JSON.parse(text) as TurnstileResult;
+    } catch {
+      return { valid: false, errorCodes: [`http-${response.status}`, `body: ${text.slice(0, 200)}`] };
     }
 
-    const result = (await response.json()) as TurnstileResult;
+    if (!response.ok) {
+      return {
+        valid: false,
+        errorCodes: [`http-${response.status}`, ...(result['error-codes'] ?? [])],
+      };
+    }
+
     return {
       valid: result.success === true,
       errorCodes: result['error-codes'],
