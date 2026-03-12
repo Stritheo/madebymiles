@@ -50,6 +50,9 @@ import Base from '@/layouts/Base.astro';
           </div>
         </div>
 
+        <!-- Turnstile invisible widget -->
+        <div id="turnstile-widget" class="mb-4"></div>
+
         <button
           id="analyse-btn"
           disabled
@@ -226,6 +229,40 @@ import Base from '@/layouts/Base.astro';
 
 <script>
   const API_BASE = '/api/fit';
+  const TURNSTILE_SITE_KEY = '0x4AAAAAABfTVfSLuQ-HqCbU'; // Replace with your Cloudflare Turnstile site key
+
+  // --- Turnstile ---
+
+  let turnstileToken: string | null = null;
+  let turnstileWidgetId: string | null = null;
+
+  function initTurnstile() {
+    if (typeof (window as any).turnstile !== 'undefined') {
+      turnstileWidgetId = (window as any).turnstile.render('#turnstile-widget', {
+        sitekey: TURNSTILE_SITE_KEY,
+        callback: (token: string) => { turnstileToken = token; },
+        'expired-callback': () => { turnstileToken = null; },
+        'error-callback': () => { turnstileToken = null; },
+        theme: 'light',
+        size: 'flexible',
+      });
+    }
+  }
+
+  function resetTurnstile() {
+    turnstileToken = null;
+    if (turnstileWidgetId !== null && typeof (window as any).turnstile !== 'undefined') {
+      (window as any).turnstile.reset(turnstileWidgetId);
+    }
+  }
+
+  // Load Turnstile script
+  const tsScript = document.createElement('script');
+  tsScript.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad';
+  tsScript.async = true;
+  tsScript.defer = true;
+  (window as any).onTurnstileLoad = initTurnstile;
+  document.head.appendChild(tsScript);
 
   // --- Element references ---
 
@@ -480,8 +517,16 @@ import Base from '@/layouts/Base.astro';
   }
 
   async function analyse() {
+    if (!turnstileToken) {
+      showError('Verification is still loading. Please wait a moment and try again.');
+      return;
+    }
+
     showState('loading');
     startProgress('phase1');
+
+    const tsToken = turnstileToken;
+    resetTurnstile(); // Reset for next use
 
     try {
       let response: Response;
@@ -489,11 +534,18 @@ import Base from '@/layouts/Base.astro';
       if (selectedFile) {
         const formData = new FormData();
         formData.append('file', selectedFile);
-        response = await fetch(API_BASE, { method: 'POST', body: formData });
+        response = await fetch(API_BASE, {
+          method: 'POST',
+          headers: { 'X-Turnstile-Token': tsToken },
+          body: formData,
+        });
       } else {
         response = await fetch(API_BASE, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Turnstile-Token': tsToken,
+          },
           body: JSON.stringify({ text: textInput.value.trim() }),
         });
       }

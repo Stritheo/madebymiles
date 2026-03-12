@@ -49,6 +49,7 @@ export interface Env {
   JWT_SECRET: string;
   DISCORD_WEBHOOK_REPORTS: string;
   DISCORD_WEBHOOK_ALERTS: string;
+  TURNSTILE_SECRET_KEY: string;
   RATE_LIMIT_KV: KVNamespace;
 }
 

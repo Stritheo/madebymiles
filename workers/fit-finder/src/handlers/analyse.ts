@@ -2,6 +2,7 @@ import type { Env } from '../types';
 import { extractText } from '../lib/extract';
 import { callClaudeSummary } from '../lib/claude';
 import { checkRateLimit } from '../lib/ratelimit';
+import { verifyTurnstile } from '../lib/turnstile';
 import { postReport, postAlert } from '../lib/discord';
 import { corsHeaders } from '../index';
 
@@ -11,6 +12,17 @@ export async function handleAnalyse(
   ctx: ExecutionContext,
 ): Promise<Response> {
   const ip = request.headers.get('CF-Connecting-IP') ?? 'unknown';
+
+  // Turnstile bot verification
+  const turnstileToken = request.headers.get('X-Turnstile-Token');
+  if (!turnstileToken) {
+    return json({ error: 'Verification required. Please try again.' }, 403);
+  }
+  const turnstileValid = await verifyTurnstile(turnstileToken, env.TURNSTILE_SECRET_KEY, ip);
+  if (!turnstileValid) {
+    ctx.waitUntil(postAlert(env.DISCORD_WEBHOOK_ALERTS, `Turnstile failed for IP: ${ip}`));
+    return json({ error: 'Verification failed. Please refresh and try again.' }, 403);
+  }
 
   // Rate limit (per-IP and global daily cap)
   const rateResult = await checkRateLimit(ip, env.RATE_LIMIT_KV);

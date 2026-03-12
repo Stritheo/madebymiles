@@ -41,7 +41,7 @@ export function corsHeaders(): HeadersInit {
   return {
     'Access-Control-Allow-Origin': 'https://madebymiles.ai',
     'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, X-Turnstile-Token',
     'Access-Control-Max-Age': '86400',
   };
 }
