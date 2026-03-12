@@ -516,16 +516,30 @@ import Base from '@/layouts/Base.astro';
     }
   }
 
-  async function analyse() {
-    if (!turnstileToken) {
-      showError('Verification is still loading. Please wait a moment and try again.');
-      return;
-    }
+  async function waitForTurnstile(maxWaitMs = 5000): Promise<string | null> {
+    if (turnstileToken) return turnstileToken;
+    const start = Date.now();
+    return new Promise((resolve) => {
+      const check = () => {
+        if (turnstileToken) return resolve(turnstileToken);
+        if (Date.now() - start > maxWaitMs) return resolve(null);
+        setTimeout(check, 200);
+      };
+      check();
+    });
+  }
 
+  async function analyse() {
     showState('loading');
     startProgress('phase1');
 
-    const tsToken = turnstileToken;
+    const tsToken = await waitForTurnstile();
+    if (!tsToken) {
+      finishProgress('phase1');
+      showError('Security verification timed out. Please refresh the page and try again.');
+      return;
+    }
+
     resetTurnstile(); // Reset for next use
 
     try {
