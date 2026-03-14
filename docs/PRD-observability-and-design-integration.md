@@ -9,82 +9,15 @@
 
 ## Overview
 
-Two capability streams to add to the milessowden.au project:
-
-1. **Penpot MCP** -- open-source design-to-code loop replacing Figma
-2. **Databricks Free Edition** -- aggregated observability dashboard with GenAI-powered weekly improvement reports
+Observability dashboard for the milessowden.au project using Databricks Free Edition with GenAI-powered weekly improvement reports.
 
 All services are free tier. No email, no Slack. Alerts and reports flow to Discord.
 
----
-
-## Stream 1: Penpot Design Integration
-
-### What is done (this session)
-
-- [x] Signed up for Penpot cloud account (GitHub login) at design.penpot.app
-- [x] Removed Figma MCP server config from Claude Code
-- [x] Added Penpot MCP server config to Claude Code (`http://localhost:4401/mcp`)
-- [x] Created setup script: `scripts/setup-penpot-mcp.sh`
-
-### What to do at home (VS Code)
-
-#### Step 1: Run the setup script (~10 minutes)
-
-```bash
-cd ~/madebymiles
-bash scripts/setup-penpot-mcp.sh
-```
-
-This clones the Penpot MCP server to `~/.penpot-mcp`, builds it, and starts it on port 4401.
-
-#### Step 2: Connect Penpot in your browser
-
-1. Open https://design.penpot.app
-2. Create a new project (e.g. "madebymiles design system")
-3. Open a design file
-4. Go to **Plugins** menu
-5. Load plugin from: `http://localhost:4400/manifest.json`
-6. Click **"Connect to MCP server"** in the plugin panel
-7. Keep the plugin panel open while working
-
-#### Step 3: Verify in Claude Code
-
-```bash
-claude mcp list
-# Should show: penpot (http://localhost:4401/mcp)
-```
-
-Then in a Claude Code session, try:
-- "Read my Penpot design file and describe the layout"
-- "Create a card component in Penpot matching my Card.astro styles"
-- "Pull the colour palette from Penpot into tailwind.config.mjs"
-
-#### Step 4: Create your design system in Penpot
-
-Start with the tokens you already have in `tailwind.config.mjs`:
-
-| Token | Value |
-|---|---|
-| bg-primary | #FAFAF9 |
-| bg-card | #FFFFFF |
-| bg-dark | #1A1F2E |
-| text-primary | #1A1A1A |
-| text-secondary | #525252 |
-| text-accent | #C87D5C |
-| border-light | #E5E5E5 |
-| font-display | DM Serif Display |
-| font-body | IBM Plex Sans |
-
-Create these as Penpot colour and typography variables so the MCP can sync them.
-
-### Browser note
-
-Chrome or Firefox recommended. If using Brave, disable Shield for the Penpot domain to allow localhost WebSocket connections.
+> **Note:** Penpot design integration was previously planned as Stream 1 but has been removed (2026-03-14). Design workflow is handled directly via Claude Code: layout proposals, reference-based design, and token sync via `tailwind.config.mjs`. No external design tool required.
 
 ---
 
-## Stream 2: Databricks Observability Dashboard
+## Databricks Observability Dashboard
 
 ### What is done (this session)
 
@@ -347,7 +280,7 @@ Data Sources
 
 | Decision | Choice | Rationale |
 |---|---|---|
-| Design tool | Penpot (not Figma) | Free, open source, self-hostable, privacy by design, official MCP server |
+| Design tool | ~~Penpot~~ Removed | Dropped 2026-03-14. Design workflow via Claude Code directly. |
 | Dashboard platform | Databricks Free Edition (not Grafana) | GenAI layer (Genie + Claude MCP) reads both data and code to propose improvements |
 | Alert channel | Discord (not Slack, not email) | Already working, unlimited webhooks, unlimited history, free |
 | Report delivery | Discord #reports via GitHub Actions | No new tools, fits existing workflow |
@@ -366,7 +299,6 @@ Data Sources
 | Databricks MCP may not work on Free Edition | Test after setup. Fall back to Genie-only (browser). Weekly report uses direct Claude API calls as backup. |
 | Fair-use compute quota exceeded | Weekly batch for a solo project is well within 99th percentile. Monitor. |
 | No commercial use on Free Edition | milessowden.au is a personal site, not a commercial product. Review terms if that changes. |
-| Penpot MCP server is relatively new | Official team maintains it. Pin to `mcp-prod` branch for stability. |
 | Weekly report Claude API costs | Uses Sonnet, not Opus. Single weekly call is ~$0.01-0.05. Monitor via Anthropic dashboard. |
 | Supabase/GSC API changes | Notebooks are simple enough to update. Schema changes caught by `write.mode("overwrite")` failures. |
 
@@ -606,19 +538,7 @@ Import order (same as before):
 
 These steps need your local dev environment.
 
-#### Mac Session 1: Pull the branch and start Penpot (~15 mins)
-
-Open VS Code terminal:
-
-```bash
-cd ~/madebymiles
-git pull origin claude/figma-mcp-integration-6pINb
-bash scripts/setup-penpot-mcp.sh
-```
-
-Then open Chrome and connect Penpot (see Stream 1 steps above).
-
-#### Mac Session 2: Generate a Databricks personal access token (~5 mins)
+#### Mac Session 1: Generate a Databricks personal access token (~5 mins)
 
 **Try this in the browser first** -- it may work from your work laptop:
 
@@ -632,7 +552,7 @@ Then open Chrome and connect Penpot (see Stream 1 steps above).
 
 If the Developer/Access tokens option does not appear, PATs are not available on Free Edition. In that case, the weekly report workflow will need to use OAuth or a different auth method -- ask Claude Code for help adapting it.
 
-#### Mac Session 3: Connect Claude Code MCP (~10 mins)
+#### Mac Session 2: Connect Claude Code MCP (~10 mins)
 
 In VS Code terminal:
 
