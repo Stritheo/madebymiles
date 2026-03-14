@@ -215,7 +215,7 @@ Miles has access to the following services. The PRD uses only the subset needed 
 | **Cloudflare** | DNS, CDN, Workers, Web Analytics | Free | Three zones: milessowden.au (primary), milessowden.com (301 redirect), madebymiles.ai (personal projects). Nameservers: fatima.ns.cloudflare.com, major.ns.cloudflare.com |
 | **Databricks** | Observability dashboard, Genie, GenAI reports | Free Edition | Workspace: `dbc-0caa5555-b747.cloud.databricks.com`. Ingestion notebooks + AI/BI dashboards. See `docs/PRD-observability-and-design-integration.md` |
 | **Supabase** | Analytics database (Postgres) -- STATUS: ON HOLD | Free (500MB, 50k MAU) | BLOCKER: Free tier pauses projects after 7 days of inactivity. Unreliable for low-traffic personal site. Decision needed on whether to keep, add keep-alive, or replace. |
-| **Penpot** | Design tool (open source, cloud-hosted) | Free | Account at design.penpot.app. MCP server setup script at `scripts/setup-penpot-mcp.sh`. Not yet activated (needs Mac terminal). |
+| ~~Penpot~~ | ~~Design tool~~ | ~~Removed~~ | Dropped -- design workflow handled via Claude Code directly (layout proposals, reference-based design, token sync via tailwind.config.mjs). |
 | **Claude API** | Fit Finder LLM (Sonnet 4.6) + weekly report (Sonnet) | Pay-per-use | Fit Finder: ~$0.02/analysis. Weekly report: ~$0.01-0.05/week. |
 | **Discord** | Ops dashboard (webhooks) | Free | Server already created. 7 channels for observability |
 | **UptimeRobot** | Uptime monitoring | Free (5 monitors) | Native Discord webhook integration |

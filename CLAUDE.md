@@ -37,13 +37,12 @@ These rules prevent the class of error where CI checks are committed without ver
 
 5. **No silent failures.** Every CI job must either pass green or post to Discord #alerts. Never add a job that can fail silently.
 
-## Design tooling
+## Design workflow
 
-- **Design tool:** Penpot (open source, free cloud at design.penpot.app)
-- **MCP server:** Official Penpot MCP at `http://localhost:4401/mcp` (requires local server running)
-- **Setup:** Run `bash scripts/setup-penpot-mcp.sh` to install and start the MCP server
-- **Design tokens:** Sync colours, typography, and spacing between Penpot and `tailwind.config.mjs`
-- **Plugin:** Load from `http://localhost:4400/manifest.json` in Penpot's Plugins menu
+- **Design tokens:** Colours, typography, and spacing defined in `tailwind.config.mjs`
+- **Layout decisions:** Describe the intent and audience for a section; Claude proposes 2-3 layout options as HTML previews or descriptions; you pick one, Claude builds it
+- **Design inspiration:** Share links or screenshots of sites you admire; Claude adapts the patterns to your brand
+- **Customer journey:** Mapped collaboratively in conversation or markdown, not in external tools
 
 ## Observability
 

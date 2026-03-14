@@ -54,12 +54,6 @@ A personal executive site for Miles Sowden, an insurance executive targeting CEO
 - Setup guide: `databricks/setup-databricks.md`
 - Full PRD: `docs/PRD-observability-and-design-integration.md`
 
-### Penpot Design Integration -- READY TO ACTIVATE
-
-- Setup script: `scripts/setup-penpot-mcp.sh`
-- MCP server config added to Claude Code (`http://localhost:4401/mcp`)
-- Requires running setup script from Mac terminal (not done yet)
-
 ---
 
 ## Known issues and blockers
@@ -186,15 +180,6 @@ The weekly GenAI report is built (`.github/workflows/weekly-report.yml`) but not
 - UptimeRobot native Discord webhook to `#uptime-alerts`
 - This is a manual configuration task, not code
 
-### 6. Penpot design system setup (ready to activate)
-
-**Reference:** `docs/PRD-observability-and-design-integration.md` Stream 1
-
-- Run `bash scripts/setup-penpot-mcp.sh` from Mac terminal
-- Create design system in Penpot with tokens from `tailwind.config.mjs`
-- Connect Claude Code MCP
-- This is a Mac-only task (needs terminal and VS Code)
-
 ---
 
 ## Cloudflare Worker secrets (already set)
@@ -215,7 +200,7 @@ KV namespace: `RATE_LIMIT_KV` (238b5712c7fe45dcb0c020aa7850036d)
 | File | Purpose |
 |---|---|
 | `PRD.md` | Full product requirements (Epic 11 has observability specs) |
-| `docs/PRD-observability-and-design-integration.md` | Databricks + Penpot detailed PRD with retro and lessons |
+| `docs/PRD-observability-and-design-integration.md` | Databricks observability PRD with retro and lessons |
 | `databricks/setup-databricks.md` | Step-by-step Databricks setup guide |
 | `databricks/notebooks/` | 6 ingestion notebooks + 1 connections setup |
 | `.github/workflows/deploy.yml` | Main CI/CD pipeline |
@@ -228,7 +213,6 @@ KV namespace: `RATE_LIMIT_KV` (238b5712c7fe45dcb0c020aa7850036d)
 | `workers/fit-finder/wrangler.toml` | Worker config, routes, KV bindings |
 | `workers/fit-finder/src/lib/claude.ts` | Prompt engineering, VOICE_RULES, ACCURACY_RULES |
 | `workers/fit-finder/src/profile.json` | Structured profile for AI matching |
-| `scripts/setup-penpot-mcp.sh` | Penpot MCP setup script |
 | `scripts/generate-profile.ts` | Profile JSON generator from content collections |
 | `tailwind.config.mjs` | Design tokens (colours, fonts, spacing) |
 
@@ -239,7 +223,7 @@ KV namespace: `RATE_LIMIT_KV` (238b5712c7fe45dcb0c020aa7850036d)
 | Decision | Choice | Rationale |
 |---|---|---|
 | Observability platform | Databricks Free Edition (not Grafana) | GenAI layer (Genie + Claude MCP) reads both data and code to propose improvements |
-| Design tool | Penpot (not Figma) | Free, open source, official MCP server |
+| Design tool | ~~Penpot~~ Removed | Dropped 2026-03-14. Design workflow via Claude Code directly. |
 | Alert channel | Discord | Already working, unlimited webhooks, unlimited history, free |
 | Report delivery | Discord via GitHub Actions | No new tools, fits existing workflow |
 | Report model | Claude Sonnet (not Opus) | Keeps weekly API cost under $0.05 |
@@ -276,7 +260,6 @@ KV namespace: `RATE_LIMIT_KV` (238b5712c7fe45dcb0c020aa7850036d)
 5. **Configure UptimeRobot** -- Manual setup, 10 minutes
 6. **Build security report** -- Cloudflare GraphQL query, post to Discord
 7. **Build beacon** (if decided to proceed) -- Worker + client script + CSP update
-8. **Penpot setup** -- Mac-only, when at home
 
 ---
 
