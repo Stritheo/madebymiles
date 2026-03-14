@@ -1,8 +1,8 @@
 # Product Requirements Document — milessowden.au
 
 **Owner:** Miles Sowden
-**Last updated:** 12 March 2026
-**Status:** Phases 1-4 complete and live. Observability (Epic 11) partially built.
+**Last updated:** 14 March 2026
+**Status:** Phases 1-4 complete and live. Domain migration to milessowden.au complete. Observability (Epic 11) partially built.
 
 ---
 
@@ -212,15 +212,15 @@ Miles has access to the following services. The PRD uses only the subset needed 
 | Service | Role in project | Tier | Notes |
 |---|---|---|---|
 | **GitHub** | Repo, CI/CD, Pages hosting | Free (with Copilot Pro) | 2,000 Actions mins/month (public repos), 500 (private) |
-| **Cloudflare** | DNS, CDN, Workers, Web Analytics | Free | Domain points from Squarespace to Cloudflare nameservers |
+| **Cloudflare** | DNS, CDN, Workers, Web Analytics | Free | Three zones: milessowden.au (primary), milessowden.com (301 redirect), madebymiles.ai (personal projects). Nameservers: fatima.ns.cloudflare.com, major.ns.cloudflare.com |
 | **Databricks** | Observability dashboard, Genie, GenAI reports | Free Edition | Workspace: `dbc-0caa5555-b747.cloud.databricks.com`. Ingestion notebooks + AI/BI dashboards. See `docs/PRD-observability-and-design-integration.md` |
 | **Supabase** | Analytics database (Postgres) -- STATUS: ON HOLD | Free (500MB, 50k MAU) | BLOCKER: Free tier pauses projects after 7 days of inactivity. Unreliable for low-traffic personal site. Decision needed on whether to keep, add keep-alive, or replace. |
 | **Penpot** | Design tool (open source, cloud-hosted) | Free | Account at design.penpot.app. MCP server setup script at `scripts/setup-penpot-mcp.sh`. Not yet activated (needs Mac terminal). |
-| **Claude API** | Fit Finder LLM (Haiku) + weekly report (Sonnet) | Pay-per-use | Fit Finder: ~$0.006/analysis. Weekly report: ~$0.01-0.05/week. |
+| **Claude API** | Fit Finder LLM (Sonnet 4.6) + weekly report (Sonnet) | Pay-per-use | Fit Finder: ~$0.02/analysis. Weekly report: ~$0.01-0.05/week. |
 | **Discord** | Ops dashboard (webhooks) | Free | Server already created. 7 channels for observability |
 | **UptimeRobot** | Uptime monitoring | Free (5 monitors) | Native Discord webhook integration |
 | **Sentry** | JS error tracking | Free (5k events/month) | Native Discord integration |
-| **Squarespace** | Domain registration | Paid (pre-paid) | DNS only — nameservers point to Cloudflare |
+| **Squarespace** | Domain registration | Paid (pre-paid) | Registrar for milessowden.au, milessowden.com, madebymiles.ai. DNS delegated to Cloudflare nameservers. milessowden.com.au not yet registered (defensive, parked pending registrar support for AU citizen eligibility) |
 
 **Available but not currently needed:**
 
@@ -633,17 +633,21 @@ A lightweight PIA for the Fit Finder feature (the only data-processing component
 | Databricks | Observability dashboard, Genie, GenAI reports | Free Edition | $0 |
 | Supabase | Analytics database -- ON HOLD (pauses after 7 days inactivity) | Free (500MB) | $0 |
 | Google Fonts | Typography (DM Serif Display, IBM Plex Sans) | Free | $0 |
-| Domain (milessowden.au) | `.ai` TLD — already paid (Squarespace) | Paid | $0 (pre-paid) |
+| Domains (milessowden.au, .com) | Domain registration (Squarespace) | Paid | $0 (pre-paid) |
 | **Total** | | | **< $1/month** |
 
-**Domain setup (Squarespace → Cloudflare):**
-The domain is registered and paid for at Squarespace. To use Cloudflare's free CDN, security, and Web Analytics without transferring the domain:
-1. Add `milessowden.au` to Cloudflare (free plan) — Cloudflare will assign two nameservers
-2. In Squarespace → Domains → `milessowden.au` → DNS Settings → Custom nameservers → enter the two Cloudflare nameservers
-3. In Cloudflare DNS, add records pointing to GitHub Pages (`A` records for `185.199.108-111.153` + `CNAME` for `www`)
-4. Enable Cloudflare proxy (orange cloud) for CDN, DDoS protection, and Web Analytics
-5. Propagation: typically 24-48 hours
-6. Alternative: transfer the domain to Cloudflare Registrar later (at-cost pricing, often cheaper than Squarespace renewal) — but not required
+**Domain strategy (completed 14 March 2026):**
+
+| Domain | Purpose | Registrar | Cloudflare zone | DNS/routing |
+|---|---|---|---|---|
+| **milessowden.au** | Primary executive site | Squarespace | Active (free plan) | 4x A records to GitHub Pages (185.199.108-111.153), www CNAME to Stritheo.github.io, proxied. Security headers via Transform Rule. Turnstile, Web Analytics active. |
+| **milessowden.com** | 301 redirect to .au | Squarespace | Active (free plan) | Dummy A record (192.0.2.1, proxied). Redirect Rule: all requests 301 to https://milessowden.au. No content served. |
+| **milessowden.com.au** | Defensive (not yet registered) | TBD | N/A | Parked. Squarespace registrar does not support AU citizen eligibility for .com.au. Will register via an AU-accredited registrar (VentraIP or similar) when prioritised. Risk: identity impersonation if someone else registers it. |
+| **madebymiles.ai** | Personal projects (separate) | Squarespace | Active (free plan) | Independent site. No redirect to milessowden.au. Remains live for personal/creative projects. |
+
+All domains use Cloudflare nameservers: `fatima.ns.cloudflare.com` and `major.ns.cloudflare.com`. Domain registration stays at Squarespace with DNS delegated to Cloudflare for CDN, security headers, DDoS protection, and Web Analytics.
+
+**Security headers (milessowden.au):** Delivered via Cloudflare Response Header Transform Rule at the edge. Headers: X-Content-Type-Options (nosniff), X-Frame-Options (DENY), Referrer-Policy (strict-origin-when-cross-origin), Permissions-Policy (camera/microphone/geolocation denied), HSTS (max-age 63072000, includeSubDomains, preload), CSP (default-src self, script-src self unsafe-inline, style-src self unsafe-inline fonts.googleapis.com, font-src self fonts.gstatic.com, img-src self data, connect-src self, frame-ancestors none).
 
 **Cost controls:**
 - **Rate limiting** on Fit Finder: 10/IP/day hard cap, 200/month soft cap with alerting
@@ -965,7 +969,7 @@ Each phase delivers a working, deployable site. No phase depends on a later phas
 2. ~~**Skill matrix rating approach**~~ — Resolved: Self-rate using Expert / Practised / Awareness scale, with 1-2 sentence evidence statements linking to case studies for each cell.
 3. ~~**Suncorp/Promina**~~ — Resolved: Yes, include as 5th case study alongside SCI, CBA, Hollard, and Westpac.
 4. ~~**Photography**~~ — Resolved: Professional headshot available (navy blazer, white shirt, glasses). Image saved to `assets/images/miles-sowden-headshot.jpg`. Will be used on homepage, `/contact`, and in Person schema `image` property for search/social previews.
-5. ~~**Domain**~~ — Resolved: `milessowden.au` is registered and paid at Squarespace. DNS will point to Cloudflare nameservers (see Epic 10).
+5. ~~**Domain**~~ — Resolved (updated 14 March 2026): Primary domain migrated from madebymiles.ai to milessowden.au. milessowden.com configured as 301 redirect. madebymiles.ai remains live independently for personal projects. milessowden.com.au flagged for defensive registration but parked due to Squarespace registrar limitations with AU citizen eligibility. All DNS delegated to Cloudflare (see Epic 10 domain strategy table).
 6. ~~**Fit Finder — blurred results unlock**~~ — Resolved: Honour system. Show a "I've contacted Miles" button that reveals the remaining matches. Trust-based, feels generous.
 7. ~~**Fit Finder — results sharing**~~ — Resolved: Yes, generate a shareable results URL. Short-lived signed URL with the result embedded — a search consultant can send the fit report link to their client board. No server-side storage needed.
 8. ~~**AICD membership**~~ — Resolved: Yes, Miles is an AICD member/graduate. Add this credential prominently on the `/experience` page and in structured data — it directly strengthens the credibility of the AICD-aligned skill matrix.
