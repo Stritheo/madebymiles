@@ -216,6 +216,23 @@ import Base from '@/layouts/Base.astro';
     </div>
   </section>
 
+  <!-- Sentry error tracking -->
+  <script is:inline src="https://browser.sentry-cdn.com/8.49.0/bundle.min.js" crossorigin="anonymous"></script>
+  <script is:inline>
+    if (window.Sentry) {
+      Sentry.init({
+        dsn: "https://ddf1759d25a21068958638d61044b374@o4510983886209024.ingest.us.sentry.io/4510983955808256",
+        tracesSampleRate: 0.1,
+        environment: "production",
+        ignoreErrors: [
+          "ResizeObserver loop",
+          "Non-Error promise rejection",
+          "Network request failed"
+        ]
+      });
+    }
+  </script>
+
   <!-- Turnstile script loaded explicitly outside Astro's bundled scripts -->
   <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 </Base>
