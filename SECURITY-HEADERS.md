@@ -1,6 +1,6 @@
 # Security Headers — Cloudflare Transform Rules
 
-GitHub Pages does not support custom HTTP response headers. Since Cloudflare is proxying madebymiles.ai (orange cloud), we add security headers using **Cloudflare Transform Rules**.
+GitHub Pages does not support custom HTTP response headers. Since Cloudflare is proxying milessowden.au (orange cloud), we add security headers using **Cloudflare Transform Rules**.
 
 Some headers are also set via `<meta http-equiv>` in the HTML `<head>` as a belt-and-suspenders approach, but the HTTP headers are the authoritative source.
 
@@ -9,7 +9,7 @@ Some headers are also set via `<meta http-equiv>` in the HTML `<head>` as a belt
 ## How to configure
 
 1. Go to [dash.cloudflare.com](https://dash.cloudflare.com)
-2. Click **madebymiles.ai** (your zone)
+2. Click **milessowden.au** (your zone)
 3. In the left sidebar: **Rules** → **Transform Rules**
 4. Click the **Modify Response Header** tab
 5. Click **Create rule**
@@ -32,8 +32,8 @@ Some headers are also set via `<meta http-equiv>` in the HTML `<head>` as a belt
 
 ## How to verify
 
-1. Run: `curl -sI https://madebymiles.ai` — check the headers are present
-2. Visit [securityheaders.com](https://securityheaders.com/?q=https://madebymiles.ai) — target score: **A+**
+1. Run: `curl -sI https://milessowden.au` — check the headers are present
+2. Visit [securityheaders.com](https://securityheaders.com/?q=https://milessowden.au) — target score: **A+**
 
 ---
 

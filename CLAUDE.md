@@ -4,7 +4,7 @@ This file is auto-read by Claude Code on every session. It is the canonical sour
 
 ## Project
 
-Personal executive website for Miles Sowden at madebymiles.ai. Goal: win CEO, CXO, and NED roles in Australian insurance/financial services.
+Personal executive website for Miles Sowden at milessowden.au. Goal: win CEO, CXO, and NED roles in Australian insurance/financial services.
 
 - **Stack:** Astro 5 + TypeScript + Tailwind CSS, static output
 - **Hosting:** GitHub Pages, Cloudflare DNS proxy

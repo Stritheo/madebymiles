@@ -9,7 +9,7 @@ kv_namespaces = [
 ]
 
 routes = [
-  { pattern = "madebymiles.ai/api/*", zone_name = "madebymiles.ai" }
+  { pattern = "milessowden.au/api/*", zone_name = "milessowden.au" }
 ]
 
 [vars]

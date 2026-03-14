@@ -113,7 +113,7 @@ const profile = {
     'Bachelor of Business (BBus)',
   ],
   contact: {
-    website: 'https://madebymiles.ai',
+    website: 'https://milessowden.au',
     linkedin: 'https://www.linkedin.com/in/milessowden',
     whatsapp: 'https://wa.me/61414185721',
   },

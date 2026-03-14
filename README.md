@@ -2,7 +2,7 @@
 
 Professional website showcasing executive leadership in insurance, data and AI transformation.
 
-**Live site:** https://madebymiles.ai
+**Live site:** https://milessowden.au
 
 ## About
 

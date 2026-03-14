@@ -8,7 +8,7 @@ This guide walks you through every manual setup step, with exact click paths and
 
 ### 1. Cloudflare (free) — your DNS and security layer
 
-**What this does:** Cloudflare sits between your domain (`madebymiles.ai`) and GitHub Pages (where the site is hosted). It makes the site faster, adds security headers, and gives you free analytics. Right now your domain is managed by Squarespace — we're moving the DNS control to Cloudflare while keeping the domain registered at Squarespace.
+**What this does:** Cloudflare sits between your domain (`milessowden.au`) and GitHub Pages (where the site is hosted). It makes the site faster, adds security headers, and gives you free analytics. Right now your domain is managed by Squarespace — we're moving the DNS control to Cloudflare while keeping the domain registered at Squarespace.
 
 #### Step 1: Create a Cloudflare account
 1. Go to [dash.cloudflare.com](https://dash.cloudflare.com)
@@ -18,7 +18,7 @@ This guide walks you through every manual setup step, with exact click paths and
 
 #### Step 2: Add your domain to Cloudflare
 1. Once logged in, click the **"Add a site"** button (big blue button on the dashboard)
-2. Type `madebymiles.ai` and click **Add site**
+2. Type `milessowden.au` and click **Add site**
 3. Select the **Free** plan at the bottom and click **Continue**
 4. Cloudflare will scan your existing DNS records — click **Continue** (we'll fix the records in a moment)
 5. Cloudflare will now show you **two nameservers** — every account gets a unique pair, e.g.:
@@ -32,7 +32,7 @@ This guide walks you through every manual setup step, with exact click paths and
 1. Open a new tab and go to [account.squarespace.com](https://account.squarespace.com)
 2. Log in to your Squarespace account
 3. Click **Domains** in the left sidebar
-4. Click on **madebymiles.ai**
+4. Click on **milessowden.au**
 5. Click **DNS Settings** (or **Advanced Settings**, depending on your Squarespace version)
 6. Look for **Nameservers** — click **Edit** or **Use Custom Nameservers**
 7. Replace the existing nameservers with the two Cloudflare gave you:
@@ -54,7 +54,7 @@ Go back to your Cloudflare tab. Navigate to **DNS → Records** and add these re
 | A | `@` | `185.199.110.153` | Proxied (orange cloud ON) |
 | A | `@` | `185.199.111.153` | Proxied (orange cloud ON) |
 
-**One CNAME record** (this makes `www.madebymiles.ai` work too):
+**One CNAME record** (this makes `www.milessowden.au` work too):
 
 | Type | Name | Content | Proxy status |
 |------|------|---------|-------------|
@@ -65,7 +65,7 @@ Go back to your Cloudflare tab. Navigate to **DNS → Records** and add these re
 #### Step 5: Enable Cloudflare Web Analytics
 1. In Cloudflare, click **Analytics & Logs** in the left sidebar
 2. Click **Web Analytics**
-3. Click **Set up** for `madebymiles.ai`
+3. Click **Set up** for `milessowden.au`
 4. Since you have the proxy enabled (orange cloud), select **"JS Snippet not required"** — Cloudflare tracks analytics automatically through the proxy
 5. Click **Done**
 
@@ -74,7 +74,7 @@ Go back to your Cloudflare tab. Navigate to **DNS → Records** and add these re
 2. Sign in with your Google account
 3. Click **Add property** (or you'll be prompted on first visit)
 4. Choose **Domain** (not "URL prefix")
-5. Type `madebymiles.ai` and click **Continue**
+5. Type `milessowden.au` and click **Continue**
 6. Google will give you a TXT record to verify ownership — it looks like:
    ```
    google-site-verification=abc123xyz...
@@ -86,7 +86,7 @@ Go back to your Cloudflare tab. Navigate to **DNS → Records** and add these re
    - Click **Save**
 8. Go back to Google Search Console and click **Verify**
 9. Once verified, click **Sitemaps** in the left sidebar
-10. Add: `https://madebymiles.ai/sitemap.xml` (we'll generate this in Phase 3 — just register it now so Google knows where to look)
+10. Add: `https://milessowden.au/sitemap.xml` (we'll generate this in Phase 3 — just register it now so Google knows where to look)
 
 - [ ] Google Search Console verified
 - [ ] Sitemap URL submitted
@@ -95,9 +95,9 @@ Go back to your Cloudflare tab. Navigate to **DNS → Records** and add these re
 
 #### Step 7: Verify it's working (after 24–48 hours)
 1. Go to [dnschecker.org](https://dnschecker.org)
-2. Type `madebymiles.ai` and select **A** record
+2. Type `milessowden.au` and select **A** record
 3. Click **Search** — you should see **Cloudflare proxy IPs** (like `104.21.x.x` and `172.67.x.x`) with green ticks across the world. You won't see the GitHub IPs directly — that's correct, Cloudflare is hiding them behind its proxy.
-4. Try visiting `https://madebymiles.ai` in your browser — it should load your site
+4. Try visiting `https://milessowden.au` in your browser — it should load your site
 
 - [ ] Cloudflare account created
 - [ ] Domain added and nameservers changed in Squarespace
@@ -223,15 +223,15 @@ This connects GitHub deploys and alerts to Discord:
 #### Step 3: Create the monitor
 1. Click **Add New Monitor** (big green button)
 2. Monitor Type: **HTTP(s)**
-3. Friendly Name: `madebymiles.ai`
-4. URL: `https://madebymiles.ai`
+3. Friendly Name: `milessowden.au`
+4. URL: `https://milessowden.au`
 5. Monitoring Interval: **5 minutes** (the free tier default)
 6. Under Alert Contacts, tick the **Discord Uptime** contact you just created
 7. Click **Create Monitor**
 
 - [ ] UptimeRobot account created
 - [ ] Discord alert contact configured
-- [ ] Monitor for `https://madebymiles.ai` created
+- [ ] Monitor for `https://milessowden.au` created
 
 ---
 

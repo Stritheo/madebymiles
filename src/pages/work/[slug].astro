@@ -19,7 +19,7 @@ export async function getStaticPaths() {
 const { entry, prev, next } = Astro.props;
 const { Content } = await render(entry);
 const slug = entry.id.replace(/\.md$/, '');
-const canonicalURL = `https://madebymiles.ai/work/${slug}`;
+const canonicalURL = `https://milessowden.au/work/${slug}`;
 const articleJsonLd = {
   "@context": "https://schema.org",
   "@type": "Article",
@@ -28,7 +28,7 @@ const articleJsonLd = {
   "author": {
     "@type": "Person",
     "name": "Miles Sowden",
-    "url": "https://madebymiles.ai"
+    "url": "https://milessowden.au"
   },
   "publisher": {
     "@type": "Person",

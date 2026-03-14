@@ -57,7 +57,7 @@ jobs:
           COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
           curl -s -H "Content-Type: application/json" \
-            -d "{\"embeds\":[{\"title\":\"Deploy Successful\",\"description\":\"**Site:** https://madebymiles.ai\n**Commit:** \`${GITHUB_SHA::7}\`\n**By:** ${GITHUB_ACTOR}\",\"color\":3066993}]}" \
+            -d "{\"embeds\":[{\"title\":\"Deploy Successful\",\"description\":\"**Site:** https://milessowden.au\n**Commit:** \`${GITHUB_SHA::7}\`\n**By:** ${GITHUB_ACTOR}\",\"color\":3066993}]}" \
             "${{ secrets.DISCORD_WEBHOOK_REPORTS }}"
 
   lighthouse:
@@ -70,10 +70,10 @@ jobs:
         uses: treosh/lighthouse-ci-action@v12
         with:
           urls: |
-            https://madebymiles.ai/
-            https://madebymiles.ai/experience/
-            https://madebymiles.ai/contact/
-            https://madebymiles.ai/fit/
+            https://milessowden.au/
+            https://milessowden.au/experience/
+            https://milessowden.au/contact/
+            https://milessowden.au/fit/
           budgetPath: .github/lighthouse-budget.json
           uploadArtifacts: true
 

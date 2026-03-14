@@ -43,7 +43,7 @@ echo "Using warehouse: $WAREHOUSE_ID"
 echo "Creating dashboard..."
 DASHBOARD_JSON=$(cat <<'DEOF'
 {
-  "display_name": "madebymiles.ai Observability"
+  "display_name": "milessowden.au Observability"
 }
 DEOF
 )

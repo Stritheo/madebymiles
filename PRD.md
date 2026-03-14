@@ -1,4 +1,4 @@
-# Product Requirements Document — madebymiles.ai
+# Product Requirements Document — milessowden.au
 
 **Owner:** Miles Sowden
 **Last updated:** 12 March 2026
@@ -8,7 +8,7 @@
 
 ## 1. Vision
 
-**madebymiles.ai** is the definitive digital representation of Miles Sowden — designed to win CEO, CXO, and Non-Executive Director roles by making his mindset, skillset, and experience immediately accessible to human decision-makers *and* the LLMs that increasingly surface and summarise candidates.
+**milessowden.au** is the definitive digital representation of Miles Sowden — designed to win CEO, CXO, and Non-Executive Director roles by making his mindset, skillset, and experience immediately accessible to human decision-makers *and* the LLMs that increasingly surface and summarise candidates.
 
 It is not a corporate brochure. It is an executive signal — concise, evidence-based, and personality-rich — that works equally well when a board chair reads it on a phone, when an executive search consultant sends a link, or when an AI agent is asked *"Who has led insurance transformation in Australia?"*
 
@@ -67,7 +67,7 @@ The site should embody the same philosophy Miles brings to his work: **pragmatic
 ## 5. Information Architecture
 
 ```
-madebymiles.ai
+milessowden.au
 ├── / ............................ Homepage (hero, capabilities, impact summary, CTA)
 ├── /experience .................. Skill matrix + career timeline
 │   └── Skill matrix grid (AICD-aligned domains × competencies)
@@ -254,7 +254,7 @@ Miles has access to the following services. The PRD uses only the subset needed 
 - Migrate the current homepage content into the new Astro structure
 - Verify the deployed site matches the current site visually
 
-**Exit criteria:** The Astro site is live on madebymiles.ai, visually identical to today, with a component-based architecture ready for new pages.
+**Exit criteria:** The Astro site is live on milessowden.au, visually identical to today, with a component-based architecture ready for new pages.
 
 ---
 
@@ -404,7 +404,7 @@ The Australian Institute of Company Directors (AICD) publishes the standard fram
 - Add a `<link rel="alternate" type="text/markdown">` tag on HTML pages pointing to the Markdown equivalent
 
 **Validation:**
-- Test with LLM retrieval: prompt Claude/ChatGPT/Perplexity with queries like "Who has led insurance AI transformation in Australia?" and verify madebymiles.ai content is retrievable and accurately represented
+- Test with LLM retrieval: prompt Claude/ChatGPT/Perplexity with queries like "Who has led insurance AI transformation in Australia?" and verify milessowden.au content is retrievable and accurately represented
 - Verify that an LLM reading `/llms-full.txt` can produce an accurate, attributed summary without needing to parse HTML
 
 **Exit criteria:** An LLM can fetch a single Markdown file from the site and produce an accurate 200-word summary of Miles's career, capabilities, and preferred contact method — without ever touching the HTML.
@@ -505,7 +505,7 @@ Browser renders three-tier fit report
 - Rate limiting: max 100 analyses per IP per day (KV-based, prevent abuse, control cost)
 
 **SHREK Team Integration:**
-Search firms and hiring teams use platforms like Invenias, Bullhorn, FileFinder (CRM/ATS), LinkedIn Recruiter, BoardEx, RelSci (sourcing), and increasingly AI-powered talent intelligence tools like Eightfold and SeekOut. The Fit Finder positions madebymiles.ai as compatible with these workflows:
+Search firms and hiring teams use platforms like Invenias, Bullhorn, FileFinder (CRM/ATS), LinkedIn Recruiter, BoardEx, RelSci (sourcing), and increasingly AI-powered talent intelligence tools like Eightfold and SeekOut. The Fit Finder positions milessowden.au as compatible with these workflows:
 - Search consultants can paste a role brief directly from their ATS
 - The structured JSON-LD on the site (Person schema, `hasOccupationExperience`) is consumable by talent intelligence crawlers
 - The skill matrix and case studies mirror the structured data these platforms index
@@ -633,13 +633,13 @@ A lightweight PIA for the Fit Finder feature (the only data-processing component
 | Databricks | Observability dashboard, Genie, GenAI reports | Free Edition | $0 |
 | Supabase | Analytics database -- ON HOLD (pauses after 7 days inactivity) | Free (500MB) | $0 |
 | Google Fonts | Typography (DM Serif Display, IBM Plex Sans) | Free | $0 |
-| Domain (madebymiles.ai) | `.ai` TLD — already paid (Squarespace) | Paid | $0 (pre-paid) |
+| Domain (milessowden.au) | `.ai` TLD — already paid (Squarespace) | Paid | $0 (pre-paid) |
 | **Total** | | | **< $1/month** |
 
 **Domain setup (Squarespace → Cloudflare):**
 The domain is registered and paid for at Squarespace. To use Cloudflare's free CDN, security, and Web Analytics without transferring the domain:
-1. Add `madebymiles.ai` to Cloudflare (free plan) — Cloudflare will assign two nameservers
-2. In Squarespace → Domains → `madebymiles.ai` → DNS Settings → Custom nameservers → enter the two Cloudflare nameservers
+1. Add `milessowden.au` to Cloudflare (free plan) — Cloudflare will assign two nameservers
+2. In Squarespace → Domains → `milessowden.au` → DNS Settings → Custom nameservers → enter the two Cloudflare nameservers
 3. In Cloudflare DNS, add records pointing to GitHub Pages (`A` records for `185.199.108-111.153` + `CNAME` for `www`)
 4. Enable Cloudflare proxy (orange cloud) for CDN, DDoS protection, and Web Analytics
 5. Propagation: typically 24-48 hours
@@ -875,8 +875,8 @@ Discord embed format example (daily summary):
 
 **4. Uptime monitoring:**
 - UptimeRobot (free tier): 5 monitors, 5-minute check intervals
-  - Monitor 1: `https://madebymiles.ai` (homepage HTTP 200)
-  - Monitor 2: `https://madebymiles.ai/llms.txt` (LLM content layer)
+  - Monitor 1: `https://milessowden.au` (homepage HTTP 200)
+  - Monitor 2: `https://milessowden.au/llms.txt` (LLM content layer)
   - Monitor 3: Fit Finder health endpoint (`/api/health`)
   - **Alert channel: `#uptime-alerts` via UptimeRobot's native Discord webhook integration**
 - Public status page via UptimeRobot (optional, free)
@@ -965,7 +965,7 @@ Each phase delivers a working, deployable site. No phase depends on a later phas
 2. ~~**Skill matrix rating approach**~~ — Resolved: Self-rate using Expert / Practised / Awareness scale, with 1-2 sentence evidence statements linking to case studies for each cell.
 3. ~~**Suncorp/Promina**~~ — Resolved: Yes, include as 5th case study alongside SCI, CBA, Hollard, and Westpac.
 4. ~~**Photography**~~ — Resolved: Professional headshot available (navy blazer, white shirt, glasses). Image saved to `assets/images/miles-sowden-headshot.jpg`. Will be used on homepage, `/contact`, and in Person schema `image` property for search/social previews.
-5. ~~**Domain**~~ — Resolved: `madebymiles.ai` is registered and paid at Squarespace. DNS will point to Cloudflare nameservers (see Epic 10).
+5. ~~**Domain**~~ — Resolved: `milessowden.au` is registered and paid at Squarespace. DNS will point to Cloudflare nameservers (see Epic 10).
 6. ~~**Fit Finder — blurred results unlock**~~ — Resolved: Honour system. Show a "I've contacted Miles" button that reveals the remaining matches. Trust-based, feels generous.
 7. ~~**Fit Finder — results sharing**~~ — Resolved: Yes, generate a shareable results URL. Short-lived signed URL with the result embedded — a search consultant can send the fit report link to their client board. No server-side storage needed.
 8. ~~**AICD membership**~~ — Resolved: Yes, Miles is an AICD member/graduate. Add this credential prominently on the `/experience` page and in structured data — it directly strengthens the credibility of the AICD-aligned skill matrix.

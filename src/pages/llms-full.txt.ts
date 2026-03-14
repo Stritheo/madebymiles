@@ -24,7 +24,7 @@ Miles Sowden leads insurers to compete better, build trust and create lasting va
 
 ## Contact
 
-- Website: https://madebymiles.ai
+- Website: https://milessowden.au
 - LinkedIn: https://www.linkedin.com/in/milessowden
 - WhatsApp: https://wa.me/61414185721
 
@@ -84,7 +84,7 @@ The CEO role has three value streams: strategic direction, external connection, 
 
 ## Fit Finder
 
-The Fit Finder is a tool at https://madebymiles.ai/fit that accepts a role description and evaluates all 10 AICD skill areas against the role's requirements. It produces a structured fit assessment with:
+The Fit Finder is a tool at https://milessowden.au/fit that accepts a role description and evaluates all 10 AICD skill areas against the role's requirements. It produces a structured fit assessment with:
 - Complete AICD skill matrix evaluation (10 skill areas across 4 governance domains)
 - Relevance classification for each skill area (primary, supporting, or noted)
 - Matched case studies selected for relevance to the specific role
@@ -94,7 +94,7 @@ The analysis is powered by Claude (Anthropic) and returns results in 15 to 25 se
 
 ---
 
-Source: https://madebymiles.ai
+Source: https://milessowden.au
 Generated from content collections at build time.
 `;
 

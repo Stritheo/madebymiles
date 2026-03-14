@@ -1,4 +1,4 @@
-# Build Roadmap — madebymiles.ai
+# Build Roadmap — milessowden.au
 
 **Companion to:** `PRD.md`
 **Status:** Ready to build
@@ -15,7 +15,7 @@ The original hand-coded HTML site is preserved in two ways:
   git show v0-pre-rebuild:index.html      # view the original homepage
   git checkout v0-pre-rebuild -- .        # restore original files (careful!)
   ```
-- **Wayback Machine** — submit `https://web.archive.org/save/https://madebymiles.ai` manually to create an external snapshot before DNS/content changes
+- **Wayback Machine** — submit `https://web.archive.org/save/https://milessowden.au` manually to create an external snapshot before DNS/content changes
 
 The `master` branch also preserves the original site state.
 
@@ -25,7 +25,7 @@ The `master` branch also preserves the original site state.
 
 - [x] WhatsApp number confirmed: `+61414185721`
 - [ ] Save headshot to `assets/images/miles-sowden-headshot.jpg` (directory created, image needed from chat attachment)
-- [x] Domain confirmed: `madebymiles.ai` at Squarespace
+- [x] Domain confirmed: `milessowden.au` at Squarespace
 
 ---
 
@@ -34,7 +34,7 @@ The `master` branch also preserves the original site state.
 Five phases, each shipping a working site. Phase 0 is woven into every phase, not built separately.
 
 ```
-Phase 1 ─── Foundation & Contact ─── Live site on madebymiles.ai, Astro, CI/CD, Discord ops
+Phase 1 ─── Foundation & Contact ─── Live site on milessowden.au, Astro, CI/CD, Discord ops
   │
 Phase 2 ─── Credibility Engine ───── Skill matrix, case studies, analytics beacon, funnel tracking
   │
@@ -49,14 +49,14 @@ Phase 5 ─── Voice & Depth ────────── Reflections, proj
 
 ## Phase 1 — Foundation & Contact
 
-**Goal:** Astro site live on `madebymiles.ai`, visually matching the current site, with CI/CD and Discord ops running.
+**Goal:** Astro site live on `milessowden.au`, visually matching the current site, with CI/CD and Discord ops running.
 
 **Dependencies:** None — this is the starting point.
 
 ### Steps
 
 #### 1.1 — DNS: Squarespace → Cloudflare
-- [ ] Add `madebymiles.ai` to Cloudflare free plan
+- [ ] Add `milessowden.au` to Cloudflare free plan
 - [ ] Copy the two assigned Cloudflare nameservers
 - [ ] In Squarespace → Domains → DNS Settings → set custom nameservers to Cloudflare
 - [ ] In Cloudflare DNS, add GitHub Pages records:
@@ -107,7 +107,7 @@ Phase 5 ─── Voice & Depth ────────── Reflections, proj
   - `#reports` — daily visitors, weekly funnel, deploy success, Fit Finder stats
 - [ ] Create Discord webhooks (one per channel)
 - [ ] Configure UptimeRobot:
-  - Monitor `https://madebymiles.ai` (HTTP 200)
+  - Monitor `https://milessowden.au` (HTTP 200)
   - Alert → Discord webhook to `#alerts`
 - [ ] Add Discord notification step to GitHub Actions:
   - Build failures → `#alerts`
@@ -125,7 +125,7 @@ Phase 5 ─── Voice & Depth ────────── Reflections, proj
   - `Strict-Transport-Security` with `includeSubDomains` and `preload`
 - [ ] Verify A+ on securityheaders.com
 
-**Phase 1 deliverable:** Astro site live at `madebymiles.ai` with all current content, LinkedIn/WhatsApp CTAs, CI/CD deploying on push, Discord receiving uptime and build notifications, security headers scoring A+.
+**Phase 1 deliverable:** Astro site live at `milessowden.au` with all current content, LinkedIn/WhatsApp CTAs, CI/CD deploying on push, Discord receiving uptime and build notifications, security headers scoring A+.
 
 ---
 
@@ -378,7 +378,7 @@ Phase 5 ─── Voice & Depth ────────── Reflections, proj
 - [ ] Build `/projects` listing page
 - [ ] Build individual project page template (what, why, tools, learnings, links)
 - [ ] Write 2-3 initial projects:
-  - [ ] This website (madebymiles.ai — meta case study)
+  - [ ] This website (milessowden.au — meta case study)
   - [ ] Other AI/automation projects
 - [ ] Add "Building things" teaser to homepage
 - [ ] Add `Article` JSON-LD to each project

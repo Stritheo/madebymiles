@@ -94,7 +94,7 @@ Key gold views:
 ### Phase 4: Build the AI/BI Dashboard
 
 1. Go to SQL > Dashboards > Create Dashboard
-2. Name: `madebymiles.ai Observability`
+2. Name: `milessowden.au Observability`
 3. Build 4 tabs querying gold views/tables:
 
 **Performance tab:**

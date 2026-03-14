@@ -1,6 +1,6 @@
 # Databricks Free Edition Setup Guide
 
-Step-by-step instructions to set up the observability dashboard for madebymiles.ai.
+Step-by-step instructions to set up the observability dashboard for milessowden.au.
 
 All steps except Step 8 (Claude Code MCP) can be done from any browser, including your work laptop.
 

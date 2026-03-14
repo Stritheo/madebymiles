@@ -26,7 +26,7 @@ Insurance Executive, Growth and Transformation
 - Bachelor of Business (BBus)
 
 ## Contact
-- Website: https://madebymiles.ai
+- Website: https://milessowden.au
 - LinkedIn: https://www.linkedin.com/in/milessowden
 - WhatsApp: https://wa.me/61414185721
 
@@ -57,12 +57,12 @@ Insurance Executive, Growth and Transformation
 
 Upload a role description to see how this profile maps to a specific role. The Fit Finder evaluates all 10 AICD skill areas, selects the most relevant case studies, and produces a structured fit assessment.
 
-Try it: https://madebymiles.ai/fit
+Try it: https://milessowden.au/fit
 
 ## More information
-- Full content: https://madebymiles.ai/llms-full.txt
-- Experience page: https://madebymiles.ai/experience
-- Contact: https://madebymiles.ai/contact
+- Full content: https://milessowden.au/llms-full.txt
+- Experience page: https://milessowden.au/experience
+- Contact: https://milessowden.au/contact
 `;
 
   return new Response(text, {

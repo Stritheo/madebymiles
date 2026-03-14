@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────
-# madebymiles.ai  —  AI crawler policy
+# milessowden.au  —  AI crawler policy
 # Default: block all AI crawlers
 # Allow: search bots and user-triggered agents
 # ─────────────────────────────────────────────
@@ -102,8 +102,8 @@ Disallow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://madebymiles.ai/sitemap-index.xml
+Sitemap: https://milessowden.au/sitemap-index.xml
 
 # LLM-readable content (voluntary disclosure)
-# Concise: https://madebymiles.ai/llms.txt
-# Full:    https://madebymiles.ai/llms-full.txt
+# Concise: https://milessowden.au/llms.txt
+# Full:    https://milessowden.au/llms-full.txt

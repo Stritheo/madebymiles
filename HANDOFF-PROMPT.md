@@ -1,11 +1,11 @@
-# Handoff Prompt -- madebymiles.ai Observability and Infrastructure
+# Handoff Prompt -- milessowden.au Observability and Infrastructure
 
 **Date:** 12 March 2026
-**Context:** This prompt hands over the remaining back-end and observability work for madebymiles.ai. The front-end site is live, the Fit Finder is deployed and working end-to-end. Read this file first, then read `PRD.md` and `docs/PRD-observability-and-design-integration.md` for full context.
+**Context:** This prompt hands over the remaining back-end and observability work for milessowden.au. The front-end site is live, the Fit Finder is deployed and working end-to-end. Read this file first, then read `PRD.md` and `docs/PRD-observability-and-design-integration.md` for full context.
 
 ---
 
-## What is madebymiles.ai
+## What is milessowden.au
 
 A personal executive site for Miles Sowden, an insurance executive targeting CEO, CXO, and NED roles in Australian insurance and financial services. Built on Astro 5 (static, GitHub Pages), with a Cloudflare Worker powering the AI Fit Finder feature.
 
@@ -15,7 +15,7 @@ A personal executive site for Miles Sowden, an insurance executive targeting CEO
 
 ### Site and Fit Finder -- COMPLETE
 
-- Astro 5 site live on madebymiles.ai via GitHub Pages + Cloudflare CDN
+- Astro 5 site live on milessowden.au via GitHub Pages + Cloudflare CDN
 - Pages: Homepage, Experience (/experience), Contact (/contact), Privacy (/privacy), 5 case study pages (/work/*)
 - Fit Finder (two-phase AI role matching) deployed on Cloudflare Workers
   - Phase 1: `POST /api/fit` returns executive summary + top match cards (~400 tokens, Claude Haiku)

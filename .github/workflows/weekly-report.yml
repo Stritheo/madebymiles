@@ -94,7 +94,7 @@ jobs:
             "max_tokens": 2048,
             "messages": [{
               "role": "user",
-              "content": "You are a DevSecOps advisor for madebymiles.ai, an Astro static site on GitHub Pages with Cloudflare DNS proxy.\n\nHere is this week's observability data:\n${METRICS}\n\nAnalyze the data and produce a weekly report with:\n1. **Metrics Summary** - Key numbers for Lighthouse scores, traffic, errors, deploy success rate\n2. **Top 3 Risks** - Security, performance, or reliability concerns ranked by severity\n3. **Top 5 Improvements** - Specific, actionable changes ranked by impact. Reference file paths where relevant.\n\nFormat your response as a single Discord embed JSON object with title, description (markdown), and color (green=3066993 if healthy, amber=16776960 if warnings, red=15158332 if critical). Keep description under 4000 characters."
+              "content": "You are a DevSecOps advisor for milessowden.au, an Astro static site on GitHub Pages with Cloudflare DNS proxy.\n\nHere is this week's observability data:\n${METRICS}\n\nAnalyze the data and produce a weekly report with:\n1. **Metrics Summary** - Key numbers for Lighthouse scores, traffic, errors, deploy success rate\n2. **Top 3 Risks** - Security, performance, or reliability concerns ranked by severity\n3. **Top 5 Improvements** - Specific, actionable changes ranked by impact. Reference file paths where relevant.\n\nFormat your response as a single Discord embed JSON object with title, description (markdown), and color (green=3066993 if healthy, amber=16776960 if warnings, red=15158332 if critical). Keep description under 4000 characters."
             }]
           }
           PAYLOAD

@@ -1,6 +1,6 @@
 # PRD: Observability Dashboard and Design Integration
 
-**Project:** madebymiles.ai
+**Project:** milessowden.au
 **Date:** 2026-03-10
 **Status:** Ingestion notebooks working. Cloudflare and GitHub Actions confirmed ingesting. Ready to finish remaining sources, build dashboard, and schedule jobs.
 **Databricks workspace:** `https://dbc-0caa5555-b747.cloud.databricks.com` (mlfsowden@gmail.com)
@@ -9,7 +9,7 @@
 
 ## Overview
 
-Two capability streams to add to the madebymiles.ai project:
+Two capability streams to add to the milessowden.au project:
 
 1. **Penpot MCP** -- open-source design-to-code loop replacing Figma
 2. **Databricks Free Edition** -- aggregated observability dashboard with GenAI-powered weekly improvement reports
@@ -365,7 +365,7 @@ Data Sources
 | Personal access tokens not available on Free Edition | Test on Day 1. If unavailable, weekly report workflow cannot trigger Databricks jobs. Fall back to GitHub Actions doing all work independently. |
 | Databricks MCP may not work on Free Edition | Test after setup. Fall back to Genie-only (browser). Weekly report uses direct Claude API calls as backup. |
 | Fair-use compute quota exceeded | Weekly batch for a solo project is well within 99th percentile. Monitor. |
-| No commercial use on Free Edition | madebymiles.ai is a personal site, not a commercial product. Review terms if that changes. |
+| No commercial use on Free Edition | milessowden.au is a personal site, not a commercial product. Review terms if that changes. |
 | Penpot MCP server is relatively new | Official team maintains it. Pin to `mcp-prod` branch for stability. |
 | Weekly report Claude API costs | Uses Sonnet, not Opus. Single weekly call is ~$0.01-0.05. Monitor via Anthropic dashboard. |
 | Supabase/GSC API changes | Notebooks are simple enough to update. Schema changes caught by `write.mode("overwrite")` failures. |
@@ -536,7 +536,7 @@ You can collect all the API keys from your browser at work and save them somewhe
 | Service | Where to go | What to create |
 |---|---|---|
 | GitHub | github.com > Settings > Developer settings > Personal access tokens > Fine-grained | Token for `Stritheo/madebymiles` with Actions (read), Contents (read) |
-| Cloudflare | dash.cloudflare.com > My Profile > API Tokens > Create Token | Use "Read analytics" template. Also note your Zone ID from the madebymiles.ai Overview page (right sidebar) |
+| Cloudflare | dash.cloudflare.com > My Profile > API Tokens > Create Token | Use "Read analytics" template. Also note your Zone ID from the milessowden.au Overview page (right sidebar) |
 | Sentry | sentry.io > Settings > Auth Tokens > Create | Read-only token. Note your org slug and project slug from the URL |
 | Supabase | supabase.com > Account > Access Tokens | Generate token. Note project ref from Settings > General |
 | GSC | console.cloud.google.com > APIs > Search Console API > Enable | Create service account, download JSON key, add email as owner in GSC |
@@ -559,7 +559,7 @@ Import order (same as before):
 #### Browser Session 5: Build the dashboard (~30 mins)
 
 1. In Databricks, go to **SQL** > **Dashboards** > **Create Dashboard**
-2. Name it `madebymiles.ai Observability`
+2. Name it `milessowden.au Observability`
 3. For each panel, click **Add** > **Visualization** > write a SQL query against your Unity Catalog tables
 4. The table schemas are documented in this PRD -- use them to write your queries
 5. Arrange into 4 tabs: Performance, Security, Deployment, Search and Traffic
@@ -676,11 +676,11 @@ If MCP is not available on Free Edition, skip this step. Genie (in the browser) 
   1. console.cloud.google.com > Create project or use existing
   2. Enable Search Console API
   3. Create service account > download JSON key
-  4. In Google Search Console, add the service account email as a property owner for madebymiles.ai
+  4. In Google Search Console, add the service account email as a property owner for milessowden.au
 
 ### Step 4: Build the dashboard (20 mins)
 - Go to SQL > Dashboards > Create Dashboard
-- Name: `madebymiles.ai Observability`
+- Name: `milessowden.au Observability`
 - Add panels using SQL queries against your tables (schemas documented below in this PRD)
 - Start with 2 tabs that have data now:
   - **Deployment tab:** GitHub Actions pass/fail rate, deploy frequency
