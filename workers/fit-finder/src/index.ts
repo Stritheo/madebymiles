@@ -27,8 +27,8 @@ export default {
       return handleVerify(request, env);
     }
 
-    if (url.pathname === '/api/health' && request.method === 'GET') {
-      return new Response(JSON.stringify({ status: 'ok' }), {
+    if (url.pathname === '/api/health' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return new Response(request.method === 'HEAD' ? null : JSON.stringify({ status: 'ok' }), {
         headers: { 'Content-Type': 'application/json' },
       });
     }
