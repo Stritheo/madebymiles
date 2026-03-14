@@ -18,6 +18,9 @@ export default {
           light: '#E5E5E5',
         },
       },
+      fontSize: {
+        'xl-plus': ['1.25rem', { lineHeight: '1.4', letterSpacing: '-0.01em' }],
+      },
       fontFamily: {
         display: ["'DM Serif Display'", 'Georgia', 'serif'],
         body: ["'IBM Plex Sans'", '-apple-system', 'sans-serif'],
