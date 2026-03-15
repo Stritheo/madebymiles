@@ -1,0 +1,176 @@
+name: Monthly Fit Finder Report
+
+on:
+  schedule:
+    - cron: '0 22 1 * *'  # 1st of month, 9am AEST (UTC+11)
+  workflow_dispatch:
+
+jobs:
+  fit-finder-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Query Databricks for Fit Finder usage
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_WAREHOUSE_ID: ${{ vars.DATABRICKS_WAREHOUSE_ID }}
+        run: |
+          python3 << 'PYEOF'
+          import json, os, requests
+          from datetime import datetime, timedelta, timezone
+
+          host = os.environ["DATABRICKS_HOST"]
+          token = os.environ["DATABRICKS_TOKEN"]
+          wid = os.environ.get("DATABRICKS_WAREHOUSE_ID", "")
+
+          def query_databricks(sql):
+              try:
+                  resp = requests.post(
+                      f"{host}/api/2.0/sql/statements",
+                      headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+                      json={"statement": sql, "warehouse_id": wid, "wait_timeout": "30s"},
+                      timeout=35,
+                  )
+                  data = resp.json()
+                  result = data.get("result", {})
+                  columns = [c["name"] for c in result.get("schema", {}).get("columns", [])]
+                  rows = result.get("data_array", [])
+                  return [dict(zip(columns, row)) for row in rows]
+              except Exception as e:
+                  print(f"Query failed: {e}")
+                  return []
+
+          # Fit Finder completions this month
+          summaries = query_databricks(
+              "SELECT COUNT(*) as cnt FROM madebymiles.observability.alert_events "
+              "WHERE source = 'fit-finder' AND title = 'Summary completed' "
+              "AND created_at >= date_format(date_trunc('MONTH', current_date() - INTERVAL 1 MONTH), 'yyyy-MM-dd') "
+              "AND created_at < date_format(date_trunc('MONTH', current_date()), 'yyyy-MM-dd')"
+          )
+
+          details = query_databricks(
+              "SELECT COUNT(*) as cnt FROM madebymiles.observability.alert_events "
+              "WHERE source = 'fit-finder' AND title = 'Detail completed' "
+              "AND created_at >= date_format(date_trunc('MONTH', current_date() - INTERVAL 1 MONTH), 'yyyy-MM-dd') "
+              "AND created_at < date_format(date_trunc('MONTH', current_date()), 'yyyy-MM-dd')"
+          )
+
+          errors = query_databricks(
+              "SELECT COUNT(*) as cnt FROM madebymiles.observability.alert_events "
+              "WHERE source = 'fit-finder' AND severity = 'critical' "
+              "AND created_at >= date_format(date_trunc('MONTH', current_date() - INTERVAL 1 MONTH), 'yyyy-MM-dd') "
+              "AND created_at < date_format(date_trunc('MONTH', current_date()), 'yyyy-MM-dd')"
+          )
+
+          summary_count = int(summaries[0]["cnt"]) if summaries else 0
+          detail_count = int(details[0]["cnt"]) if details else 0
+          error_count = int(errors[0]["cnt"]) if errors else 0
+          total = summary_count + detail_count
+          error_rate = round(error_count / max(total, 1) * 100, 1)
+
+          # Estimate API cost (rough: ~$0.002 per summary, ~$0.005 per detail)
+          estimated_cost = round(summary_count * 0.002 + detail_count * 0.005, 2)
+
+          now = datetime.now(timezone.utc)
+          last_month = now - timedelta(days=now.day)
+          month_name = last_month.strftime("%B %Y")
+
+          report = {
+              "month": month_name,
+              "summaries": summary_count,
+              "details": detail_count,
+              "errors": error_count,
+              "error_rate": error_rate,
+              "estimated_cost": estimated_cost,
+          }
+
+          with open("/tmp/fit-finder-report.json", "w") as f:
+              json.dump(report, f)
+
+          print(f"Month: {month_name}")
+          print(f"Summaries: {summary_count}, Details: {detail_count}, Errors: {error_count}")
+          print(f"Error rate: {error_rate}%, Est. cost: ${estimated_cost}")
+          PYEOF
+
+      - name: Post report to Databricks
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_WAREHOUSE_ID: ${{ vars.DATABRICKS_WAREHOUSE_ID }}
+        run: |
+          python3 << 'PYEOF'
+          import json, os, requests, datetime
+
+          with open("/tmp/fit-finder-report.json") as f:
+              report = json.load(f)
+
+          now = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+          message = (
+              f"Month: {report['month']}. "
+              f"Analyses: {report['summaries']} summaries, {report['details']} details. "
+              f"Errors: {report['errors']} ({report['error_rate']}%). "
+              f"Estimated API cost: ${report['estimated_cost']}."
+          )
+          msg_escaped = message.replace("'", "''")
+          metadata = json.dumps(report).replace("'", "''")
+
+          sql = f"INSERT INTO madebymiles.observability.alert_events (source, severity, title, message, metadata, created_at) VALUES ('fit-finder-report', 'info', 'Monthly Fit Finder Report', '{msg_escaped}', '{metadata}', '{now}')"
+
+          host = os.environ["DATABRICKS_HOST"]
+          token = os.environ["DATABRICKS_TOKEN"]
+          wid = os.environ.get("DATABRICKS_WAREHOUSE_ID", "")
+
+          try:
+              requests.post(
+                  f"{host}/api/2.0/sql/statements",
+                  headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+                  json={"statement": sql, "warehouse_id": wid, "wait_timeout": "10s"},
+                  timeout=15,
+              )
+              print("Fit Finder report posted to Databricks")
+          except Exception as e:
+              print(f"Databricks post failed (non-blocking): {e}")
+          PYEOF
+
+      - name: Post to Discord if errors are high
+        env:
+          DISCORD_WEBHOOK_ALERTS: ${{ secrets.DISCORD_WEBHOOK_ALERTS }}
+        run: |
+          python3 << 'PYEOF'
+          import json, os, requests
+
+          with open("/tmp/fit-finder-report.json") as f:
+              report = json.load(f)
+
+          error_rate = report["error_rate"]
+          cost = report["estimated_cost"]
+
+          # Alert to Discord if error rate > 10% or cost > $3
+          if error_rate > 10 or cost > 3:
+              color = 15158332  # red
+              title = "Fit Finder Alert"
+              if error_rate > 10:
+                  desc = f"**Error rate is {error_rate}%** for {report['month']}.\nSummaries: {report['summaries']}, Details: {report['details']}, Errors: {report['errors']}."
+              else:
+                  desc = f"**Estimated API cost is ${cost}** for {report['month']}.\nSummaries: {report['summaries']}, Details: {report['details']}."
+
+              requests.post(
+                  os.environ["DISCORD_WEBHOOK_ALERTS"],
+                  json={"embeds": [{"title": title, "description": desc, "color": color}]},
+                  timeout=10,
+              )
+              print(f"Posted alert to Discord: error_rate={error_rate}%, cost=${cost}")
+          else:
+              print(f"All healthy: error_rate={error_rate}%, cost=${cost}. No Discord alert needed.")
+          PYEOF
+
+  notify-failure:
+    needs: fit-finder-report
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Discord (Fit Finder report failed)
+        run: |
+          curl -s -H "Content-Type: application/json" \
+            -d "{\"embeds\":[{\"title\":\"Fit Finder Report FAILED\",\"description\":\"**Details:** ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}\",\"color\":15158332}]}" \
+            "${{ secrets.DISCORD_WEBHOOK_ALERTS }}"

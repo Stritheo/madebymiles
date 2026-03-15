@@ -1,0 +1,191 @@
+name: Weekly Security Report
+
+on:
+  schedule:
+    - cron: '0 21 * * 0'  # Monday 8am AEST (UTC+11), Sunday 9pm UTC
+  workflow_dispatch:
+
+jobs:
+  security-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Query Cloudflare security events
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        run: |
+          python3 << 'PYEOF'
+          import json, os, requests
+          from datetime import datetime, timedelta, timezone
+
+          token = os.environ["CLOUDFLARE_API_TOKEN"]
+          zone_id = os.environ["CLOUDFLARE_ZONE_ID"]
+
+          # Last 7 days
+          now = datetime.now(timezone.utc)
+          since = (now - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
+          until = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+          # Cloudflare GraphQL Analytics API
+          query = """
+          query {
+            viewer {
+              zones(filter: {zoneTag: "%s"}) {
+                firewallEventsAdaptiveGroups(
+                  filter: {datetime_geq: "%s", datetime_leq: "%s"}
+                  limit: 10
+                  orderBy: [count_DESC]
+                ) {
+                  count
+                  dimensions {
+                    action
+                    clientCountryName
+                    clientRequestHTTPHost
+                    ruleId
+                    source
+                  }
+                }
+                httpRequestsAdaptiveGroups(
+                  filter: {datetime_geq: "%s", datetime_leq: "%s"}
+                  limit: 5
+                  orderBy: [count_DESC]
+                ) {
+                  count
+                  dimensions {
+                    clientCountryName
+                  }
+                }
+              }
+            }
+          }
+          """ % (zone_id, since, until, since, until)
+
+          resp = requests.post(
+              "https://api.cloudflare.com/client/v4/graphql",
+              headers={
+                  "Authorization": f"Bearer {token}",
+                  "Content-Type": "application/json",
+              },
+              json={"query": query},
+              timeout=30,
+          )
+
+          data = resp.json()
+          zones = data.get("data", {}).get("viewer", {}).get("zones", [{}])
+          zone = zones[0] if zones else {}
+
+          firewall = zone.get("firewallEventsAdaptiveGroups", [])
+          traffic = zone.get("httpRequestsAdaptiveGroups", [])
+
+          # Build summary
+          total_blocked = sum(e["count"] for e in firewall)
+          actions = {}
+          countries = {}
+          for e in firewall:
+              action = e["dimensions"]["action"]
+              country = e["dimensions"]["clientCountryName"]
+              actions[action] = actions.get(action, 0) + e["count"]
+              countries[country] = countries.get(country, 0) + e["count"]
+
+          top_countries_traffic = []
+          for e in traffic:
+              top_countries_traffic.append(
+                  f"{e['dimensions']['clientCountryName']}: {e['count']:,}"
+              )
+
+          # Format
+          action_lines = "\n".join(f"  {k}: {v}" for k, v in sorted(actions.items(), key=lambda x: -x[1]))
+          country_lines = "\n".join(f"  {k}: {v}" for k, v in sorted(countries.items(), key=lambda x: -x[1])[:5])
+          traffic_lines = "\n".join(f"  {t}" for t in top_countries_traffic[:5])
+
+          report = {
+              "total_blocked": total_blocked,
+              "actions": action_lines or "  None",
+              "threat_countries": country_lines or "  None",
+              "top_traffic_countries": traffic_lines or "  No data",
+              "period": f"{(now - timedelta(days=7)).strftime('%d %b')} - {now.strftime('%d %b %Y')}",
+          }
+
+          with open("/tmp/security-report.json", "w") as f:
+              json.dump(report, f)
+
+          print(f"Firewall events: {total_blocked}")
+          print(f"Actions: {action_lines}")
+          PYEOF
+
+      - name: Post to Databricks
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_WAREHOUSE_ID: ${{ vars.DATABRICKS_WAREHOUSE_ID }}
+        run: |
+          python3 << 'PYEOF'
+          import json, os, requests, datetime
+
+          with open("/tmp/security-report.json") as f:
+              report = json.load(f)
+
+          now = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+          period = report["period"]
+          total = report["total_blocked"]
+
+          message = f"Period: {period}. Threats blocked: {total}. Actions: {report['actions']}. Top threat countries: {report['threat_countries']}. Top traffic countries: {report['top_traffic_countries']}."
+          msg_escaped = message.replace("'", "''")[:4000]
+
+          sql = f"INSERT INTO madebymiles.observability.alert_events (source, severity, title, message, metadata, created_at) VALUES ('security-report', 'info', 'Weekly Security Report', '{msg_escaped}', '{{\"total_blocked\": {total}}}', '{now}')"
+
+          host = os.environ["DATABRICKS_HOST"]
+          token = os.environ["DATABRICKS_TOKEN"]
+          wid = os.environ.get("DATABRICKS_WAREHOUSE_ID", "")
+
+          try:
+              requests.post(
+                  f"{host}/api/2.0/sql/statements",
+                  headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+                  json={"statement": sql, "warehouse_id": wid, "wait_timeout": "10s"},
+                  timeout=15,
+              )
+              print("Security report posted to Databricks")
+          except Exception as e:
+              print(f"Databricks post failed (non-blocking): {e}")
+          PYEOF
+
+      - name: Post critical threats to Discord
+        env:
+          DISCORD_WEBHOOK_ALERTS: ${{ secrets.DISCORD_WEBHOOK_ALERTS }}
+        run: |
+          python3 << 'PYEOF'
+          import json, os, requests
+
+          with open("/tmp/security-report.json") as f:
+              report = json.load(f)
+
+          total = report["total_blocked"]
+
+          # Only post to Discord if there are actual threats
+          if total > 0:
+              embed = {
+                  "title": "Weekly Security Report",
+                  "description": f"**Period:** {report['period']}\n**Threats blocked:** {total}\n\n**Actions:**\n{report['actions']}\n\n**Top threat countries:**\n{report['threat_countries']}",
+                  "color": 15158332 if total > 50 else 16776960,  # red if >50, amber otherwise
+              }
+              requests.post(
+                  os.environ["DISCORD_WEBHOOK_ALERTS"],
+                  json={"embeds": [embed]},
+                  timeout=10,
+              )
+              print(f"Posted to Discord: {total} threats")
+          else:
+              print("No threats this week, skipping Discord")
+          PYEOF
+
+  notify-failure:
+    needs: security-report
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Discord (security report failed)
+        run: |
+          curl -s -H "Content-Type: application/json" \
+            -d "{\"embeds\":[{\"title\":\"Security Report FAILED\",\"description\":\"**Details:** ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}\",\"color\":15158332}]}" \
+            "${{ secrets.DISCORD_WEBHOOK_ALERTS }}"
