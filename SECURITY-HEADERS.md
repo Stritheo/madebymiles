@@ -39,5 +39,5 @@ Some headers are also set via `<meta http-equiv>` in the HTML `<head>` as a belt
 
 ## Future changes
 
-- **Phase 2:** Update `connect-src` to include Supabase URL for the analytics beacon
+- **When funnel tracking is added:** Update `connect-src` to include the beacon endpoint (Cloudflare Analytics Engine -- no external domain needed since it runs on the same Worker)
 - **Phase 4:** Update `connect-src` to include the Fit Finder Worker URL

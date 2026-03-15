@@ -37,17 +37,10 @@ These rules prevent the class of error where CI checks are committed without ver
 
 5. **No silent failures.** Every CI job must either pass green or post to Discord #alerts. Never add a job that can fail silently.
 
-## Design workflow
-
-- **Design tokens:** Colours, typography, and spacing defined in `tailwind.config.mjs`
-- **Layout decisions:** Describe the intent and audience for a section; Claude proposes 2-3 layout options as HTML previews or descriptions; you pick one, Claude builds it
-- **Design inspiration:** Share links or screenshots of sites you admire; Claude adapts the patterns to your brand
-- **Customer journey:** Mapped collaboratively in conversation or markdown, not in external tools
-
 ## Observability
 
 - **Dashboard:** Databricks Free Edition (AI/BI dashboards + Genie)
-- **Data sources:** Cloudflare, Supabase, Sentry, GitHub Actions, Google Search Console
+- **Data sources:** Cloudflare, Sentry, GitHub Actions, Google Search Console
 - **Reports:** Weekly GenAI improvement proposals via GitHub Actions to Discord #reports
 - **PRD:** See `docs/PRD-observability-and-design-integration.md` for full setup plan
 

@@ -86,7 +86,7 @@ Changed from "madebymiles-site" to "milessowden-site".
 | Security headers A+ | P2 | OPEN | Currently Grade A. Needs expanded Permissions-Policy header in Cloudflare Transform Rule. |
 | Register milessowden.com.au | P4 | OPEN | Defensive registration. Requires AU-accredited registrar (e.g. VentraIP). |
 | Internal docs domain refs | P4 | OPEN | COWORK-PROMPT.md, SETUP-CHECKLIST.md, databricks/setup-databricks.md reference old domain. Cosmetic only. |
-| Supabase keepalive workflow | P4 | OPEN | Workflow exists but Supabase is ON HOLD per PRD. Silently fails. No harm. |
+| ~~Supabase keepalive workflow~~ | -- | REMOVED | Supabase removed from architecture 15 Mar 2026. Workflow deleted. |
 | Databricks Sentry ingestion | P3 | READY | Notebook exists, needs Sentry data flowing (now resolved) to produce results. |
 | Databricks Lighthouse ingestion | P3 | READY | Notebook exists, ready to run. |
 

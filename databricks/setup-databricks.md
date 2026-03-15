@@ -63,8 +63,6 @@ dbutils.secrets.put(scope="madebymiles", key="SENTRY_AUTH_TOKEN", string_value="
 dbutils.secrets.put(scope="madebymiles", key="SENTRY_ORG", string_value="xxx")
 dbutils.secrets.put(scope="madebymiles", key="SENTRY_PROJECT", string_value="xxx")
 dbutils.secrets.put(scope="madebymiles", key="GSC_SERVICE_ACCOUNT_JSON", string_value='{"type":"service_account",...}')
-dbutils.secrets.put(scope="madebymiles", key="SUPABASE_ACCESS_TOKEN", string_value="xxx")
-dbutils.secrets.put(scope="madebymiles", key="SUPABASE_PROJECT_REF", string_value="xxx")
 ```
 
 **If secrets did not work**, skip this step. The notebooks will prompt you for keys via widget text boxes each time you run them.
@@ -79,8 +77,6 @@ dbutils.secrets.put(scope="madebymiles", key="SUPABASE_PROJECT_REF", string_valu
 | SENTRY_AUTH_TOKEN | sentry.io > Settings > Auth Tokens > Create |
 | SENTRY_ORG / SENTRY_PROJECT | From your Sentry project URL: sentry.io/organizations/ORG/issues/?project=PROJECT |
 | GSC_SERVICE_ACCOUNT_JSON | console.cloud.google.com > IAM > Service Accounts > Create > Download JSON key. Then add as owner in GSC. |
-| SUPABASE_ACCESS_TOKEN | supabase.com > Account > Access Tokens |
-| SUPABASE_PROJECT_REF | From your Supabase project URL or Settings > General |
 
 ## Step 5: Import the notebooks
 
@@ -98,8 +94,7 @@ Run them one at a time in this order (easiest to hardest):
 1. `ingest_github_actions.py` -- only needs a GitHub token (you already have one)
 2. `ingest_cloudflare.py` -- uses your existing Cloudflare API token
 3. `ingest_sentry.py` -- straightforward REST API
-4. `ingest_supabase.py` -- simple health check
-5. `ingest_lighthouse.py` -- parses CI artifacts (more complex)
+4. `ingest_lighthouse.py` -- parses CI artifacts (more complex)
 6. `ingest_gsc.py` -- needs Google service account setup (most complex)
 
 **If using widgets (no secrets):** When you click **Run All**, text boxes will appear at the top of the notebook. Paste your API key(s) there, then click **Run All** again.

@@ -58,30 +58,9 @@ A personal executive site for Miles Sowden, an insurance executive targeting CEO
 
 ## Known issues and blockers
 
-### CRITICAL: Supabase free tier pausing
+### Supabase removed from architecture (15 Mar 2026)
 
-Supabase pauses inactive projects on the free tier after 7 days of inactivity. This is a known limitation of Supabase Free. The PRD (Epic 11, Section 1) specifies Supabase as the analytics beacon database:
-
-```
-Browser (sendBeacon) --> Cloudflare Worker (/api/beacon) --> Supabase Postgres
-```
-
-**Impact:** If the beacon Worker is built as specified in the PRD, the Supabase project will pause unless:
-- The site generates enough beacon traffic to keep it active (unlikely for a personal site in early months)
-- Miles manually unpauses it regularly (bad UX, defeats the purpose)
-- A keep-alive cron pings the Supabase API daily (adds complexity)
-
-**Decision needed:** The PRD's Supabase beacon architecture may need to be reconsidered. Options:
-
-1. **Keep Supabase, add keep-alive cron** -- A scheduled GitHub Actions job or Cloudflare Worker pings the Supabase REST API daily to prevent pausing. Simplest to implement, but adds a dependency and a failure mode.
-
-2. **Replace Supabase with Cloudflare Analytics Engine** -- Cloudflare's free Analytics Engine (25M data points/month) accepts write events from Workers and supports SQL-like queries. No pausing risk, no external dependency, already in the Cloudflare ecosystem. The beacon Worker writes directly to Analytics Engine instead of Supabase.
-
-3. **Replace Supabase with Databricks directly** -- Since Databricks is already the observability platform, route beacon data there. But Databricks Free Edition may not accept real-time writes from a Worker (needs testing).
-
-4. **Defer the beacon entirely** -- Cloudflare Web Analytics (already active, free, passive) provides page views, top pages, referrers, and Core Web Vitals without any custom code. The custom beacon adds funnel tracking (scroll_50, skill_matrix_view, cta_click_*) which is valuable but not critical yet.
-
-**Recommendation:** Option 4 (defer) for now -- Cloudflare Web Analytics covers the basics. Revisit when the site has enough traffic to justify funnel tracking. If funnel tracking is needed sooner, Option 2 (Cloudflare Analytics Engine) is the cleanest path.
+Supabase free tier pauses after 7 days of inactivity, making it unreliable for a low-traffic personal site. Removed from the architecture entirely. The custom analytics beacon is deferred -- Cloudflare Web Analytics (already active, free, passive) covers page views, referrers, and Core Web Vitals. When funnel tracking is needed, Cloudflare Analytics Engine (free, 25M data points/month, no pausing) will be wired to the existing beacon Worker stub.
 
 ### Databricks Free Edition limitations (hard-won lessons)
 
@@ -103,9 +82,9 @@ These were discovered through painful trial and error (see retro in `docs/PRD-ob
 
 **Widget quirk:** Databricks widgets ignore default values if the widget was previously created empty. Fix: run `dbutils.widgets.removeAll()` before first run.
 
-### Supabase ingestion notebook may be moot
+### Supabase ingestion notebook removed
 
-`databricks/notebooks/ingest_supabase.py` was written to pull Supabase project health metrics into Databricks. If Supabase is dropped as the beacon database, this notebook has limited value (it only checks db_healthy, db_size, storage, bandwidth). It can be removed or deprioritised.
+Supabase was removed from the architecture on 15 Mar 2026. The `ingest_supabase.py` notebook is no longer needed.
 
 ---
 
@@ -122,7 +101,7 @@ These were discovered through painful trial and error (see retro in `docs/PRD-ob
 - Weekly report workflow in GitHub Actions (soft-fail mode)
 
 **Still to do:**
-- Run remaining ingestion notebooks: Sentry, Lighthouse, GSC (and Supabase if kept)
+- Run remaining ingestion notebooks: Sentry, Lighthouse, GSC
 - Collect API tokens for each service (see Browser Session 3 in the PRD-observability doc for where to get each one)
 - Build the AI/BI Dashboard (4 tabs: Performance, Security, Deployment, Search/Traffic -- SQL queries documented in PRD-observability doc)
 - Test Genie natural language queries on published dashboard
@@ -133,21 +112,9 @@ These were discovered through painful trial and error (see retro in `docs/PRD-ob
 - Trigger weekly report manually, verify it posts to Discord #reports
 - Remove `continue-on-error: true` from weekly-report.yml after it passes green
 
-### 2. Resolve Supabase beacon architecture (decision needed)
+### 2. Custom analytics beacon (DEFERRED)
 
-**Reference:** PRD.md Epic 11 Section 1
-
-The PRD specifies a custom analytics beacon writing to Supabase. Given the pausing issue, decide whether to:
-- Build it as specified with a keep-alive mechanism
-- Switch to Cloudflare Analytics Engine
-- Defer and rely on Cloudflare Web Analytics for now
-
-If building the beacon:
-- New Cloudflare Worker endpoint: `/api/beacon`
-- Client-side sendBeacon script in `src/layouts/Base.astro`
-- 8 tracked funnel events (page_view through cta_click_whatsapp -- see PRD)
-- Update CSP `connect-src` to allow the beacon endpoint
-- Update `SECURITY-HEADERS.md` and Cloudflare Transform Rule
+**Decision (15 Mar 2026):** Supabase removed. Custom beacon deferred. Cloudflare Web Analytics covers the basics. When funnel tracking is needed, wire the beacon Worker stub to Cloudflare Analytics Engine (free, 25M data points/month, no pausing).
 
 ### 3. Scheduled Discord reports (partially done)
 
@@ -156,7 +123,7 @@ If building the beacon:
 The weekly GenAI report is built (`.github/workflows/weekly-report.yml`) but not yet active. It queries Databricks and uses Claude Sonnet to generate improvement proposals.
 
 **Still to do:**
-- Daily summary report (08:00 AEST to #site-visitors) -- not built yet. If beacon is deferred, this depends on Cloudflare Web Analytics data instead of Supabase.
+- Daily summary report (08:00 AEST to #site-visitors) -- not built yet. Depends on Cloudflare Web Analytics data (beacon deferred).
 - Weekly funnel report (Monday 08:00 to #funnel-tracking) -- depends on beacon data
 - Weekly security report (Monday 08:00 to #security-threats) -- not built yet. Needs Cloudflare GraphQL Analytics API query.
 - Monthly Fit Finder report (1st of month to #fit-finder) -- not built yet. Data available from existing Worker Discord webhooks.
@@ -187,9 +154,11 @@ The weekly GenAI report is built (`.github/workflows/weekly-report.yml`) but not
 Set via `npx wrangler secret put`:
 - `ANTHROPIC_API_KEY`
 - `JWT_SECRET`
-- `DISCORD_WEBHOOK_REPORTS`
 - `DISCORD_WEBHOOK_ALERTS`
 - `TURNSTILE_SECRET_KEY`
+- `DATABRICKS_HOST`
+- `DATABRICKS_TOKEN`
+- `DATABRICKS_WAREHOUSE_ID`
 
 KV namespace: `RATE_LIMIT_KV` (238b5712c7fe45dcb0c020aa7850036d)
 
@@ -200,7 +169,7 @@ KV namespace: `RATE_LIMIT_KV` (238b5712c7fe45dcb0c020aa7850036d)
 | File | Purpose |
 |---|---|
 | `PRD.md` | Full product requirements (Epic 11 has observability specs) |
-| `docs/PRD-observability-and-design-integration.md` | Databricks observability PRD with retro and lessons |
+| `docs/PRD-observability-and-design-integration.md` | Databricks observability detailed PRD with retro and lessons |
 | `databricks/setup-databricks.md` | Step-by-step Databricks setup guide |
 | `databricks/notebooks/` | 6 ingestion notebooks + 1 connections setup |
 | `.github/workflows/deploy.yml` | Main CI/CD pipeline |
@@ -223,7 +192,6 @@ KV namespace: `RATE_LIMIT_KV` (238b5712c7fe45dcb0c020aa7850036d)
 | Decision | Choice | Rationale |
 |---|---|---|
 | Observability platform | Databricks Free Edition (not Grafana) | GenAI layer (Genie + Claude MCP) reads both data and code to propose improvements |
-| Design tool | ~~Penpot~~ Removed | Dropped 2026-03-14. Design workflow via Claude Code directly. |
 | Alert channel | Discord | Already working, unlimited webhooks, unlimited history, free |
 | Report delivery | Discord via GitHub Actions | No new tools, fits existing workflow |
 | Report model | Claude Sonnet (not Opus) | Keeps weekly API cost under $0.05 |
@@ -232,7 +200,7 @@ KV namespace: `RATE_LIMIT_KV` (238b5712c7fe45dcb0c020aa7850036d)
 | Fit Finder architecture | Two-phase (summary then detail) | Keeps Phase 1 under 3 seconds |
 | Profile hydration | Claude returns names, Worker hydrates data | Keeps token usage low |
 | CSP delivery | Cloudflare Transform Rules | HTTP headers take precedence over meta tags |
-| Static-first | No servers, no containers | Supabase free tier is the only database (if kept) |
+| Static-first | No servers, no containers | No database needed (Supabase removed) |
 
 ---
 
@@ -253,13 +221,13 @@ KV namespace: `RATE_LIMIT_KV` (238b5712c7fe45dcb0c020aa7850036d)
 
 ## Priority order for next session
 
-1. **Decide on Supabase/beacon** -- Quick conversation, no code needed yet
+1. ~~Decide on Supabase/beacon~~ RESOLVED: Supabase removed, beacon deferred (15 Mar 2026)
 2. **Finish Databricks ingestion** -- Run Sentry and Lighthouse notebooks, collect remaining API tokens
 3. **Build Databricks dashboard** -- 4 tabs, SQL queries are documented
 4. **Activate weekly report** -- Add secrets/variables to GitHub repo, trigger manually
 5. **Configure UptimeRobot** -- Manual setup, 10 minutes
 6. **Build security report** -- Cloudflare GraphQL query, post to Discord
-7. **Build beacon** (if decided to proceed) -- Worker + client script + CSP update
+7. ~~Build beacon~~ DEFERRED: Cloudflare Analytics Engine when funnel tracking needed
 
 ---
 

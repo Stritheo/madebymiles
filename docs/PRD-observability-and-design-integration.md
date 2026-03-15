@@ -40,7 +40,6 @@ databricks/
     ingest_sentry.py                # Sentry issues and error trends
     ingest_gsc.py                   # Google Search Console clicks/impressions
     ingest_lighthouse.py            # Lighthouse scores from CI artifacts
-    ingest_supabase.py              # Supabase project health metrics
 
 .github/workflows/
     weekly-report.yml               # Sunday 8am AEST GenAI report to Discord
@@ -69,8 +68,7 @@ Import notebooks from `databricks/notebooks/` into your workspace. Test in this 
 | 1 | `ingest_github_actions.py` | `GITHUB_TOKEN` | Easy -- you already have a GitHub token |
 | 2 | `ingest_cloudflare.py` | `CLOUDFLARE_API_TOKEN` + `ZONE_ID` | Easy -- token already in GitHub Actions secrets |
 | 3 | `ingest_sentry.py` | `SENTRY_AUTH_TOKEN` + org/project | Easy -- straightforward REST |
-| 4 | `ingest_supabase.py` | `SUPABASE_ACCESS_TOKEN` + project ref | Easy -- simple health check |
-| 5 | `ingest_lighthouse.py` | `GITHUB_TOKEN` | Medium -- parses zip artifacts |
+| 4 | `ingest_lighthouse.py` | `GITHUB_TOKEN` | Medium -- parses zip artifacts |
 | 6 | `ingest_gsc.py` | `GSC_SERVICE_ACCOUNT_JSON` | Harder -- needs Google Cloud service account |
 
 After each notebook succeeds, verify data:
@@ -230,24 +228,13 @@ The report uses Claude Sonnet (not Opus) to keep API costs low. A single weekly 
 | tti_ms | double | Time to Interactive (ms) |
 | total_bytes | double | Total page weight (bytes) |
 
-#### `madebymiles.observability.supabase_health`
-| Column | Type | Description |
-|---|---|---|
-| snapshot_date | string | YYYY-MM-DD |
-| project_ref | string | Supabase project reference |
-| db_healthy | boolean | Database health status |
-| db_status | string | Status string |
-| db_size_bytes | long | Database size |
-| storage_size_bytes | long | Storage size |
-| bandwidth_bytes | long | Bandwidth used |
-
 ---
 
 ## Architecture summary
 
 ```
 Data Sources
-  Cloudflare, Supabase, Sentry, GitHub Actions, GSC
+  Cloudflare, Sentry, GitHub Actions, GSC
           |
           v
   Databricks Free Edition
@@ -312,6 +299,7 @@ CREATE TABLE IF NOT EXISTS madebymiles.observability.alert_events (
 | Report delivery | Databricks (was Discord #reports) | Weekly reports queryable historically, not ephemeral chat messages |
 | Report model | Claude Sonnet (not Opus) | Keeps weekly API cost under $0.05 |
 | Ingestion pattern | Databricks notebooks (not external ETL) | Simplest path, runs on free serverless compute |
+| Custom beacon database | ~~Supabase~~ Deferred (15 Mar 2026) | Supabase free tier pauses after 7 days of inactivity. Use Cloudflare Analytics Engine (free, no pausing) when funnel tracking is needed. |
 
 ---
 
@@ -326,7 +314,7 @@ CREATE TABLE IF NOT EXISTS madebymiles.observability.alert_events (
 | Fair-use compute quota exceeded | Weekly batch for a solo project is well within 99th percentile. Monitor. |
 | No commercial use on Free Edition | milessowden.au is a personal site, not a commercial product. Review terms if that changes. |
 | Weekly report Claude API costs | Uses Sonnet, not Opus. Single weekly call is ~$0.01-0.05. Monitor via Anthropic dashboard. |
-| Supabase/GSC API changes | Notebooks are simple enough to update. Schema changes caught by `write.mode("overwrite")` failures. |
+| GSC API changes | Notebooks are simple enough to update. Schema changes caught by `write.mode("overwrite")` failures. |
 
 ---
 
@@ -496,7 +484,6 @@ You can collect all the API keys from your browser at work and save them somewhe
 | GitHub | github.com > Settings > Developer settings > Personal access tokens > Fine-grained | Token for `Stritheo/madebymiles` with Actions (read), Contents (read) |
 | Cloudflare | dash.cloudflare.com > My Profile > API Tokens > Create Token | Use "Read analytics" template. Also note your Zone ID from the milessowden.au Overview page (right sidebar) |
 | Sentry | sentry.io > Settings > Auth Tokens > Create | Read-only token. Note your org slug and project slug from the URL |
-| Supabase | supabase.com > Account > Access Tokens | Generate token. Note project ref from Settings > General |
 | GSC | console.cloud.google.com > APIs > Search Console API > Enable | Create service account, download JSON key, add email as owner in GSC |
 
 #### Browser Session 4: Import remaining notebooks and add keys (~10 mins each)
@@ -510,8 +497,7 @@ Import order (same as before):
 | 1 | `ingest_github_actions.py` | GitHub token |
 | 2 | `ingest_cloudflare.py` | Cloudflare API token + zone ID |
 | 3 | `ingest_sentry.py` | Sentry auth token + org + project |
-| 4 | `ingest_supabase.py` | Supabase access token + project ref |
-| 5 | `ingest_lighthouse.py` | GitHub token (same as #1) |
+| 4 | `ingest_lighthouse.py` | GitHub token (same as #1) |
 | 6 | `ingest_gsc.py` | GSC service account JSON |
 
 #### Browser Session 5: Build the dashboard (~30 mins)
@@ -608,13 +594,7 @@ If MCP is not available on Free Edition, skip this step. Genie (in the browser) 
 - Fill in widgets: `SENTRY_ORG` = `stritheo`, `SENTRY_PROJECT` = `madebymiles`, `SENTRY_TOKEN` = your token
 - Run. Verify: `SELECT * FROM madebymiles.observability.sentry_issues LIMIT 5;`
 
-### Step 2: Finish Supabase ingestion (10 mins)
-- Create a Supabase access token if you have not already: supabase.com > Account > Access Tokens
-- Paste the complete notebook code into a single Databricks cell
-- Fill in widgets: `SUPABASE_PROJECT_REF` = `wmjgvscktxawvfybxoue`, `SUPABASE_TOKEN` = your token
-- Run. Verify: `SELECT * FROM madebymiles.observability.supabase_health LIMIT 5;`
-
-### Step 3: GSC ingestion (15 mins)
+### Step 2: GSC ingestion (15 mins)
 - GSC needs a Google Cloud service account JSON key, which is too long for a widget
 - Option A (recommended): Set up Databricks CLI and store via `databricks secrets put-secret madebymiles gsc-sa-json`
 - Option B: Skip GSC for now -- it is the least critical source. Come back when Databricks CLI is set up.
@@ -631,7 +611,7 @@ If MCP is not available on Free Edition, skip this step. Genie (in the browser) 
 - Start with 2 tabs that have data now:
   - **Deployment tab:** GitHub Actions pass/fail rate, deploy frequency
   - **Traffic tab:** Cloudflare unique visitors, page views, cache hit rate, threats
-- Add Sentry and Supabase panels as those tables come online
+- Add Sentry panels as that table comes online
 - Click Publish
 
 ### Step 5: Test Genie (5 mins)

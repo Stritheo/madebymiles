@@ -254,52 +254,9 @@ Or if you'd prefer, you can drag and drop the image into this chat and I'll save
 
 ## Phase 2 — Credibility Engine (do these before Phase 2 starts)
 
-### 6. Supabase (free) — anonymous analytics database
+### ~~6. Supabase~~ — REMOVED (15 Mar 2026)
 
-**What this does:** Supabase is a database that stores anonymous page view and click events. No cookies, no personal info — just "someone viewed the homepage" or "someone clicked the WhatsApp button." This feeds your daily visitor reports in Discord.
-
-#### Step 1: Create a Supabase account
-1. Go to [supabase.com](https://supabase.com)
-2. Click **Start your project** (or **Sign Up**)
-3. Sign in with your **GitHub account** (easiest) — click "Continue with GitHub"
-4. Authorise Supabase to access your GitHub account
-
-#### Step 2: Create a project
-1. Click **New project**
-2. Organisation: select your default org (or create one — name doesn't matter)
-3. Project name: `madebymiles`
-4. Database password: click **Generate a password** and save it somewhere safe (you won't need it day-to-day, but keep it just in case)
-5. Region: choose **Southeast Asia (Singapore)** — closest to Australia
-6. Click **Create new project**
-7. Wait 1–2 minutes for it to set up
-
-#### Step 3: Find your keys
-Once the project is created:
-1. Click **Settings** (gear icon in the left sidebar)
-2. Click **API** (under Configuration)
-3. You'll see:
-   - **Project URL**: something like `https://abcdefgh.supabase.co` — copy this
-   - **anon public** key: a long string starting with `eyJ...` — copy this
-   - **service_role** key: click **Reveal** to see it — copy this
-
-> **Important:** The `service_role` key is powerful — it bypasses security rules. Never put it in client-side code. We'll store it as a secret.
-
-#### Step 4: Save the keys as GitHub secrets
-Go to your GitHub repo → **Settings** → **Secrets and variables** → **Actions**, and add three secrets:
-
-| Secret name | Value |
-|------------|-------|
-| `SUPABASE_URL` | Your Project URL (e.g., `https://abcdefgh.supabase.co`) |
-| `SUPABASE_ANON_KEY` | Your anon public key |
-| `SUPABASE_SERVICE_KEY` | Your service_role key |
-
-> **I will handle the database setup** (creating tables, views, and security rules) — that's code work, not something you need to do manually.
-
-- [ ] Supabase project created
-- [ ] Project URL copied
-- [ ] `anon` key copied
-- [ ] `service_role` key copied
-- [ ] All three secrets added to GitHub
+Supabase free tier pauses after 7 days of inactivity. Removed from architecture. Cloudflare Analytics Engine (free, 25M data points/month, no pausing) will replace when funnel tracking is needed.
 
 ---
 
@@ -469,9 +426,9 @@ Here's the complete list of secrets you'll add over time. You only need the Phas
 |------------|-------------|----------------|
 | `DISCORD_WEBHOOK_ALERTS` | Phase 1 | Discord `#alerts` channel webhook |
 | `DISCORD_WEBHOOK_REPORTS` | Phase 1 | Discord `#reports` channel webhook |
-| `SUPABASE_URL` | Phase 2 | Supabase project settings → API |
-| `SUPABASE_ANON_KEY` | Phase 2 | Supabase project settings → API |
-| `SUPABASE_SERVICE_KEY` | Phase 2 | Supabase project settings → API |
+| ~~`SUPABASE_URL`~~ | ~~Phase 2~~ | ~~Removed~~ |
+| ~~`SUPABASE_ANON_KEY`~~ | ~~Phase 2~~ | ~~Removed~~ |
+| ~~`SUPABASE_SERVICE_KEY`~~ | ~~Phase 2~~ | ~~Removed~~ |
 | `ANTHROPIC_API_KEY` | Phase 4 | Anthropic console → API Keys |
 | `CLOUDFLARE_API_TOKEN` | Phase 4 | Cloudflare My Profile → API Tokens |
 | `CLOUDFLARE_ACCOUNT_ID` | Phase 4 | Cloudflare Workers & Pages page |

@@ -1,153 +1,243 @@
-# Cowork Task: Complete Databricks Observability Setup
+# Cowork Task: Close Out All Outstanding Items
+
+**Last updated:** 14 March 2026
 
 ## Context
 
+This is the canonical handoff for all remaining work on milessowden.au. The domain migration is complete and the site is live. Two workstreams remain open: Databricks observability setup, and a small number of post-migration stretch items.
+
 Read these files first (in this order):
-1. `HANDOFF-PROMPT.md` -- current state summary and known blockers
-2. `docs/PRD-observability-and-design-integration.md` -- detailed Databricks PRD with retro and hard-won platform lessons
-3. `databricks/setup-databricks.md` -- step-by-step setup guide
-4. `databricks/notebooks/` -- all 6 ingestion notebook templates
+1. `MIGRATION-AUDIT.md` -- full audit of domain migration, shows what was resolved and what remains
+2. `docs/PRD-observability-and-design-integration.md` -- Databricks PRD with architecture, table schemas, and hard-won platform lessons
+3. `databricks/notebooks/` -- all 6 ingestion notebooks (ready to run, no code changes needed)
 
 ## Security boundary
 
 **You do NOT handle API tokens.** When a notebook needs a token pasted into a widget, stop and tell Miles exactly what to paste and where. He will type the token himself. Never ask him to share tokens in chat.
 
-Specifically:
-- You build the infrastructure, schemas, SQL, dashboards, and job configuration
+- You build infrastructure, schemas, SQL, dashboards, and job configuration
 - Miles pastes tokens into Databricks widget fields and clicks Run
-- Miles generates the Databricks personal access token
-- Miles adds secrets to GitHub repo settings
+- Miles adds secrets and variables to GitHub repo settings
+- Miles does all browser-based configuration (Cloudflare, UptimeRobot, VentraIP)
+
+---
 
 ## What is already done
 
-- Databricks workspace: `https://dbc-0caa5555-b747.cloud.databricks.com` (mlfsowden@gmail.com, Google sign-in)
+### Site and migration (complete)
+- milessowden.au live: GitHub Pages, Cloudflare CDN, CSP, HSTS, Turnstile, Sentry
+- madebymiles.ai and milessowden.com both 301 redirect to milessowden.au
+- og:site_name, OG image URL, package.json name all updated
+- Security headers: Grade A on securityheaders.com
+- Sentry: browser SDK v8.49.0 on /fit, DSN configured, Discord and GitHub integrations active
+- UptimeRobot: 3 monitors active (homepage, llms.txt, /api/health) with Discord #alerts webhook
+- Google Search Console: milessowden.au verified, sitemap submitted
+- Worker /api/health: GET and HEAD both supported (UptimeRobot-compatible)
+- Duplicate Sentry init block in fit.astro: removed and committed
+
+### GitHub Actions secrets (confirmed added)
+`DATABRICKS_HOST`, `DATABRICKS_TOKEN`, `DATABRICKS_WAREHOUSE_ID`, `ANTHROPIC_API_KEY`, `DISCORD_WEBHOOK_REPORTS`
+
+Note: `DATABRICKS_REFRESH_JOB_ID` is still needed -- it will be known after the Databricks job is created in Workstream 1.
+
+### Cloudflare Worker (deployed, confirmed working)
+- `WORKER_ENABLED = true` is set in GitHub Actions variables
+- Worker deploys automatically on every push to main via the `deploy-worker` CI job
+- `/api/health` returns 200 for GET and HEAD (UptimeRobot monitor is green)
+- `/api/fit` (Fit Finder) is live at milessowden.au/fit
+- Static fallback `public/api/health` also exists as belt-and-suspenders for UptimeRobot
+
+### Databricks (partial)
+- Workspace: `https://dbc-0caa5555-b747.cloud.databricks.com` (mlfsowden@gmail.com, Google sign-in)
 - Unity Catalog: `madebymiles` catalog and `observability` schema created
-- Cloudflare ingestion: confirmed working (7 days of analytics ingested)
-- GitHub Actions ingestion: confirmed working (workflow runs ingested)
-- All 6 notebook templates written and in the repo at `databricks/notebooks/`
-- Weekly GenAI report GitHub Actions workflow built (`.github/workflows/weekly-report.yml`, soft-fail mode)
+- Cloudflare ingestion: confirmed working previously (data in `madebymiles.observability.*`)
+- GitHub Actions ingestion: confirmed working previously (data in `madebymiles.observability.*`)
+- All 6 notebook templates in repo at `databricks/notebooks/` -- code is correct, no changes needed
+- Weekly GenAI report workflow built at `.github/workflows/weekly-report.yml` (soft-fail)
 
-## What you need to do (in Chrome)
+---
 
-### Phase 1: Import and run remaining notebooks
+## Workstream 1: Databricks (Claude guides, Miles executes in browser)
 
-1. Open Databricks workspace in Chrome
-2. Navigate to Workspace, find or create the `madebymiles-observability` folder
-3. Import notebooks from the repo (`databricks/notebooks/`)
-4. Run `dbutils.widgets.removeAll()` in a scratch cell first (clears stale widget defaults)
-5. For `ingest_sentry.py`:
-   - Tell Miles: "Paste your Sentry auth token into the SENTRY_TOKEN widget, set SENTRY_ORG to `stritheo`, set SENTRY_PROJECT to `madebymiles`, then click Run All"
-   - Wait for him to confirm success
-   - Verify: `SELECT * FROM madebymiles.observability.sentry_issues LIMIT 5`
-6. For `ingest_lighthouse.py`:
-   - Tell Miles: "Paste your GitHub token into the GITHUB_TOKEN widget, then click Run All"
-   - Wait for him to confirm success
-   - Verify: `SELECT * FROM madebymiles.observability.lighthouse_scores LIMIT 5`
-7. **Skip** `ingest_gsc.py` -- needs Google Cloud service account JSON which is too long for a widget. Park it.
-8. **Skip** `ingest_supabase.py` -- Supabase is on hold (free tier pauses after 7 days inactivity)
+### Step 1 -- Create schemas
 
-### Phase 2: Medallion architecture
+Open any notebook in Databricks, create a scratch cell, and run:
 
-Set up bronze/silver/gold layers in Unity Catalog.
-
-**Create schemas:**
 ```sql
 CREATE SCHEMA IF NOT EXISTS madebymiles.bronze;
 CREATE SCHEMA IF NOT EXISTS madebymiles.silver;
 CREATE SCHEMA IF NOT EXISTS madebymiles.gold;
 ```
 
-**Bronze layer** -- raw ingestion (move existing tables):
-- The existing `madebymiles.observability.*` tables are the bronze layer
-- Either rename the schema to bronze, or create views in bronze pointing to observability tables
-- Going forward, notebooks should write to `madebymiles.bronze.*`
+Note: The previously confirmed data lives in `madebymiles.observability.*`. The new bronze/silver/gold architecture replaces it. The ingestion notebooks write to `bronze.*`, so re-running them will populate the new schema from scratch. The old `observability.*` data can be left as-is.
 
-**Silver layer** -- cleaned and typed:
-Create transformation notebooks/queries that:
-- Deduplicate rows (some notebooks use overwrite mode, some append)
-- Cast string dates to proper DATE/TIMESTAMP types
-- Standardise column naming (snake_case throughout)
-- Add `_ingested_at TIMESTAMP` metadata column
-- One silver table per bronze table
+### Step 2 -- Import notebooks into Databricks
 
-**Gold layer** -- aggregated views for dashboard panels:
-Create SQL views optimised for each dashboard panel. The SQL queries for each panel are documented in the PRD-observability doc under "Phase 3: Dashboard build" and the table schemas are in the "Unity Catalog table schemas" section.
+1. Navigate to Workspace in Databricks
+2. Find or create the `madebymiles-observability` folder
+3. Import each file from `databricks/notebooks/` (drag-and-drop or File > Import)
+4. Notebooks to import: `ingest_cloudflare.py`, `ingest_github_actions.py`, `ingest_sentry.py`, `ingest_lighthouse.py`, `silver/transforms.py`, `gold/views.py`
 
-Key gold views:
-- `gold.lighthouse_trend` -- scores by URL over time (for Performance tab line chart)
-- `gold.deploy_summary` -- pass/fail rate, frequency, duration (for Deployment tab)
-- `gold.traffic_daily` -- visitors, page views, cache hit rate (for Traffic tab)
-- `gold.sentry_summary` -- error count by level, top issues (for Security tab)
-- `gold.weekly_metrics` -- combined weekly snapshot for the GenAI report
+### Step 3 -- Run ingestion notebooks
 
-### Phase 3: Schedule daily ingestion
+Run each notebook in this order. Before the first run of any notebook, run `dbutils.widgets.removeAll()` in a scratch cell (clears stale widget defaults).
 
-1. Go to Workflows > Create Job
+**`ingest_cloudflare.py`**
+Tell Miles: "Paste your Cloudflare API token into the CLOUDFLARE_API_TOKEN widget, paste your Zone ID into the CLOUDFLARE_ZONE_ID widget, then click Run All"
+Verify: `SELECT * FROM madebymiles.bronze.cloudflare_analytics LIMIT 5`
+
+**`ingest_github_actions.py`**
+Tell Miles: "Paste your GitHub token into the GITHUB_TOKEN widget, then click Run All"
+Verify: `SELECT * FROM madebymiles.bronze.github_actions_runs LIMIT 5`
+
+**`ingest_sentry.py`** (now unblocked -- Sentry is live)
+Tell Miles: "Paste your Sentry auth token into the SENTRY_TOKEN widget, set SENTRY_ORG to `stritheo`, set SENTRY_PROJECT to `madebymiles`, then click Run All"
+Verify: `SELECT * FROM madebymiles.bronze.sentry_issues LIMIT 5`
+
+**`ingest_lighthouse.py`**
+Tell Miles: "Paste your GitHub token into the GITHUB_TOKEN widget, then click Run All"
+Verify: `SELECT * FROM madebymiles.bronze.lighthouse_scores LIMIT 5`
+
+**Skip** `ingest_gsc.py` -- needs Google Cloud service account JSON (too long for a widget). Park it.
+
+**Skip** `ingest_supabase.py` -- Supabase removed from architecture (15 Mar 2026). Notebook no longer needed.
+
+### Step 4 -- Run silver and gold notebooks
+
+Run in order:
+1. `silver/transforms.py` -- cleans and types all bronze tables into silver
+2. `gold/views.py` -- creates aggregated views for the dashboard
+
+Each handles missing source tables gracefully (try/except), so partial data is fine.
+
+Verify gold layer:
+```sql
+SELECT * FROM madebymiles.gold.weekly_metrics ORDER BY metric_date DESC LIMIT 10;
+SELECT * FROM madebymiles.gold.lighthouse_trend LIMIT 5;
+```
+
+### Step 5 -- Schedule daily ingestion job
+
+1. Workflows > Create Job
 2. Name: `madebymiles-daily-ingest`
-3. Add a task for each working notebook: GitHub Actions, Cloudflare, Sentry, Lighthouse
-4. For each task, the notebook will need widget values -- configure default parameter values in the job task settings so tokens are pre-filled
-   - **Important:** Tell Miles which widget parameters each task needs. He will type the token values into the job task parameter fields himself.
+3. Add tasks in this order (each as a separate notebook task):
+   - `ingest_cloudflare` -- parameters: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID
+   - `ingest_github_actions` -- parameter: GITHUB_TOKEN
+   - `ingest_sentry` -- parameters: SENTRY_TOKEN, SENTRY_ORG (stritheo), SENTRY_PROJECT (madebymiles)
+   - `ingest_lighthouse` -- parameter: GITHUB_TOKEN
+   - `silver/transforms` -- no parameters
+   - `gold/views` -- no parameters
+4. Tell Miles which parameter fields to fill in for each task -- he will type token values himself
 5. Set schedule: daily at 00:00 UTC (10:00 AEST)
-6. Note the **Job ID** -- Miles needs this for the GitHub Actions weekly report
-7. Add a downstream task that runs the silver transformations after ingestion completes
+6. Save and note the **Job ID** -- Miles will add it as a GitHub Actions variable
 
-### Phase 4: Build the AI/BI Dashboard
+After creating the job, tell Miles:
+"Go to github.com/Stritheo/madebymiles/settings/variables/actions and add a variable named `DATABRICKS_REFRESH_JOB_ID` with the value [job ID]"
 
-1. Go to SQL > Dashboards > Create Dashboard
+### Step 6 -- Build the AI/BI Dashboard
+
+1. SQL > Dashboards > Create Dashboard
 2. Name: `milessowden.au Observability`
-3. Build 4 tabs querying gold views/tables:
+3. Build 4 tabs (all queries use gold layer tables):
 
-**Performance tab:**
-- Lighthouse scores over time (line chart: performance, accessibility, SEO, best practices)
-- FCP and TTI trends (line chart)
-- Total page weight trend (bar chart)
+**Performance tab**
+```sql
+-- Lighthouse scores over time
+SELECT run_date, url, performance, accessibility, best_practices, seo
+FROM madebymiles.gold.lighthouse_trend
+ORDER BY run_date DESC;
 
-**Security tab:**
-- Sentry error count by level (stacked bar: error, warning, info)
-- Top 5 issues by frequency (table)
-- Threats blocked by Cloudflare (from cloudflare_analytics.threats)
+-- FCP and TTI trend
+SELECT run_date, url, ROUND(fcp_ms, 0) AS fcp_ms, ROUND(tti_ms, 0) AS tti_ms
+FROM madebymiles.gold.lighthouse_trend
+ORDER BY run_date DESC;
 
-**Deployment tab:**
-- GitHub Actions pass/fail rate (pie chart)
-- Deploy frequency per week (bar chart)
-- Build duration trend (line chart)
+-- Page weight trend
+SELECT run_date, url, ROUND(total_kb, 1) AS total_kb
+FROM madebymiles.gold.lighthouse_trend
+ORDER BY run_date DESC;
+```
 
-**Search and Traffic tab:**
-- Cloudflare unique visitors and page views over time (line chart)
-- Cache hit rate trend (line chart)
-- Top referrer domains (table)
+**Security tab**
+```sql
+-- Error count by level
+SELECT level, status, issue_count, total_events
+FROM madebymiles.gold.sentry_summary;
+
+-- Top issues by frequency
+SELECT title, culprit, level, event_count, last_seen_ts
+FROM madebymiles.gold.sentry_top_issues
+ORDER BY event_count DESC
+LIMIT 10;
+
+-- Threats blocked by Cloudflare
+SELECT date, threats
+FROM madebymiles.silver.cloudflare_analytics
+ORDER BY date DESC
+LIMIT 14;
+```
+
+**Deployment tab**
+```sql
+-- Weekly pass/fail summary
+SELECT week_start, total_runs, successful_runs, failed_runs,
+       ROUND(success_rate_pct, 1) AS success_rate_pct,
+       ROUND(avg_duration_seconds / 60, 1) AS avg_duration_min
+FROM madebymiles.gold.deploy_summary
+ORDER BY week_start DESC;
+
+-- Deploy frequency (bar chart)
+SELECT week_start, total_runs
+FROM madebymiles.gold.deploy_summary
+ORDER BY week_start DESC;
+```
+
+**Search and Traffic tab**
+```sql
+-- Daily visitors and page views
+SELECT date, unique_visitors, page_views, bandwidth_mb
+FROM madebymiles.gold.traffic_daily
+ORDER BY date DESC
+LIMIT 30;
+
+-- Cache hit rate
+SELECT date, cache_hit_rate
+FROM madebymiles.silver.cloudflare_analytics
+ORDER BY date DESC
+LIMIT 30;
+```
 
 4. Publish the dashboard
-5. Test Genie: ask "What are the Lighthouse scores this week?" and "How many deploys succeeded this week?"
+5. Test Genie: "What are the Lighthouse scores this week?" and "How many deploys succeeded this week?"
 
-### Phase 5: Personal access token and GitHub secrets
+### Step 7 -- Test the weekly report
 
-1. Click profile icon (top right) > Settings > Developer
-2. If "Access tokens" option appears:
-   - Tell Miles: "Click Generate new token, set description to `github-actions-weekly-report`, set lifetime to 90 days, copy the token immediately"
-   - Then tell him to add these to GitHub repo settings (github.com/Stritheo/madebymiles/settings/secrets/actions):
-     - Secret `DATABRICKS_HOST` = `https://dbc-0caa5555-b747.cloud.databricks.com`
-     - Secret `DATABRICKS_TOKEN` = the token he just generated
-     - Variable `DATABRICKS_REFRESH_JOB_ID` = the job ID from Phase 3
-     - Variable `DATABRICKS_WAREHOUSE_ID` = the SQL warehouse ID (found in SQL Warehouses page)
-3. If "Access tokens" does not appear: note that PATs are not available on Free Edition and we need an alternative auth method for the weekly report workflow
+Tell Miles: "Go to github.com/Stritheo/madebymiles/actions/workflows/weekly-report.yml and click Run workflow"
 
-### Phase 6: Test the weekly report
+Check Discord #reports for the AI-generated report. If it posts successfully, the `continue-on-error: true` lines in the workflow can be removed in a follow-up commit.
 
-1. Tell Miles: "Go to github.com/Stritheo/madebymiles/actions/workflows/weekly-report.yml, click Run workflow"
-2. Check Discord #reports for output
-3. If it passes green, the `continue-on-error: true` lines in the workflow can be removed in a future commit
+---
+
+## Workstream 2: Stretch items (Miles does these manually)
+
+These do not require Claude. Listed for completeness.
+
+| Item | Action | Notes |
+|---|---|---|
+| Security headers A+ | Cloudflare > milessowden.au > Transform Rules > find the headers rule > add more Permissions-Policy directives | Check securityheaders.com for the exact gap after updating |
+| Register milessowden.com.au | VentraIP (AU-accredited registrar) | Defensive registration only |
+| Internal docs cleanup | Update SETUP-CHECKLIST.md and databricks/setup-databricks.md when next editing those files | Cosmetic, references old domain |
+
+---
 
 ## Critical platform constraints
 
-These were learned the hard way (see retro in `docs/PRD-observability-and-design-integration.md`):
-
 1. **ALWAYS use Python `requests` for HTTP calls** -- never SQL `http_request()`. The SQL function corrupts JSON payloads via Spark string literal escaping. This caused two full notebook rewrites.
 2. **Widget defaults are ignored** if the widget was previously created with an empty value. Always run `dbutils.widgets.removeAll()` before first run of any notebook.
-3. **GSC service account JSON is too long for widgets.** Skip GSC ingestion for now.
+3. **GSC service account JSON is too long for widgets.** Skip GSC ingestion entirely.
 4. **`dbutils.secrets.put` does not work on Free Edition.** Secrets must be created via UI or stored as job parameters.
-5. **Test one thing end-to-end before scaling.** Do not write multiple notebooks before confirming the pattern works. Run one notebook, verify the data, then proceed to the next.
-6. **Notebook code pushed to GitHub is not auto-synced to Databricks.** If you update notebook code, you need to re-import or copy/paste into Databricks.
+5. **Test one notebook end-to-end before proceeding to the next.** Verify data in the table before moving on.
+6. **Notebook code pushed to GitHub is not auto-synced to Databricks.** If notebook code is updated, re-import or copy/paste into Databricks manually.
 
 ## Miles has these tokens ready
 
@@ -155,4 +245,4 @@ These were learned the hard way (see retro in `docs/PRD-observability-and-design
 - Cloudflare API token (read analytics) + Zone ID
 - Sentry auth token + org slug (`stritheo`) + project slug (`madebymiles`)
 
-He will paste them when you tell him where. Never ask him to share them in chat.
+He will paste them when told where. Never ask him to share tokens in chat.

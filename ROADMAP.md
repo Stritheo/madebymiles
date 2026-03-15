@@ -36,7 +36,7 @@ Five phases, each shipping a working site. Phase 0 is woven into every phase, no
 ```
 Phase 1 ─── Foundation & Contact ─── Live site on milessowden.au, Astro, CI/CD, Discord ops
   │
-Phase 2 ─── Credibility Engine ───── Skill matrix, case studies, analytics beacon, funnel tracking
+Phase 2 ─── Credibility Engine ───── Skill matrix, case studies, Lighthouse CI
   │
 Phase 3 ─── Discoverability ──────── LLM layer, structured data, SEO, llms.txt
   │
@@ -131,7 +131,7 @@ Phase 5 ─── Voice & Depth ────────── Reflections, proj
 
 ## Phase 2 — Credibility Engine
 
-**Goal:** Skill matrix (AICD-aligned), case studies, analytics beacon with funnel tracking, all reporting to Discord.
+**Goal:** Skill matrix (AICD-aligned), case studies, Lighthouse CI.
 
 **Dependencies:** Phase 1 (site is live, CI/CD works, Discord channels exist).
 
@@ -174,48 +174,11 @@ Phase 5 ─── Voice & Depth ────────── Reflections, proj
 - [ ] Update homepage cards to link to full case study pages
 - [ ] Add prev/next navigation between case studies
 
-#### 2.4 — Supabase analytics setup
-- [ ] Create Supabase project (free tier)
-- [ ] Run schema migration:
-  ```sql
-  CREATE TABLE events (
-    id         bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    page       text NOT NULL,
-    referrer   text,
-    event_type text NOT NULL,
-    created_at timestamptz DEFAULT now()
-  );
-  ALTER TABLE events ENABLE ROW LEVEL SECURITY;
-  CREATE POLICY "anon_insert" ON events FOR INSERT TO anon WITH CHECK (true);
-  CREATE POLICY "service_read" ON events FOR SELECT TO service_role USING (true);
-  ```
-- [ ] Create reporting views (`daily_summary`, `top_pages`, `funnel_steps`)
-- [ ] Note the `anon` key (for beacon Worker) and `service_role` key (for cron Worker)
-- [ ] Store both keys as Cloudflare Worker secrets
+#### 2.4 — Analytics beacon (DEFERRED)
 
-#### 2.5 — Analytics beacon Worker
-- [ ] Create Cloudflare Worker for `/api/beacon`:
-  - Accept POST with `{ page, referrer, event_type, timestamp }`
-  - Validate and sanitise input (allowlisted event types, URL-safe page paths)
-  - INSERT into Supabase via REST API using `anon` key
-  - Return 204 No Content
-  - No PII, no IP logging, no cookies
-- [ ] Add `navigator.sendBeacon('/api/beacon', ...)` to every page via Astro layout:
-  - `page_view` on page load
-  - `scroll_50` on scroll past 50%
-  - `cta_click_linkedin` / `cta_click_whatsapp` on CTA clicks
-  - `skill_matrix_view` on `/experience` page
-  - `case_study_click` on case study link clicks
-- [ ] Deploy Worker and verify events appear in Supabase
+~~Supabase analytics setup~~ Removed 15 Mar 2026. Supabase free tier pauses after 7 days of inactivity.
 
-#### 2.6 — Discord reporting cron Worker
-- [ ] Create Cloudflare Worker with cron trigger:
-  - **Daily at 08:00 AEST (22:00 UTC):** Query `daily_summary` view from Supabase → post rich embed to `#reports`
-  - **Weekly Monday 08:00 AEST:** Query funnel steps → calculate drop-off → post to `#reports`
-- [ ] Use `service_role` key to read from Supabase
-- [ ] Format as Discord embeds (colour-coded, with fields)
-- [ ] Store Discord webhook URLs as Worker secrets
-- [ ] Deploy and verify first daily report posts correctly
+**Future:** Wire `/api/beacon` Worker stub to Cloudflare Analytics Engine (free, 25M data points/month, no pausing) when funnel tracking is prioritised. Cloudflare Web Analytics covers page views and referrers passively in the meantime.
 
 #### 2.7 — Lighthouse CI
 - [ ] Add Lighthouse CI to GitHub Actions workflow:
@@ -224,7 +187,7 @@ Phase 5 ─── Voice & Depth ────────── Reflections, proj
   - Fail build if scores drop below thresholds
 - [ ] Post Lighthouse scores to `#reports` Discord channel after each deploy
 
-**Phase 2 deliverable:** AICD-aligned skill matrix live on `/experience`, 4 case studies on `/work/*`, analytics beacon tracking 7 funnel steps into Supabase, daily visitor report and weekly funnel report posting to Discord.
+**Phase 2 deliverable:** AICD-aligned skill matrix live on `/experience`, 5 case studies on `/work/*`, Lighthouse CI running in deploy pipeline.
 
 ---
 
@@ -293,8 +256,7 @@ Phase 5 ─── Voice & Depth ────────── Reflections, proj
   - Rate limit: 10 per IP per day
   - Return structured match JSON
   - Log nothing (no document content, no IP)
-- [ ] Store Claude API key and Supabase keys as Worker secrets
-- [ ] Track usage: increment Fit Finder event counters in Supabase
+- [ ] Store Claude API key as Worker secret
 
 #### 4.2 — Fit Finder UI (`/fit`)
 - [ ] Build `/fit` page:
@@ -313,7 +275,7 @@ Phase 5 ─── Voice & Depth ────────── Reflections, proj
 - [ ] Create `/privacy` page:
   - What we collect (nothing)
   - What happens when you use Fit Finder (in-memory, no storage)
-  - Analytics (Cloudflare Web Analytics — no cookies, no PII; Supabase — anonymous events only)
+  - Analytics (Cloudflare Web Analytics — no cookies, no PII)
   - Anthropic API data policy
   - Your rights
   - Contact
@@ -384,12 +346,8 @@ Phase 5 ─── Voice & Depth ────────── Reflections, proj
 - [ ] Add `Article` JSON-LD to each project
 - [ ] Update `/llms-full.txt` generation to include projects
 
-#### 5.3 — Analytics beacon updates
-- [ ] Add beacon events for new pages:
-  - `reflection_view` — individual reflection opened
-  - `project_view` — individual project opened
-- [ ] Verify funnel tracking still works end-to-end
-- [ ] Verify Discord daily/weekly reports include new event types
+#### 5.3 — Analytics beacon updates (DEFERRED)
+Beacon is deferred until Cloudflare Analytics Engine integration. When implemented, add events for new page types (reflection_view, project_view).
 
 **Phase 5 deliverable:** Reflections and projects sections live with initial content. Homepage shows latest thinking and side projects. RSS feed includes all content types. LLM content layer includes everything.
 
@@ -403,7 +361,7 @@ These are not separate steps — they're woven into each phase:
 |---|---|---|---|---|---|
 | **Security** | Headers, HTTPS, CSP | SRI on fonts | — | Fit Finder hardening, PIA | — |
 | **Privacy** | No cookies, no PII | Beacon: no IP/PII | — | `/privacy` page, inline notices | — |
-| **Cost** | All free | Supabase free | — | API limits, rate limiting | — |
+| **Cost** | All free | All free | — | API limits, rate limiting | — |
 | **Discord** | `#alerts` (uptime, build fails) + `#reports` (deploys) | `#reports` (analytics, funnel) | — | `#alerts` (security, errors) + `#reports` (Fit Finder stats) | New event types |
 | **Testing** | Visual parity check | Lighthouse CI | LLM retrieval tests | Fit Finder E2E | Content checks |
 

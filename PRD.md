@@ -162,11 +162,11 @@ Migrate from static HTML to **Astro** — a content-focused static site generato
 │  └── Weekly GenAI report (GitHub Actions → Claude Sonnet →       │
 │      Discord #reports) -- workflow built, soft-fail, needs secrets│
 │                                                                  │
-│  Browser beacon ──→ Worker ──→ TBD ──→ Discord                   │
-│  (sendBeacon)       (/api/beacon)                                │
-│  NOTE: Supabase pauses after 7 days inactivity on free tier.     │
-│  Beacon database decision needed. See Epic 11 implementation     │
-│  notes. Cloudflare Web Analytics covers basics in the meantime.  │
+│  Browser beacon ──→ Worker ──→ Cloudflare Analytics Engine        │
+│  (sendBeacon)       (/api/beacon stub)                           │
+│  DEFERRED: Beacon Worker stub ready. Will wire to Cloudflare     │
+│  Analytics Engine (free, 25M data points/month) when funnel      │
+│  tracking is prioritised.                                        │
 │                                                                  │
 │  UptimeRobot ─────────────────────────────────→ #uptime-alerts   │
 │  GitHub Actions ──────────────────────────────→ #build-deploys   │
@@ -196,8 +196,7 @@ Migrate from static HTML to **Astro** — a content-focused static site generato
 - **Monitoring:** UptimeRobot free tier + Lighthouse CI in GitHub Actions
 - **Ops dashboard:** Discord server with webhook integrations -- all alerts, reports, and metrics push to Discord channels
 - **Observability platform:** Databricks Free Edition -- ingestion notebooks, AI/BI dashboards, Genie natural language queries, weekly GenAI improvement reports via Claude Sonnet
-- **Funnel tracking:** Custom `sendBeacon` beacon planned (see Epic 11 implementation notes -- Supabase pausing issue requires architecture decision)
-- **Analytics database:** Decision pending. Supabase free tier pauses after 7 days of inactivity, making it unreliable for a low-traffic personal site. Cloudflare Web Analytics covers page views and referrers passively. Options under evaluation: Cloudflare Analytics Engine, keep-alive cron, or defer custom beacon entirely.
+- **Funnel tracking:** DEFERRED. Beacon Worker stub ready for Cloudflare Analytics Engine integration (free, 25M data points/month, no pausing). Cloudflare Web Analytics covers page views and referrers passively in the meantime.
 - **Contact:** LinkedIn deep-link messaging + WhatsApp `wa.me` link (no email forms)
 - **Security:** CSP headers, SRI, no cookies, no PII, HSTS
 
@@ -214,8 +213,7 @@ Miles has access to the following services. The PRD uses only the subset needed 
 | **GitHub** | Repo, CI/CD, Pages hosting | Free (with Copilot Pro) | 2,000 Actions mins/month (public repos), 500 (private) |
 | **Cloudflare** | DNS, CDN, Workers, Web Analytics | Free | Three zones: milessowden.au (primary), milessowden.com (301 redirect), madebymiles.ai (personal projects). Nameservers: fatima.ns.cloudflare.com, major.ns.cloudflare.com |
 | **Databricks** | Observability dashboard, Genie, GenAI reports | Free Edition | Workspace: `dbc-0caa5555-b747.cloud.databricks.com`. Ingestion notebooks + AI/BI dashboards. See `docs/PRD-observability-and-design-integration.md` |
-| **Supabase** | Analytics database (Postgres) -- STATUS: ON HOLD | Free (500MB, 50k MAU) | BLOCKER: Free tier pauses projects after 7 days of inactivity. Unreliable for low-traffic personal site. Decision needed on whether to keep, add keep-alive, or replace. |
-| ~~Penpot~~ | ~~Design tool~~ | ~~Removed~~ | Dropped -- design workflow handled via Claude Code directly (layout proposals, reference-based design, token sync via tailwind.config.mjs). |
+| **Supabase** | ~~Analytics database~~ REMOVED (15 Mar 2026) | Free (500MB, 50k MAU) | Removed: free tier pauses after 7 days of inactivity. Cloudflare Analytics Engine will replace when funnel tracking is needed. |
 | **Claude API** | Fit Finder LLM (Sonnet 4.6) + weekly report (Sonnet) | Pay-per-use | Fit Finder: ~$0.02/analysis. Weekly report: ~$0.01-0.05/week. |
 | **Discord** | Ops dashboard (webhooks) | Free | Server already created. 7 channels for observability |
 | **UptimeRobot** | Uptime monitoring | Free (5 monitors) | Native Discord webhook integration |
@@ -227,7 +225,7 @@ Miles has access to the following services. The PRD uses only the subset needed 
 | Service | What it could do | Why not using (yet) |
 |---|---|---|
 | **Langflow** | Visual LLM prompt chain builder | Could simplify Fit Finder prompt iteration — evaluate during Epic 8 |
-| **Firebase** | Realtime DB, auth, hosting | Supabase covers the DB need; GitHub Pages covers hosting |
+| **Firebase** | Realtime DB, auth, hosting | GitHub Pages covers hosting; no DB needed currently |
 | **Google Cloud** | Cloud Functions, storage, AI APIs | Cloudflare Workers covers serverless; would add complexity |
 | **Vercel / Netlify** | Hosting with serverless + analytics | GitHub Pages is simpler and already working; Vercel is a viable alternative if Pages hits limits |
 | **Gemini (free)** | Fallback LLM | If Claude API costs spike, Gemini could serve as Fit Finder fallback |
@@ -631,7 +629,7 @@ A lightweight PIA for the Fit Finder feature (the only data-processing component
 | Cloudflare Workers | Fit Finder serverless function | Free (100k req/day) | $0 |
 | Claude API (Haiku + Sonnet) | Fit Finder + weekly GenAI report | Pay-per-use | ~$0.30 (Fit Finder) + ~$0.20 (reports) |
 | Databricks | Observability dashboard, Genie, GenAI reports | Free Edition | $0 |
-| Supabase | Analytics database -- ON HOLD (pauses after 7 days inactivity) | Free (500MB) | $0 |
+| ~~Supabase~~ | ~~Analytics database~~ REMOVED | -- | -- |
 | Google Fonts | Typography (DM Serif Display, IBM Plex Sans) | Free | $0 |
 | Domains (milessowden.au, .com) | Domain registration (Squarespace) | Paid | $0 (pre-paid) |
 | **Total** | | | **< $1/month** |
@@ -685,24 +683,18 @@ All domains use Cloudflare nameservers: `fatima.ns.cloudflare.com` and `major.ns
 | Databricks ingestion: Sentry | READY | Notebook written, not yet run |
 | Databricks ingestion: Lighthouse | READY | Notebook written, not yet run |
 | Databricks ingestion: GSC | READY | Notebook written, needs Google Cloud service account |
-| Databricks ingestion: Supabase | ON HOLD | See Supabase pausing issue below |
+| Databricks ingestion: Supabase | REMOVED | Supabase dropped 15 Mar 2026. Cloudflare Analytics Engine will replace when needed. |
 | Weekly GenAI report workflow | BUILT | `.github/workflows/weekly-report.yml`, soft-fail mode, needs secrets |
 | AI/BI Dashboard | NOT STARTED | 4 tabs designed, SQL queries documented |
 | Genie | NOT STARTED | Requires published dashboard |
 | Databricks MCP for Claude Code | NOT TESTED | May not be available on Free Edition |
-| Custom analytics beacon | NOT STARTED | Blocked by Supabase pausing decision |
-| Daily visitor report (cron) | NOT STARTED | Depends on beacon data source |
-| Weekly funnel report (cron) | NOT STARTED | Depends on beacon data source |
+| Custom analytics beacon | DEFERRED | Beacon Worker stub ready. Will wire to Cloudflare Analytics Engine when funnel tracking is prioritised. |
+| Daily visitor report (cron) | DEFERRED | Depends on beacon implementation |
+| Weekly funnel report (cron) | DEFERRED | Depends on beacon implementation |
 | Security threat report (cron) | NOT STARTED | Needs Cloudflare GraphQL query |
 | UptimeRobot | NOT STARTED | Manual configuration task |
 
-**BLOCKER: Supabase free tier pauses after 7 days of inactivity.** The original beacon architecture (`sendBeacon` to Worker to Supabase Postgres) is unreliable for a low-traffic personal site. Options:
-1. Keep Supabase + add keep-alive cron (adds complexity and a failure mode)
-2. Replace with Cloudflare Analytics Engine (free, 25M data points/month, no pausing)
-3. Defer custom beacon -- Cloudflare Web Analytics (already active, free) covers page views, referrers, and Core Web Vitals without custom code
-4. Route beacon data to Databricks directly (needs testing)
-
-**Recommendation:** Defer the custom beacon. Cloudflare Web Analytics covers the basics. Revisit when traffic justifies funnel tracking. If needed sooner, Cloudflare Analytics Engine is the cleanest replacement.
+**Decision (15 Mar 2026): Supabase removed from architecture.** Supabase free tier pauses after 7 days of inactivity, making it unreliable for a low-traffic personal site. Custom analytics beacon is deferred. Cloudflare Analytics Engine (free, 25M data points/month, no pausing) will replace Supabase when funnel tracking is prioritised. Cloudflare Web Analytics covers page views, referrers, and Core Web Vitals passively in the meantime.
 
 **Databricks Free Edition: platform constraints (discovered 11 March 2026).** See full retro in `docs/PRD-observability-and-design-integration.md`. Key findings:
 - `dbutils.secrets` API not available in notebooks (must use UI for scope creation)
@@ -737,11 +729,9 @@ Discord webhooks are free, unlimited, and support rich embeds (colour-coded, str
 | Uptime/downtime | UptimeRobot | `#uptime-alerts` | UptimeRobot native Discord webhook | $0 |
 | Build pass/fail | GitHub Actions | `#build-deploys` | GitHub webhook or Actions step (`curl`) | $0 |
 | Lighthouse scores | GitHub Actions | `#build-deploys` | CI step posts embed after each deploy | $0 |
-| Visitor summary | Custom analytics beacon → Supabase | `#site-visitors` | Scheduled Worker (cron) → Discord webhook | $0 |
-| Top pages + referrers | Custom analytics beacon → Supabase | `#site-visitors` | Scheduled Worker (cron) → Discord webhook | $0 |
-| Funnel conversion | Custom beacon events → Supabase | `#funnel-tracking` | Scheduled Worker (cron) → Discord webhook | $0 |
-| Drop-off points | Custom beacon events → Supabase | `#funnel-tracking` | Scheduled Worker (cron) → Discord webhook | $0 |
-| CTA clicks | Custom beacon events → Supabase | `#funnel-tracking` | Scheduled Worker (cron) → Discord webhook | $0 |
+| Visitor summary | DEFERRED (Cloudflare Analytics Engine) | `#site-visitors` | Beacon Worker stub ready | $0 |
+| Funnel conversion | DEFERRED (Cloudflare Analytics Engine) | `#funnel-tracking` | Beacon Worker stub ready | $0 |
+| CTA clicks | DEFERRED (Cloudflare Analytics Engine) | `#funnel-tracking` | Beacon Worker stub ready | $0 |
 | Threats blocked | Cloudflare Security Events API | `#security-threats` | Scheduled Worker → Cloudflare API → Discord | $0 |
 | Rate limit hits | Cloudflare Worker (Fit Finder) | `#security-threats` | Worker posts to Discord on rate limit trigger | $0 |
 | Fit Finder usage | Cloudflare Worker counter | `#fit-finder` | Scheduled Worker (cron) → Discord webhook | $0 |
@@ -752,74 +742,15 @@ Discord webhooks are free, unlimited, and support rich embeds (colour-coded, str
 
 **Scope:**
 
-**1. Custom analytics beacon (privacy-respecting, cookie-free):**
+**1. Custom analytics beacon (DEFERRED):**
 
-The site needs funnel and conversion tracking that Cloudflare Web Analytics alone can't provide. Build a lightweight, first-party analytics beacon:
+The site needs funnel and conversion tracking that Cloudflare Web Analytics alone cannot provide. A beacon Worker stub is ready at `/api/beacon` -- it accepts and validates payloads but does not persist data yet.
 
-```
-Browser (every page)
-    │
-    ├── navigator.sendBeacon('/api/beacon', payload)
-    │   Payload: { page, referrer, event, timestamp }
-    │   No cookies. No fingerprinting. No PII.
-    │
-    ▼
-Cloudflare Worker (/api/beacon)
-    │
-    ├── Validate & sanitise input
-    ├── INSERT into Supabase Postgres (via REST API):
-    │   ├── events table: { page, referrer, event_type, created_at }
-    │   └── No PII stored. No IP logging. No user IDs.
-    │
-    ▼
-Supabase (free tier: 500MB Postgres, 50k MAU, unlimited API requests)
-    │
-    ├── SQL views for reporting:
-    │   ├── daily_pageviews    → COUNT(*) GROUP BY date
-    │   ├── top_pages          → COUNT(*) GROUP BY page, date
-    │   ├── top_referrers      → COUNT(*) GROUP BY referrer, date
-    │   ├── funnel_steps       → COUNT(*) GROUP BY event_type, date
-    │   └── conversion_rate    → funnel step comparisons
-    │
-    ▼
-Scheduled Cloudflare Worker (cron) → queries Supabase → posts to Discord
-```
+**Future: wire to Cloudflare Analytics Engine** when funnel tracking is prioritised. Analytics Engine is free (25M data points/month), runs on the same Cloudflare edge as the Worker, has no pausing or inactivity issues, and supports SQL-like queries via the Analytics Engine SQL API.
 
-**Why Supabase over Workers KV:**
-- **No write limits** — Workers KV free tier caps at 1,000 writes/day (~125 page views). Supabase has no meaningful write limit on the free tier.
-- **Real SQL** — Funnel queries, date ranges, GROUP BY, conversion calculations — all native SQL instead of counter arithmetic
-- **Historical data** — Keep months of analytics data (500MB is years of event rows for a personal site). Workers KV would require daily counter resets.
-- **Supabase REST API** — The Worker calls Supabase's auto-generated REST API (PostgREST) with the `anon` key. No direct Postgres connection needed.
-- **Row Level Security** — Supabase RLS ensures the `anon` key can only INSERT events, not read or delete. The cron Worker uses the `service_role` key to read for reports.
+**Why not Supabase:** Supabase free tier pauses after 7 days of inactivity. A personal site with low initial traffic would trigger constant pausing, requiring keep-alive crons and adding a failure mode. Removed from architecture on 15 Mar 2026.
 
-**Supabase schema (minimal):**
-```sql
-CREATE TABLE events (
-  id         bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  page       text NOT NULL,
-  referrer   text,
-  event_type text NOT NULL,
-  created_at timestamptz DEFAULT now()
-);
-
--- RLS: anon can only insert
-ALTER TABLE events ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "anon_insert" ON events FOR INSERT TO anon WITH CHECK (true);
-CREATE POLICY "service_read" ON events FOR SELECT TO service_role USING (true);
-
--- Reporting views
-CREATE VIEW daily_summary AS
-SELECT
-  created_at::date AS day,
-  COUNT(*) FILTER (WHERE event_type = 'page_view') AS pageviews,
-  COUNT(DISTINCT page) AS unique_pages,
-  COUNT(*) FILTER (WHERE event_type LIKE 'cta_%') AS cta_clicks
-FROM events
-GROUP BY created_at::date
-ORDER BY day DESC;
-```
-
-**Tracked events (for funnel):**
+**Tracked events (for future funnel):**
 
 | Event | Funnel step | Trigger |
 |---|---|---|
@@ -886,7 +817,7 @@ Discord embed format example (daily summary):
 - Public status page via UptimeRobot (optional, free)
 
 **5. Performance monitoring:**
-- Cloudflare Web Analytics (free): page views, top pages, countries, devices, Web Vitals — this runs in parallel with the custom beacon as a second source of truth
+- Cloudflare Web Analytics (free): page views, top pages, countries, devices, Web Vitals — primary analytics source until custom beacon is wired to Analytics Engine
 - Lighthouse CI scores tracked over time in GitHub Actions artifacts + posted to Discord
 - Core Web Vitals targets:
   - LCP (Largest Contentful Paint): < 1.5s
@@ -925,7 +856,7 @@ Discord embed format example (daily summary):
 
 **Implementation order:**
 1. **Phase 1 (with Foundation):** UptimeRobot → Discord, GitHub Actions → Discord (build/deploy notifications)
-2. **Phase 2 (with Skill Matrix):** Custom analytics beacon + Supabase + daily/weekly Discord reports
+2. **Phase 2 (with Skill Matrix):** Custom analytics beacon deferred (Cloudflare Analytics Engine when ready)
 3. **Phase 4 (with Fit Finder):** Fit Finder usage tracking, Sentry, rate limit alerts, API spend tracking, security event reporting
 
 **Exit criteria:** Every signal in the table above routes to the correct Discord channel. A daily summary posts at 08:00 AEST. A weekly funnel report shows conversion rates and drop-off points. Build failures, downtime, and security threats trigger immediate alerts. Miles checks one Discord server and knows exactly how the site is performing.
@@ -1006,9 +937,7 @@ Each phase delivers a working, deployable site. No phase depends on a later phas
 - [Cloudflare GraphQL Analytics API](https://developers.cloudflare.com/analytics/graphql-api/)
 - [Anthropic Claude API](https://docs.anthropic.com/en/docs/about-claude/models)
 - [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/)
-- [Supabase](https://supabase.com/)
-- [Supabase REST API (PostgREST)](https://supabase.com/docs/guides/api)
-- [Supabase Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security)
+- ~~[Supabase](https://supabase.com/)~~ Removed from architecture (15 Mar 2026)
 - [Discord Webhooks](https://discord.com/developers/docs/resources/webhook)
 - [UptimeRobot](https://uptimerobot.com/)
 - [UptimeRobot Discord Integration](https://blog.uptimerobot.com/how-to-set-up-discord-notifications-for-uptimerobot/)
