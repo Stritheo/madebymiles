@@ -51,14 +51,19 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Notify Discord (success)
+      - name: Log deploy to Databricks
         if: success()
         env:
-          COMMIT_MSG: ${{ github.event.head_commit.message }}
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_WAREHOUSE_ID: ${{ vars.DATABRICKS_WAREHOUSE_ID }}
         run: |
-          curl -s -H "Content-Type: application/json" \
-            -d "{\"embeds\":[{\"title\":\"Deploy Successful\",\"description\":\"**Site:** https://milessowden.au\n**Commit:** \`${GITHUB_SHA::7}\`\n**By:** ${GITHUB_ACTOR}\",\"color\":3066993}]}" \
-            "${{ secrets.DISCORD_WEBHOOK_REPORTS }}"
+          SQL="INSERT INTO madebymiles.observability.alert_events (source, severity, title, message, metadata, created_at) VALUES ('deploy', 'info', 'Deploy Successful', 'Commit: ${GITHUB_SHA::7} by ${GITHUB_ACTOR}', '{\"commit\":\"${GITHUB_SHA::7}\",\"actor\":\"${GITHUB_ACTOR}\"}', '$(date -u +%Y-%m-%dT%H:%M:%SZ)')"
+          curl -s -X POST "${DATABRICKS_HOST}/api/2.0/sql/statements" \
+            -H "Authorization: Bearer ${DATABRICKS_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"statement\": \"${SQL}\", \"warehouse_id\": \"${DATABRICKS_WAREHOUSE_ID}\", \"wait_timeout\": \"10s\"}" \
+            -o /dev/null || true
 
   lighthouse:
     needs: deploy
@@ -77,12 +82,19 @@ jobs:
           budgetPath: .github/lighthouse-budget.json
           uploadArtifacts: true
 
-      - name: Notify Discord (Lighthouse)
+      - name: Log Lighthouse results to Databricks
         if: always()
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_WAREHOUSE_ID: ${{ vars.DATABRICKS_WAREHOUSE_ID }}
         run: |
-          curl -s -H "Content-Type: application/json" \
-            -d "{\"embeds\":[{\"title\":\"Lighthouse CI Complete\",\"description\":\"**Pages tested:** homepage, experience, contact, fit\n**Details:** ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}\",\"color\":3447003}]}" \
-            "${{ secrets.DISCORD_WEBHOOK_REPORTS }}"
+          SQL="INSERT INTO madebymiles.observability.alert_events (source, severity, title, message, metadata, created_at) VALUES ('lighthouse', 'info', 'Lighthouse CI Complete', 'Pages tested: homepage, experience, contact, fit. Run: ${GITHUB_RUN_ID}', '{\"run_id\":\"${GITHUB_RUN_ID}\",\"pages\":[\"homepage\",\"experience\",\"contact\",\"fit\"]}', '$(date -u +%Y-%m-%dT%H:%M:%SZ)')"
+          curl -s -X POST "${DATABRICKS_HOST}/api/2.0/sql/statements" \
+            -H "Authorization: Bearer ${DATABRICKS_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"statement\": \"${SQL}\", \"warehouse_id\": \"${DATABRICKS_WAREHOUSE_ID}\", \"wait_timeout\": \"10s\"}" \
+            -o /dev/null || true
 
   deploy-worker:
     needs: deploy

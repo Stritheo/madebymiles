@@ -2,7 +2,8 @@ import type { Env } from '../types';
 import type { SummaryResult } from '../lib/claude';
 import { callClaudeDetail } from '../lib/claude';
 import { sign } from '../lib/jwt';
-import { postReport, postAlert } from '../lib/discord';
+import { postAlert } from '../lib/discord';
+import { postToDatabricks } from '../lib/databricks';
 import { corsHeaders } from '../index';
 
 export async function handleDetail(
@@ -50,13 +51,20 @@ export async function handleDetail(
   };
   const token = await sign(fullPayload, env.JWT_SECRET);
 
-  // Discord notification
+  // Log completion to Databricks (non-critical, historical)
   const primaryCount = detailData.skillMatrix.filter((e) => e.relevance === 'primary').length;
   ctx.waitUntil(
-    postReport(
-      env.DISCORD_WEBHOOK_REPORTS,
-      `Detail completed. Primary: ${primaryCount}/${detailData.skillMatrix.length}. Case studies: ${detailData.relevantCaseStudies.length}.`,
-    ),
+    postToDatabricks(env.DATABRICKS_HOST, env.DATABRICKS_TOKEN, env.DATABRICKS_WAREHOUSE_ID, {
+      source: 'fit-finder',
+      severity: 'info',
+      title: 'Detail completed',
+      message: `Primary: ${primaryCount}/${detailData.skillMatrix.length}. Case studies: ${detailData.relevantCaseStudies.length}.`,
+      metadata: {
+        primarySkills: primaryCount,
+        totalSkills: detailData.skillMatrix.length,
+        caseStudies: detailData.relevantCaseStudies.length,
+      },
+    }),
   );
 
   return json({ ...detailData, token, analysedAt }, 200);

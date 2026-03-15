@@ -11,10 +11,9 @@
 
 Observability dashboard for the milessowden.au project using Databricks Free Edition with GenAI-powered weekly improvement reports.
 
-All services are free tier. No email, no Slack. Alerts and reports flow to Discord.
+All services are free tier. No email, no Slack. **Critical alerts only** (build failures, Fit Finder errors, uptime) flow to Discord. Non-critical events (deploy success, Lighthouse scores, weekly reports, Fit Finder completions) are logged to `madebymiles.observability.alert_events` in Databricks for historical analysis.
 
 > **Note:** Penpot design integration was previously planned as Stream 1 but has been removed (2026-03-14). Design workflow is handled directly via Claude Code: layout proposals, reference-based design, and token sync via `tailwind.config.mjs`. No external design tool required.
-
 ---
 
 ## Databricks Observability Dashboard
@@ -255,7 +254,7 @@ Data Sources
   [Python notebooks - scheduled daily ingestion]
           |
           v
-  Unity Catalog tables (6 tables)
+  Unity Catalog tables (7 tables, including alert_events)
           |
     +-----+-----+
     |             |
@@ -270,8 +269,34 @@ Data Sources
   [Reads metrics data + references repo code]
           |
           v
-  Weekly improvement report --> Discord #reports
-  Failures --> Discord #alerts
+  Weekly report --> Databricks alert_events table
+  Failures --> Discord #alerts (critical only)
+```
+
+### Alert routing (updated 2026-03-15)
+
+| Signal | Destination | Rationale |
+|---|---|---|
+| Build/deploy failure | Discord #alerts | Critical -- needs immediate attention |
+| Weekly report generation failure | Discord #alerts | Critical -- pipeline broken |
+| Fit Finder errors (Turnstile, rate limit, API) | Discord #alerts | Critical -- user-facing breakage |
+| Deploy success | Databricks alert_events | Non-critical -- historical record |
+| Lighthouse CI results | Databricks alert_events | Non-critical -- trends over time |
+| Weekly observability report | Databricks alert_events | Non-critical -- query in dashboard |
+| Fit Finder analysis completions | Databricks alert_events | Non-critical -- usage analytics |
+| Fit Finder detail completions | Databricks alert_events | Non-critical -- usage analytics |
+
+### alert_events table schema
+
+```sql
+CREATE TABLE IF NOT EXISTS madebymiles.observability.alert_events (
+  source STRING,        -- deploy, lighthouse, weekly-report, fit-finder
+  severity STRING,      -- critical, info
+  title STRING,         -- short event title
+  message STRING,       -- detailed message (up to 4000 chars)
+  metadata STRING,      -- JSON blob for structured data
+  created_at STRING     -- ISO timestamp
+);
 ```
 
 ---
@@ -282,8 +307,9 @@ Data Sources
 |---|---|---|
 | Design tool | ~~Penpot~~ Removed | Dropped 2026-03-14. Design workflow via Claude Code directly. |
 | Dashboard platform | Databricks Free Edition (not Grafana) | GenAI layer (Genie + Claude MCP) reads both data and code to propose improvements |
-| Alert channel | Discord (not Slack, not email) | Already working, unlimited webhooks, unlimited history, free |
-| Report delivery | Discord #reports via GitHub Actions | No new tools, fits existing workflow |
+| Critical alert channel | Discord #alerts only | Reduces notification noise by 70%+, critical signals not lost |
+| Non-critical event storage | Databricks alert_events table | Historical analysis, dashboards, queryable via Genie |
+| Report delivery | Databricks (was Discord #reports) | Weekly reports queryable historically, not ephemeral chat messages |
 | Report model | Claude Sonnet (not Opus) | Keeps weekly API cost under $0.05 |
 | Ingestion pattern | Databricks notebooks (not external ETL) | Simplest path, runs on free serverless compute |
 

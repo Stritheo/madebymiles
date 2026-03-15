@@ -47,9 +47,11 @@ export interface MatchResult {
 export interface Env {
   ANTHROPIC_API_KEY: string;
   JWT_SECRET: string;
-  DISCORD_WEBHOOK_REPORTS: string;
   DISCORD_WEBHOOK_ALERTS: string;
   TURNSTILE_SECRET_KEY: string;
+  DATABRICKS_HOST: string;
+  DATABRICKS_TOKEN: string;
+  DATABRICKS_WAREHOUSE_ID: string;
   RATE_LIMIT_KV: KVNamespace;
 }
 

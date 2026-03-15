@@ -18,6 +18,8 @@ ENVIRONMENT = "production"
 # Secrets (set via wrangler secret put):
 # ANTHROPIC_API_KEY
 # JWT_SECRET
-# DISCORD_WEBHOOK_REPORTS
-# DISCORD_WEBHOOK_ALERTS
+# DISCORD_WEBHOOK_ALERTS       (critical errors only)
 # TURNSTILE_SECRET_KEY
+# DATABRICKS_HOST               (e.g. https://dbc-0caa5555-b747.cloud.databricks.com)
+# DATABRICKS_TOKEN              (Databricks personal access token)
+# DATABRICKS_WAREHOUSE_ID       (SQL warehouse ID for statement API)

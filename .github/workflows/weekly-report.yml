@@ -117,11 +117,41 @@ jobs:
 
           echo "$EMBED_JSON" > /tmp/report.json
 
-      - name: Post to Discord
+      - name: Post report to Databricks
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_WAREHOUSE_ID: ${{ vars.DATABRICKS_WAREHOUSE_ID }}
         run: |
-          curl -s -H "Content-Type: application/json" \
-            -d @/tmp/report.json \
-            "${{ secrets.DISCORD_WEBHOOK_REPORTS }}"
+          python3 << 'PYEOF'
+          import json, requests, datetime
+
+          with open("/tmp/report.json") as f:
+            data = json.load(f)
+
+          desc = data.get("embeds", [{}])[0].get("description", "")[:4000]
+          now = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+          # Escape single quotes for SQL
+          desc_escaped = desc.replace("'", "''")
+          sql = f"INSERT INTO madebymiles.observability.alert_events (source, severity, title, message, metadata, created_at) VALUES ('weekly-report', 'info', 'Weekly Observability Report', '{desc_escaped}', '{{}}', '{now}')"
+
+          import os
+          host = os.environ["DATABRICKS_HOST"]
+          token = os.environ["DATABRICKS_TOKEN"]
+          wid = os.environ.get("DATABRICKS_WAREHOUSE_ID", "")
+
+          try:
+            requests.post(
+              f"{host}/api/2.0/sql/statements",
+              headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+              json={"statement": sql, "warehouse_id": wid, "wait_timeout": "10s"},
+              timeout=15,
+            )
+            print("Report posted to Databricks")
+          except Exception as e:
+            print(f"Databricks post failed (non-blocking): {e}")
+          PYEOF
 
   notify-failure:
     needs: [trigger-databricks, generate-report]

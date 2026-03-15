@@ -3,7 +3,8 @@ import { extractText } from '../lib/extract';
 import { callClaudeSummary } from '../lib/claude';
 import { checkRateLimit } from '../lib/ratelimit';
 import { verifyTurnstile } from '../lib/turnstile';
-import { postReport, postAlert } from '../lib/discord';
+import { postAlert } from '../lib/discord';
+import { postToDatabricks } from '../lib/databricks';
 import { corsHeaders } from '../index';
 
 export async function handleAnalyse(
@@ -66,12 +67,20 @@ export async function handleAnalyse(
     env.RATE_LIMIT_KV.put(`session:${sessionId}`, sessionPayload, { expirationTtl: 3600 }),
   );
 
-  // Discord notification
+  // Log completion to Databricks (non-critical, historical)
   ctx.waitUntil(
-    postReport(
-      env.DISCORD_WEBHOOK_REPORTS,
-      `Summary completed. Role: ${summaryData.roleTitle ?? 'unlabelled'}. Top skillset: ${summaryData.topMatches.skillset.skillArea}. Top mindset: ${summaryData.topMatches.mindset.skillArea}.`,
-    ),
+    postToDatabricks(env.DATABRICKS_HOST, env.DATABRICKS_TOKEN, env.DATABRICKS_WAREHOUSE_ID, {
+      source: 'fit-finder',
+      severity: 'info',
+      title: 'Summary completed',
+      message: `Role: ${summaryData.roleTitle ?? 'unlabelled'}. Top skillset: ${summaryData.topMatches.skillset.skillArea}. Top mindset: ${summaryData.topMatches.mindset.skillArea}.`,
+      metadata: {
+        roleTitle: summaryData.roleTitle,
+        topSkillset: summaryData.topMatches.skillset.skillArea,
+        topMindset: summaryData.topMatches.mindset.skillArea,
+        sessionId,
+      },
+    }),
   );
 
   return json({ ...summaryData, sessionId }, 200);
