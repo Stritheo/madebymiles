@@ -60,6 +60,12 @@ jobs:
           }
           """ % (zone_id, since, until, since, until)
 
+          if not zone_id:
+              print("CLOUDFLARE_ZONE_ID not set, writing empty report")
+              with open("/tmp/security-report.json", "w") as f:
+                  json.dump({"total_blocked": 0, "actions": "  No data (CLOUDFLARE_ZONE_ID not set)", "threat_countries": "  No data", "top_traffic_countries": "  No data", "period": f"{(now - timedelta(days=7)).strftime('%d %b')} - {now.strftime('%d %b %Y')}"}, f)
+              exit(0)
+
           resp = requests.post(
               "https://api.cloudflare.com/client/v4/graphql",
               headers={
@@ -71,11 +77,17 @@ jobs:
           )
 
           data = resp.json()
-          zones = data.get("data", {}).get("viewer", {}).get("zones", [{}])
+          print(f"Cloudflare API response keys: {list(data.keys())}")
+          if data.get("errors"):
+              print(f"GraphQL errors: {data['errors']}")
+
+          viewer = data.get("data") or {}
+          viewer = viewer.get("viewer") or {}
+          zones = viewer.get("zones") or [{}]
           zone = zones[0] if zones else {}
 
-          firewall = zone.get("firewallEventsAdaptiveGroups", [])
-          traffic = zone.get("httpRequestsAdaptiveGroups", [])
+          firewall = zone.get("firewallEventsAdaptiveGroups") or []
+          traffic = zone.get("httpRequestsAdaptiveGroups") or []
 
           # Build summary
           total_blocked = sum(e["count"] for e in firewall)

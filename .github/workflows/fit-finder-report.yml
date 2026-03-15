@@ -23,7 +23,8 @@ jobs:
           token = os.environ["DATABRICKS_TOKEN"]
           wid = os.environ.get("DATABRICKS_WAREHOUSE_ID", "")
 
-          def query_databricks(sql):
+          def query_count(sql):
+              """Query Databricks and return a single count value."""
               try:
                   resp = requests.post(
                       f"{host}/api/2.0/sql/statements",
@@ -32,39 +33,48 @@ jobs:
                       timeout=35,
                   )
                   data = resp.json()
-                  result = data.get("result", {})
-                  columns = [c["name"] for c in result.get("schema", {}).get("columns", [])]
+                  print(f"Databricks response status: {data.get('status', {}).get('state', 'unknown')}")
+
+                  # Handle both possible response structures
+                  result = data.get("result", {}) or {}
                   rows = result.get("data_array", [])
-                  return [dict(zip(columns, row)) for row in rows]
+                  if rows and rows[0]:
+                      return int(rows[0][0])
+
+                  # Fallback: check manifest/chunks structure
+                  manifest = data.get("manifest", {})
+                  if manifest:
+                      chunks = data.get("result", {}).get("data_array", [])
+                      if chunks and chunks[0]:
+                          return int(chunks[0][0])
+
+                  print(f"No rows returned. Full response keys: {list(data.keys())}")
+                  return 0
               except Exception as e:
                   print(f"Query failed: {e}")
-                  return []
+                  return 0
 
           # Fit Finder completions this month
-          summaries = query_databricks(
-              "SELECT COUNT(*) as cnt FROM madebymiles.observability.alert_events "
+          summary_count = query_count(
+              "SELECT COUNT(*) FROM madebymiles.observability.alert_events "
               "WHERE source = 'fit-finder' AND title = 'Summary completed' "
               "AND created_at >= date_format(date_trunc('MONTH', current_date() - INTERVAL 1 MONTH), 'yyyy-MM-dd') "
               "AND created_at < date_format(date_trunc('MONTH', current_date()), 'yyyy-MM-dd')"
           )
 
-          details = query_databricks(
-              "SELECT COUNT(*) as cnt FROM madebymiles.observability.alert_events "
+          detail_count = query_count(
+              "SELECT COUNT(*) FROM madebymiles.observability.alert_events "
               "WHERE source = 'fit-finder' AND title = 'Detail completed' "
               "AND created_at >= date_format(date_trunc('MONTH', current_date() - INTERVAL 1 MONTH), 'yyyy-MM-dd') "
               "AND created_at < date_format(date_trunc('MONTH', current_date()), 'yyyy-MM-dd')"
           )
 
-          errors = query_databricks(
-              "SELECT COUNT(*) as cnt FROM madebymiles.observability.alert_events "
+          error_count = query_count(
+              "SELECT COUNT(*) FROM madebymiles.observability.alert_events "
               "WHERE source = 'fit-finder' AND severity = 'critical' "
               "AND created_at >= date_format(date_trunc('MONTH', current_date() - INTERVAL 1 MONTH), 'yyyy-MM-dd') "
               "AND created_at < date_format(date_trunc('MONTH', current_date()), 'yyyy-MM-dd')"
           )
-
-          summary_count = int(summaries[0]["cnt"]) if summaries else 0
-          detail_count = int(details[0]["cnt"]) if details else 0
-          error_count = int(errors[0]["cnt"]) if errors else 0
           total = summary_count + detail_count
           error_rate = round(error_count / max(total, 1) * 100, 1)
 
