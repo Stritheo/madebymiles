@@ -179,7 +179,7 @@ import Base from '@/layouts/Base.astro';
         <div id="detail-loading" class="hidden mb-8" aria-live="polite">
           <div class="flex flex-col items-center justify-center py-12 bg-bg-card border border-border-light rounded-lg">
             <p id="detail-loading-title" class="text-lg text-text-primary font-medium mb-2">Building full evaluation...</p>
-            <p class="text-base text-text-secondary mb-6">This takes 30 to 45 seconds. The depth is worth the wait.</p>
+            <p id="detail-loading-subtitle" class="text-base text-text-secondary mb-6">This takes 30 to 45 seconds. The depth is worth the wait.</p>
             <div class="w-full max-w-[400px] h-1.5 bg-border-light rounded-full overflow-hidden mx-6">
               <div id="detail-progress-bar" class="h-full bg-text-accent rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
             </div>
@@ -254,6 +254,12 @@ import Base from '@/layouts/Base.astro';
               Open WhatsApp
             </a>
           </div>
+          <button
+            id="analyse-another-btn"
+            class="mt-8 text-base text-text-secondary hover:text-text-primary transition-colors underline underline-offset-4"
+          >
+            Analyse another role
+          </button>
         </div>
 
       </div>
@@ -365,7 +371,6 @@ import Base from '@/layouts/Base.astro';
   let currentSessionId: string | null = null;
   let detailData: DetailData | null = null;
   let detailLoaded = false;
-  let detailLoadingInProgress = false;
   let progressInterval: ReturnType<typeof setInterval> | null = null;
   let detailProgressInterval: ReturnType<typeof setInterval> | null = null;
   let firstUnlockedSection: 'matrix' | 'cases' | null = null;
@@ -434,10 +439,11 @@ import Base from '@/layouts/Base.astro';
   function startProgress(target: 'phase1' | 'phase2' = 'phase1') {
     const bar = target === 'phase1' ? progressBar : detailProgressBar;
     const pct = target === 'phase1' ? progressPercent : detailProgressPercent;
-    const rate = target === 'phase1' ? 0.06 : 0.02; // Phase 2 is slower
-    let progress = 0;
-    bar.style.width = '0%';
-    pct.textContent = '0%';
+    // Phase 2 starts faster because data may already be loading in background
+    const rate = target === 'phase1' ? 0.06 : 0.05;
+    let progress = target === 'phase2' ? 30 : 0; // Phase 2 starts at 30% (pre-fetch head start)
+    bar.style.width = `${progress}%`;
+    pct.textContent = `${Math.round(progress)}%`;
     const interval = setInterval(() => {
       progress += (90 - progress) * rate;
       const rounded = Math.min(Math.round(progress), 90);
@@ -523,8 +529,46 @@ import Base from '@/layouts/Base.astro';
     alsoAvailable.classList.add('hidden');
   });
 
+  document.getElementById('analyse-another-btn')!.addEventListener('click', resetToUpload);
+
 
   // --- Core functions ---
+
+  function resetToUpload() {
+    // Clear all state
+    selectedFile = null;
+    currentToken = null;
+    currentSessionId = null;
+    detailData = null;
+    detailLoaded = false;
+    detailPromise = null;
+    firstUnlockedSection = null;
+
+    // Clear UI
+    textInput.value = '';
+    fileName.textContent = '';
+    fileName.classList.add('hidden');
+    fileInput.value = '';
+    charHint.classList.add('hidden');
+    analyseBtn.disabled = true;
+    resultRoleTitle.classList.add('hidden');
+    matchesVisible.innerHTML = '';
+    skillMatrixContainer.innerHTML = '';
+    caseStudiesContainer.innerHTML = '';
+    unlockButtons.classList.remove('hidden');
+    unlockChoice.classList.add('hidden');
+
+    // Remove token from URL without reload
+    const cleanUrl = window.location.pathname;
+    window.history.replaceState({}, '', cleanUrl);
+
+    // Reset Turnstile for next analysis
+    resetTurnstile();
+    renderTurnstileWidget();
+
+    showState('upload');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   function handleFileSelect(file: File) {
     if (file.type !== 'application/pdf' && !file.name.endsWith('.pdf')) {
@@ -656,7 +700,6 @@ import Base from '@/layouts/Base.astro';
     detailLoading.classList.add('hidden');
     alsoAvailable.classList.add('hidden');
 
-
     // Reset state
     detailData = null;
     detailLoaded = false;
@@ -664,20 +707,25 @@ import Base from '@/layouts/Base.astro';
     firstUnlockedSection = null;
 
     showState('results');
+
+    // Pre-fetch Phase 2 in background so it is ready when the user unlocks
+    prefetchDetail();
   }
 
-  async function loadDetail(): Promise<boolean> {
-    if (detailLoaded && detailData) return true;
-    if (detailLoadingInProgress) return false;
-    if (!currentSessionId) return false;
+  // Background pre-fetch promise — resolved when Phase 2 data arrives
+  let detailPromise: Promise<DetailData | null> | null = null;
 
-    detailLoadingInProgress = true;
+  function prefetchDetail() {
+    if (!currentSessionId || detailLoaded) return;
+    detailPromise = fetchDetailData(currentSessionId);
+  }
 
+  async function fetchDetailData(sessionId: string): Promise<DetailData | null> {
     try {
       const response = await fetch(`${API_BASE}/detail`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId: currentSessionId }),
+        body: JSON.stringify({ sessionId }),
       });
 
       if (!response.ok) {
@@ -685,16 +733,30 @@ import Base from '@/layouts/Base.astro';
         throw new Error(err.error ?? `Detail request failed (${response.status})`);
       }
 
-      detailData = await response.json() as DetailData;
-      currentToken = detailData.token;
-      detailLoaded = true;
-      return true;
-    } catch (err) {
-      showDetailError(err instanceof Error ? err.message : 'Could not load full evaluation.');
-      return false;
-    } finally {
-      detailLoadingInProgress = false;
+      return await response.json() as DetailData;
+    } catch {
+      return null;
     }
+  }
+
+  async function loadDetail(): Promise<boolean> {
+    if (detailLoaded && detailData) return true;
+    if (!currentSessionId) return false;
+
+    // Use pre-fetched promise if available, otherwise start a new fetch
+    const promise = detailPromise ?? fetchDetailData(currentSessionId);
+    detailPromise = null;
+
+    const result = await promise;
+    if (!result) {
+      showDetailError('Could not load full evaluation.');
+      return false;
+    }
+
+    detailData = result;
+    currentToken = result.token;
+    detailLoaded = true;
+    return true;
   }
 
   async function unlockSection(section: 'matrix' | 'cases') {
@@ -705,6 +767,10 @@ import Base from '@/layouts/Base.astro';
     detailLoadingTitle.textContent = section === 'matrix'
       ? 'Building full skill evaluation...'
       : 'Loading matched case studies...';
+    const subtitle = document.getElementById('detail-loading-subtitle')!;
+    subtitle.textContent = detailLoaded
+      ? 'Almost there...'
+      : 'This takes 30 to 45 seconds. The depth is worth the wait.';
     startProgress('phase2');
 
     const success = await loadDetail();
