@@ -374,6 +374,7 @@ import Base from '@/layouts/Base.astro';
   let progressInterval: ReturnType<typeof setInterval> | null = null;
   let detailProgressInterval: ReturnType<typeof setInterval> | null = null;
   let firstUnlockedSection: 'matrix' | 'cases' | null = null;
+  let detailFetchError: string | null = null;
 
   // --- Interfaces ---
 
@@ -543,6 +544,7 @@ import Base from '@/layouts/Base.astro';
     detailLoaded = false;
     detailPromise = null;
     firstUnlockedSection = null;
+    detailFetchError = null;
 
     // Clear UI
     textInput.value = '';
@@ -705,6 +707,7 @@ import Base from '@/layouts/Base.astro';
     detailLoaded = false;
     currentToken = null;
     firstUnlockedSection = null;
+    detailFetchError = null;
 
     showState('results');
 
@@ -734,7 +737,9 @@ import Base from '@/layouts/Base.astro';
       }
 
       return await response.json() as DetailData;
-    } catch {
+    } catch (err) {
+      console.error('Detail fetch failed:', err);
+      detailFetchError = err instanceof Error ? err.message : 'Could not load full evaluation.';
       return null;
     }
   }
@@ -743,13 +748,16 @@ import Base from '@/layouts/Base.astro';
     if (detailLoaded && detailData) return true;
     if (!currentSessionId) return false;
 
+    // Reset error state
+    detailFetchError = null;
+
     // Use pre-fetched promise if available, otherwise start a new fetch
     const promise = detailPromise ?? fetchDetailData(currentSessionId);
     detailPromise = null;
 
     const result = await promise;
     if (!result) {
-      showDetailError('Could not load full evaluation.');
+      showDetailError(detailFetchError ?? 'Could not load full evaluation. Please try again.');
       return false;
     }
 
@@ -815,16 +823,32 @@ import Base from '@/layouts/Base.astro';
 
   function showDetailError(message: string) {
     detailLoading.classList.add('hidden');
-    // Re-show the gate with an error
+    // Re-show the gate with the choice buttons and a retry option
     unlockGate.classList.remove('hidden');
     unlockButtons.classList.add('hidden');
     unlockChoice.classList.remove('hidden');
-    // Show a temporary error
-    const errDiv = document.createElement('p');
-    errDiv.className = 'text-sm text-red-500 mt-4 text-center';
-    errDiv.textContent = message + ' Please try again.';
+
+    // Remove any previous error messages
+    const oldErr = unlockChoice.querySelector('.detail-error-msg');
+    if (oldErr) oldErr.remove();
+
+    // Show error with retry button
+    const errDiv = document.createElement('div');
+    errDiv.className = 'detail-error-msg mt-4 text-center';
+    errDiv.innerHTML = `<p class="text-sm text-red-500 mb-3">${message}</p>
+      <button class="text-sm text-text-accent underline hover:text-[#B36F4F]" id="detail-retry-btn">Try again</button>`;
     unlockChoice.appendChild(errDiv);
-    setTimeout(() => errDiv.remove(), 8000);
+
+    // Reset prefetch state so retry triggers a fresh fetch
+    detailPromise = null;
+    detailFetchError = null;
+
+    document.getElementById('detail-retry-btn')?.addEventListener('click', () => {
+      errDiv.remove();
+      // Re-trigger the last section the user tried to unlock
+      const section = firstUnlockedSection ?? 'matrix';
+      unlockSection(section);
+    });
   }
 
   // --- Shared URL loading ---
