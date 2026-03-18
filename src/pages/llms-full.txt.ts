@@ -66,19 +66,19 @@ Miles Sowden leads insurers to compete better, build trust and create lasting va
 
 ## How I lead
 
-Four defining patterns across twenty years and five roles.
+Four patterns that hold across twenty years and five institutions. Not principles I aspire to. This is how we work together.
 
-### Systemic diagnosis and phased transformation
-Every role starts the same way. Understand the root causes, not the symptoms. Design a strategy that sequences for impact. Build capability in layers. Combined ratio from 101.5% to 89.2% at CBA. From 105% to 98% at Suncorp. Digital availability from less than 5% to 60% at SCI.
+### Diagnose before acting
+Every role starts the same way. Map the root causes, not the symptoms. Design a strategy that sequences for impact and build capability in layers to compete better.
 
-### Customer outcomes as the organising principle
-Strategy, pricing, operations, technology, and culture designed backward from customer outcomes. Not as a statement of values. As an operating discipline. NPS from +15 to +45 at CBA. From +25 to +44 at Westpac. CANSTAR Outstanding Value five consecutive years.
+### Organise everything around customer outcomes
+Strategy, product, technology and measurement designed backward from what customers actually need. Not as a statement of values. As a design principle that every person in the team can see, follow and be measured against to earn trust.
 
-### Building capability that outlasts the leader
-The test of leadership is not what happens while you are there. It is what happens after you leave. Designed a 10-person executive team at CBA that stayed in place after divestment. Built succession at SCI with internal promotion now leading national operations.
+### Build teams and systems that last
+Good leadership compounds. I build operating models, develop people and embed ways of working that grow stronger over time. Structured delegation, coaching and operating rhythms that spread capability across the organisation rather than concentrate it.
 
-### Designing the CEO operating model
-The CEO role has three value streams: strategic direction, external connection, and internal execution discipline. No single person excels at all three simultaneously. The CEOs who perform design their office and their leadership team to cover all three.
+### Operate like a founder inside institutions
+Bold mandate. Refusal to accept inherited dysfunction. Then back it with cost discipline, bias to action and personal accountability for outcomes to create shareholder and stakeholder value.
 
 ---
 
