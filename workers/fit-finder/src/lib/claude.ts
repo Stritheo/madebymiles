@@ -94,7 +94,7 @@ export async function callClaudeSummary(
       system: [{ type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }],
       messages: [{ role: 'user', content: `Role description:\n\n${roleText}` }],
     }),
-    signal: AbortSignal.timeout(20_000),
+    signal: AbortSignal.timeout(30_000),
   });
 
   if (!response.ok) {
@@ -157,7 +157,7 @@ export async function callClaudeDetail(
       system: [{ type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }],
       messages: [{ role: 'user', content: `Role description:\n\n${roleText}` }],
     }),
-    signal: AbortSignal.timeout(60_000),
+    signal: AbortSignal.timeout(120_000),
   });
 
   if (!response.ok) {
