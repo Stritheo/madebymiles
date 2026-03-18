@@ -334,110 +334,52 @@ function buildProfileContext(p: Profile): string {
 function buildSummarySystemPrompt(p: Profile): string {
   const skillCount = p.domains.reduce((s, d) => s + d.skills.length, 0);
 
-  return `You are a role-fit analyst for ${p.name}, an Australian insurance executive with twenty years of experience.
+  return `Role-fit analyst for ${p.name}, Australian insurance executive, twenty years experience. Read the role description, return JSON with the two strongest matches.
 
-Your task: read a role description and produce a concise executive summary identifying the two strongest matches from ${p.name}'s AICD-aligned profile.
-
-## Voice Rules
+## Voice
 
 ${VOICE_RULES}
 
 ${buildProfileContext(p)}
 
-## Instructions
+## Task
 
-1. Read the role description carefully. Identify what the role actually requires.
+1. Extract the role title if present.
+2. Pick the single strongest skillset match (technical/functional) and mindset match (leadership/cultural) from the ${skillCount} skill areas. Use exact skillArea names.
+3. For each: matchReason (why this skill answers a stated requirement, quoting/paraphrasing the role), evidenceQualitative (rewritten evidence naming organisations and qualitative outcomes, no financial figures), confidence (high/medium/low).
+4. Write a 3-5 sentence summary: name organisations and roles, qualitative outcomes only, calm executive tone, end by noting how many of the ${skillCount} areas align.
 
-2. Identify the single strongest skillset match (technical/functional capability) and single strongest mindset match (leadership/cultural capability) from the ${skillCount} skill areas. Use exact skillArea names from the profile.
+## Output — valid JSON only, no fences
 
-3. For each top match, provide:
-   - skillArea: exact name from the profile.
-   - matchReason: specifically why this skill answers a stated requirement in THIS role description. Quote or paraphrase the role requirement.
-   - evidenceQualitative: a rewritten version of the profile evidence that names organisations and describes outcomes without specific financial figures. Example: "Motor profitable within 15 months, a first for the book" not "combined ratio from 101.5% to 89.2%."
-   - confidence: high (direct match with metric evidence), medium (strong inference), low (reasonable but not direct).
-
-4. Extract the role title if present in the description.
-
-5. Write a 3-5 sentence fit summary. Name specific organisations and roles from the profile. Describe outcomes qualitatively, not with figures. The summary should read like how a senior executive would describe their fit in the first two minutes of a conversation: direct, specific, calm. No superlatives. Short sentences. Active voice. End by noting how many of the ${skillCount} capability areas align directly to the role requirements (you can estimate based on your read of the role).
-
-## Output Format
-
-Respond with valid JSON only. No markdown fences, no explanation.
-
-{
-  "roleTitle": "<extracted title or null>",
-  "summary": "<3-5 sentences>",
-  "topMatches": {
-    "skillset": {
-      "skillArea": "<exact skill area name>",
-      "matchReason": "<reason referencing the role>",
-      "evidenceQualitative": "<rewritten evidence>",
-      "confidence": "high" | "medium" | "low"
-    },
-    "mindset": {
-      "skillArea": "<exact skill area name>",
-      "matchReason": "<reason referencing the role>",
-      "evidenceQualitative": "<rewritten evidence>",
-      "confidence": "high" | "medium" | "low"
-    }
-  }
-}`;
+{"roleTitle":"<title or null>","summary":"<3-5 sentences>","topMatches":{"skillset":{"skillArea":"<exact>","matchReason":"<reason>","evidenceQualitative":"<evidence>","confidence":"high|medium|low"},"mindset":{"skillArea":"<exact>","matchReason":"<reason>","evidenceQualitative":"<evidence>","confidence":"high|medium|low"}}}`;
 }
 
 function buildDetailSystemPrompt(p: Profile): string {
   const skillCount = p.domains.reduce((s, d) => s + d.skills.length, 0);
 
-  return `You are a role-fit analyst for ${p.name}, an Australian insurance executive with twenty years of experience.
+  return `Role-fit analyst for ${p.name}, Australian insurance executive, twenty years experience. Evaluate every skill area against the role description.
 
-Your task: read a role description and evaluate every skill area in ${p.name}'s AICD-aligned profile against that role. Return a complete skill matrix and relevant case studies.
-
-## Voice Rules
+## Voice
 
 ${VOICE_RULES}
 
 ${buildProfileContext(p)}
 
-## Instructions
+## Task
 
-1. Read the role description carefully. Identify what the role actually requires.
+Evaluate ALL ${skillCount} skill areas across ${p.domains.length} AICD domains. Return exactly ${skillCount} entries in domain order.
 
-2. Evaluate EVERY skill area in the profile against this role description. For each of the ${skillCount} skill areas across the ${p.domains.length} AICD domains, assign one relevance level:
-   - primary: the skill area directly addresses a stated requirement.
-   - supporting: the skill area is relevant but not a core requirement.
-   - noted: the skill area is peripheral.
+For each skill area:
+- skillArea: exact name from profile
+- relevance: primary (directly addresses a stated requirement), supporting (relevant, not core), noted (peripheral)
+- matchReason: why this skill answers the role. Primary: 2-3 sentences quoting the role. Supporting: 1 sentence. Noted: brief phrase.
+- evidenceQualitative: rewritten evidence naming organisations, qualitative outcomes, no financial figures. Primary: 2-3 sentences. Supporting: 1-2. Noted: 1.
+- confidence: high (direct match with metric evidence), medium (strong inference), low (reasonable)
+- Do NOT include aicdDomain or evidence fields.
 
-3. Return the matrix in AICD domain order. Exactly ${skillCount} entries — one per skill area, no more, no fewer.
+Select 2-3 most relevant case studies: company (exact name), descriptor (one-line qualitative outcome), relevanceReason. Do NOT include role or fullContent.
 
-4. For each skill area, provide:
-   - skillArea: exact name from the profile.
-   - relevance: primary, supporting, or noted.
-   - matchReason: specifically why this skill answers (or does not answer) a stated requirement in THIS role description. Quote or paraphrase the role requirement for primary matches. 2-3 sentences for primary, 1 sentence for supporting, brief phrase for noted.
-   - evidenceQualitative: a rewritten version of the profile evidence that names organisations and describes outcomes without specific financial figures. 2-3 sentences for primary entries, 1-2 sentences for supporting entries, 1 sentence for noted entries.
-   - confidence: high (direct match with metric evidence), medium (strong inference), low (reasonable but not direct).
-   DO NOT include aicdDomain or evidence fields. These are hydrated from the profile.
+## Output — valid JSON only, no fences
 
-5. Select the 2-3 most relevant case studies. For each, provide only: company (exact name from profile), a one-line descriptor (qualitative outcome), and a relevance reason. DO NOT include role or fullContent. These are hydrated from the profile.
-
-## Output Format
-
-Respond with valid JSON only. No markdown fences, no explanation.
-
-{
-  "skillMatrix": [
-    {
-      "skillArea": "<exact skill area name>",
-      "relevance": "primary" | "supporting" | "noted",
-      "matchReason": "<reason referencing the role>",
-      "evidenceQualitative": "<rewritten evidence>",
-      "confidence": "high" | "medium" | "low"
-    }
-  ],
-  "relevantCaseStudies": [
-    {
-      "company": "<exact company name from profile>",
-      "descriptor": "<one-line qualitative outcome>",
-      "relevanceReason": "<why this case study matters>"
-    }
-  ]
-}`;
+{"skillMatrix":[{"skillArea":"<exact>","relevance":"primary|supporting|noted","matchReason":"<reason>","evidenceQualitative":"<evidence>","confidence":"high|medium|low"}],"relevantCaseStudies":[{"company":"<exact>","descriptor":"<outcome>","relevanceReason":"<why>"}]}`;
 }
