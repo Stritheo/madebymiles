@@ -1,6 +1,7 @@
 ---
 import Base from '@/layouts/Base.astro';
 import CTA from '@/components/CTA.astro';
+import { SITE } from '@/site.config';
 ---
 
 <Base
@@ -32,7 +33,7 @@ import CTA from '@/components/CTA.astro';
             />
           </div>
           <div data-reveal data-delay="400" class="flex gap-4 flex-wrap max-md:flex-col">
-            <CTA href="/contact">
+            <CTA href="#contact">
               Contact
             </CTA>
             <CTA href="#work-and-impact" variant="secondary">
@@ -67,23 +68,23 @@ import CTA from '@/components/CTA.astro';
       <div class="grid grid-cols-2 max-md:grid-cols-1 gap-x-16 gap-y-12 mt-16">
         <div data-reveal class="border-t-[3px] border-text-accent pt-8">
           <span class="text-sm font-medium text-text-accent tracking-wide">01</span>
-          <h3 class="font-display text-2xl leading-[1.3] text-text-primary mb-3 mt-2">Diagnose before acting</h3>
-          <p class="text-lg leading-relaxed text-text-secondary">Every role starts the same way. Map the root causes, not the symptoms. Design a strategy that sequences for impact and build capability in layers to compete better.</p>
+          <h3 class="font-display text-2xl leading-[1.3] text-text-primary mb-3 mt-2">Operate like a founder inside institutions</h3>
+          <p class="text-lg leading-relaxed text-text-secondary">Bold mandate. Refusal to accept inherited dysfunction. Then back it with cost discipline, bias to action, and personal accountability for outcomes. At CBA, this meant taking full accountability as the executive through the Royal Commission. Zero enforceable undertakings. Zero fines.</p>
         </div>
         <div data-reveal class="border-t-[3px] border-text-accent pt-8">
           <span class="text-sm font-medium text-text-accent tracking-wide">02</span>
-          <h3 class="font-display text-2xl leading-[1.3] text-text-primary mb-3 mt-2">Organise everything around customer outcomes</h3>
-          <p class="text-lg leading-relaxed text-text-secondary">Strategy, product, technology and measurement designed backward from what customers actually need. Not as a statement of values. As a design principle that every person in the team can see, follow and be measured against to earn trust.</p>
+          <h3 class="font-display text-2xl leading-[1.3] text-text-primary mb-3 mt-2">Diagnose before acting</h3>
+          <p class="text-lg leading-relaxed text-text-secondary">Every role starts the same way. Map the root causes, not the symptoms. Design a strategy that sequences for impact and build capability in layers. At CBA, root cause mapping across a $1bn book preceded any structural change. Combined ratio: 101.5% to 89.2%.</p>
         </div>
         <div data-reveal class="border-t-[3px] border-text-accent pt-8">
           <span class="text-sm font-medium text-text-accent tracking-wide">03</span>
-          <h3 class="font-display text-2xl leading-[1.3] text-text-primary mb-3 mt-2">Build teams and systems that last</h3>
-          <p class="text-lg leading-relaxed text-text-secondary">Good leadership compounds. I build operating models, develop people and embed ways of working that grow stronger over time. Structured delegation, coaching and operating rhythms that spread capability across the organisation rather than concentrate it.</p>
+          <h3 class="font-display text-2xl leading-[1.3] text-text-primary mb-3 mt-2">Organise everything around customer outcomes</h3>
+          <p class="text-lg leading-relaxed text-text-secondary">Strategy, product, technology, and measurement designed backward from what customers actually need. Not as a statement of values. As a design principle. At Westpac, this drove NPS from +25 to +44 and portfolio growth from $115m to $200m.</p>
         </div>
         <div data-reveal class="border-t-[3px] border-text-accent pt-8">
           <span class="text-sm font-medium text-text-accent tracking-wide">04</span>
-          <h3 class="font-display text-2xl leading-[1.3] text-text-primary mb-3 mt-2">Operate like a founder inside institutions</h3>
-          <p class="text-lg leading-relaxed text-text-secondary">Bold mandate. Refusal to accept inherited dysfunction. Then back it with cost discipline, bias to action and personal accountability for outcomes to create shareholder and stakeholder value.</p>
+          <h3 class="font-display text-2xl leading-[1.3] text-text-primary mb-3 mt-2">Build teams and systems that last</h3>
+          <p class="text-lg leading-relaxed text-text-secondary">Good leadership compounds. Operating models, people development, and ways of working that grow stronger over time. At CBA, the 10-person executive team stayed in place after divestment. Staff engagement rose from 50% to 70% during the Royal Commission.</p>
         </div>
       </div>
     </div>
@@ -112,7 +113,7 @@ import CTA from '@/components/CTA.astro';
         <div data-reveal class="p-10 max-md:p-8 bg-bg-card transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_16px_40px_rgba(0,0,0,0.1)]">
           <h3 class="font-display text-2xl leading-[1.3] text-text-primary mb-2">Hollard Insurance</h3>
           <p class="text-sm text-text-secondary/70 mb-4">Chief Revenue Officer</p>
-          <p class="text-base leading-relaxed text-text-secondary">Transitional role following CBA Insurance acquisition that doubled Hollard's business. Engaged the Board and executive on joint strategy, risk profile and integration. Confirmed the portfolio was well governed with minor underwriting changes required. Signed the ASIC Pricing Promise Review at a second insurer.</p>
+          <p class="text-base leading-relaxed text-text-secondary">Appointed following the CBA Insurance acquisition that doubled Hollard's business. Assessed the combined portfolio at board level, led the ASIC Pricing Promise Review across both entities, and steered entry into the Australian Government's Cyclone Reinsurance Pool for the entire group. Built enduring board relationships that continued beyond the role.</p>
         </div>
         <div data-reveal class="p-10 max-md:p-8 bg-bg-card transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_16px_40px_rgba(0,0,0,0.1)]">
           <h3 class="font-display text-2xl leading-[1.3] text-text-primary mb-2">Westpac Banking Corporation</h3>
@@ -125,9 +126,111 @@ import CTA from '@/components/CTA.astro';
           <p class="text-base leading-relaxed text-text-secondary">Delivered the first underwriting profit in intermediated personal lines after four consecutive years of losses. Combined ratio from 105% to 98% through pricing, underwriting rules, product consolidation, claims effectiveness, and distribution rationalisation.</p>
         </div>
         <div data-reveal class="p-10 max-md:p-8 bg-bg-card transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_16px_40px_rgba(0,0,0,0.1)]">
-          <h3 class="font-display text-2xl leading-[1.3] text-text-primary mb-2">Agentic Engineering</h3>
-          <p class="text-sm text-text-secondary/70 mb-4">Independent projects</p>
-          <p class="text-base leading-relaxed text-text-secondary">Applying AI to real problems outside of corporate roles. This site, including the Fit Finder, was built using agentic workflows as a practical test of how AI changes the way work gets done. The same approach I bring to operations and customer outcomes at scale.</p>
+          <h3 class="font-display text-2xl leading-[1.3] text-text-primary mb-2">What I'm building toward</h3>
+          <p class="text-sm text-text-secondary/70 mb-4">CEO, CXO, and NED appointments</p>
+          <p class="text-base leading-relaxed text-text-secondary">Compressed margins, regulatory intensity, and a technology inflection are reshaping Australian general insurance. I'm pursuing leadership roles where the mandate is to compete better through all three: allocate capital to what earns the right to grow, earn trust through how the business operates, and create lasting value by building capability that compounds.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Challenge selector -->
+  <section class="py-32 max-md:py-20 bg-bg-card" id="challenges">
+    <div class="max-w-[1200px] mx-auto px-12 max-lg:px-8 max-md:px-6">
+      <h2 data-reveal class="font-display text-[2.5rem] max-md:text-[2rem] leading-[1.2] tracking-[-0.02em] text-text-primary">
+        What is your insurer facing?
+      </h2>
+      <p data-reveal class="text-xl max-md:text-lg leading-relaxed text-text-secondary mt-6">
+        Select a challenge to see relevant experience.
+      </p>
+      <div class="flex flex-wrap gap-3 mt-12" id="archetype-buttons">
+        <button data-archetype="turnaround" class="archetype-btn px-6 py-3 text-sm font-medium rounded-lg border-[1.5px] border-border-light bg-white text-text-primary transition-all duration-200 hover:border-text-accent hover:text-text-accent cursor-pointer">
+          Turnaround and combined ratio recovery
+        </button>
+        <button data-archetype="integration" class="archetype-btn px-6 py-3 text-sm font-medium rounded-lg border-[1.5px] border-border-light bg-white text-text-primary transition-all duration-200 hover:border-text-accent hover:text-text-accent cursor-pointer">
+          Post-merger integration
+        </button>
+        <button data-archetype="digital" class="archetype-btn px-6 py-3 text-sm font-medium rounded-lg border-[1.5px] border-border-light bg-white text-text-primary transition-all duration-200 hover:border-text-accent hover:text-text-accent cursor-pointer">
+          Digital and AI transformation
+        </button>
+        <button data-archetype="growth" class="archetype-btn px-6 py-3 text-sm font-medium rounded-lg border-[1.5px] border-border-light bg-white text-text-primary transition-all duration-200 hover:border-text-accent hover:text-text-accent cursor-pointer">
+          Growth through distribution
+        </button>
+        <button data-archetype="governance" class="archetype-btn px-6 py-3 text-sm font-medium rounded-lg border-[1.5px] border-border-light bg-white text-text-primary transition-all duration-200 hover:border-text-accent hover:text-text-accent cursor-pointer">
+          Board and governance capability
+        </button>
+      </div>
+      <div id="archetype-results" class="mt-12 hidden">
+        <div id="archetype-cards" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+        <div class="flex gap-4 flex-wrap max-md:flex-col mt-12">
+          <CTA href="#contact">
+            Contact
+          </CTA>
+          <CTA href="#fit-finder" variant="secondary">
+            Get a detailed assessment
+          </CTA>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Fit Finder (simplified) -->
+  <section class="py-32 max-md:py-20" id="fit-finder">
+    <div class="max-w-[1200px] mx-auto px-12 max-lg:px-8 max-md:px-6">
+      <h2 data-reveal class="font-display text-[2.5rem] max-md:text-[2rem] leading-[1.2] tracking-[-0.02em] text-text-primary">
+        Fit Finder
+      </h2>
+      <p data-reveal class="text-xl max-md:text-lg leading-relaxed text-text-secondary mt-6">
+        Paste the role requirements or key challenges. Get an executive summary of fit in under 30 seconds.
+      </p>
+      <div class="mt-12 max-w-[720px]">
+        <div id="fit-input-area">
+          <textarea
+            id="fit-text"
+            rows="6"
+            placeholder="Paste the role description, key selection criteria, or the challenges the board wants addressed..."
+            class="w-full p-6 text-base leading-relaxed text-text-primary bg-bg-card border-[1.5px] border-border-light rounded-lg resize-y focus:outline-none focus:border-text-accent transition-colors duration-200"
+          ></textarea>
+          <p id="fit-char-hint" class="text-sm text-text-secondary/70 mt-2">Minimum 100 characters</p>
+          <div class="mt-6">
+            <button
+              id="fit-analyse-btn"
+              disabled
+              class="inline-flex items-center justify-center px-10 py-4.5 text-base font-medium no-underline rounded-lg transition-all duration-250 bg-bg-dark text-white border-[1.5px] border-bg-dark hover:bg-bg-dark-hover hover:border-bg-dark-hover hover:-translate-y-px disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 cursor-pointer"
+            >
+              Assess fit
+            </button>
+          </div>
+        </div>
+        <!-- Loading state -->
+        <div id="fit-loading" class="hidden">
+          <div class="flex items-center gap-4">
+            <div class="w-full bg-border-light rounded-full h-1.5 overflow-hidden">
+              <div id="fit-progress-bar" class="bg-text-accent h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+          <p class="text-sm text-text-secondary mt-3">Evaluating fit against 13 skill areas...</p>
+        </div>
+        <!-- Error state -->
+        <div id="fit-error" class="hidden">
+          <p id="fit-error-msg" class="text-base text-red-600 mb-4"></p>
+          <button id="fit-retry-btn" class="text-sm font-medium text-text-accent hover:text-text-accent-hover cursor-pointer bg-transparent border-none">Try again</button>
+        </div>
+        <!-- Results -->
+        <div id="fit-results" class="hidden">
+          <div class="border-t-[3px] border-text-accent pt-8">
+            <h3 class="font-display text-2xl leading-[1.3] text-text-primary mb-2" id="fit-role-title"></h3>
+            <p class="text-base leading-relaxed text-text-secondary mb-8" id="fit-summary-text"></p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8" id="fit-top-matches"></div>
+          </div>
+          <div class="flex gap-4 flex-wrap max-md:flex-col mt-8">
+            <CTA href="#contact">
+              Contact
+            </CTA>
+            <a href="/fit" class="inline-flex items-center justify-center px-10 py-4.5 text-base font-medium no-underline rounded-lg transition-all duration-250 bg-transparent text-text-primary border-[1.5px] border-border-light hover:border-border-light-hover hover:bg-bg-card">
+              Full analysis on the Fit Finder
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -137,15 +240,321 @@ import CTA from '@/components/CTA.astro';
   <section class="py-32 max-md:py-20 bg-bg-dark text-white">
     <div class="max-w-[1200px] mx-auto px-12 max-lg:px-8 max-md:px-6">
       <p data-reveal class="text-xl max-md:text-lg leading-relaxed text-white/90">
-        If you lead, chair, or advise a medium to large Australian general insurer and believe the next phase of growth requires both strategic discipline and operational intensity, I would welcome a conversation. Good outcomes start with good conversations.
+        If your insurer needs a leader who builds from the frontline up, start here.
       </p>
-      <div class="mt-12">
-        <a href="/contact" class="inline-flex items-center justify-center px-10 py-4 text-base font-medium no-underline rounded-lg transition-all duration-200 bg-text-accent text-white border-[1.5px] border-text-accent hover:bg-text-accent-hover hover:border-text-accent-hover">
+      <div data-reveal data-delay="200" class="mt-12">
+        <CTA href="#contact">
           Contact
-        </a>
+        </CTA>
       </div>
     </div>
   </section>
+
+  <!-- Contact -->
+  <section class="py-32 max-md:py-20" id="contact">
+    <div class="max-w-[1200px] mx-auto px-12 max-lg:px-8 max-md:px-6">
+      <h2 data-reveal class="font-display text-[2.5rem] max-md:text-[2rem] leading-[1.2] tracking-[-0.02em] text-text-primary">
+        Contact
+      </h2>
+      <p data-reveal class="text-xl max-md:text-lg leading-relaxed text-text-secondary mt-6">
+        Three ways to reach me. Pick whichever suits you.
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+        <!-- LinkedIn -->
+        <div data-reveal class="flex flex-col p-8 bg-bg-card border-t-[3px] border-text-accent">
+          <h3 class="font-display text-xl text-text-primary mb-2">LinkedIn</h3>
+          <p class="text-sm text-text-secondary mb-6">Professional introductions and role conversations.</p>
+          <div class="mt-auto">
+            <CTA href={SITE.linkedIn} size="sm" external>
+              Connect on LinkedIn
+            </CTA>
+          </div>
+        </div>
+        <!-- WhatsApp -->
+        <div data-reveal class="flex flex-col p-8 bg-bg-card border-t-[3px] border-text-accent">
+          <h3 class="font-display text-xl text-text-primary mb-2">WhatsApp</h3>
+          <p class="text-sm text-text-secondary mb-6">Direct and quick.</p>
+          <div class="mt-auto">
+            <CTA href={SITE.whatsApp.link('Hi Miles, I found your site and would like to connect.')} size="sm" external>
+              Open WhatsApp
+            </CTA>
+          </div>
+        </div>
+        <!-- Send a note -->
+        <div data-reveal class="flex flex-col p-8 bg-bg-card border-t-[3px] border-text-accent">
+          <h3 class="font-display text-xl text-text-primary mb-2">Send a note</h3>
+          <p class="text-sm text-text-secondary mb-4">Leave your details. I will be in touch within 24 hours.</p>
+          <div class="mt-auto">
+            <input
+              type="text"
+              id="contact-name"
+              placeholder="Your name"
+              class="w-full px-3 py-2 text-sm text-text-primary bg-white border-[1.5px] border-border-light rounded-lg focus:outline-none focus:border-text-accent transition-colors duration-200 mb-2"
+            />
+            <input
+              type="email"
+              id="contact-email"
+              placeholder="Your email"
+              class="w-full px-3 py-2 text-sm text-text-primary bg-white border-[1.5px] border-border-light rounded-lg focus:outline-none focus:border-text-accent transition-colors duration-200 mb-3"
+            />
+            <button
+              id="contact-send-btn"
+              disabled
+              class="inline-flex items-center justify-center w-full px-5 py-2.5 text-sm font-medium no-underline rounded-lg transition-all duration-250 bg-bg-dark text-white border-[1.5px] border-bg-dark hover:bg-bg-dark-hover hover:border-bg-dark-hover hover:-translate-y-px disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 cursor-pointer"
+            >
+              Send
+            </button>
+            <p id="contact-status" class="text-xs mt-2 hidden"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive behaviour -->
+  <script>
+    // Challenge selector data
+    const archetypes: Record<string, Array<{ company: string; role: string; metric: string; context: string }>> = {
+      turnaround: [
+        { company: 'Commonwealth Bank', role: 'General Manager, General Insurance', metric: 'Combined ratio: 101.5% to 89.2%', context: 'Three-year pricing programme, digital rebuild, and claims redesign across a $1bn book. Motor profitable within 15 months, a first for the portfolio.' },
+        { company: 'Suncorp and Promina', role: 'Product Manager Roles', metric: 'Combined ratio: 105% to 98%', context: 'Delivered the first underwriting profit in intermediated personal lines through pricing, product consolidation, claims effectiveness, and distribution rationalisation.' },
+      ],
+      integration: [
+        { company: 'Hollard Insurance', role: 'Chief Revenue Officer', metric: 'Portfolio governance across combined group', context: 'Assessed the combined CBA-Hollard portfolio at board level following an acquisition that doubled the business. Led regulatory sign-off across both entities.' },
+        { company: 'Suncorp and Promina', role: 'Product Manager Roles', metric: 'Platform integration across $2bn GWP', context: 'Integrated products and systems across the merged Suncorp-Promina group. Rationalised broker network to profitable relationships.' },
+      ],
+      digital: [
+        { company: 'Strata Community Insurance', role: 'GM, Data and Technology Solutions', metric: 'Digital availability: less than 5% to 60%', context: 'Sequenced operations, digital, then AI. Deployed agentic AI at 97% underwriting accuracy. Cleared a 30,000-task backlog and reduced underwriting cycle time by 19%.' },
+        { company: 'Commonwealth Bank', role: 'General Manager, General Insurance', metric: 'Digital sales: 20% to 70%, headcount flat', context: 'Built channels embedded in the bank app, website, and home buying process. Quote-to-sale conversion from 20% to 50% in three months.' },
+      ],
+      growth: [
+        { company: 'Westpac Banking Corporation', role: 'Senior Management Roles', metric: 'Portfolio growth: $115m to $200m', context: 'Originated the strategic recommendation for a single alliance partner. Ran a six-month competitive process. Allianz selected.' },
+        { company: 'Commonwealth Bank', role: 'General Manager, General Insurance', metric: 'CANSTAR Outstanding Value, five consecutive years', context: 'Novel rating factor delivered 10% average premium reduction with 1% loss ratio improvement. No adverse rating on lower economic groups.' },
+      ],
+      governance: [
+        { company: 'Commonwealth Bank', role: 'General Manager, General Insurance', metric: 'Royal Commission: zero enforceable undertakings, zero fines', context: 'Took full accountability as the executive. Quarterly entity board presentations. Reinsurance placed up to $1.9bn annually.' },
+        { company: 'Hollard Insurance', role: 'Chief Revenue Officer', metric: 'ASIC Pricing Promise Review signed across both entities', context: 'Board-level portfolio assessment across the combined group. Led Cyclone Reinsurance Pool entry for the entire CBA-Hollard group.' },
+      ],
+    };
+
+    // Challenge selector interaction
+    document.querySelectorAll('.archetype-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = (btn as HTMLElement).dataset.archetype;
+        if (!key || !archetypes[key]) return;
+
+        // Update button states
+        document.querySelectorAll('.archetype-btn').forEach((b) => {
+          b.classList.remove('border-text-accent', 'text-text-accent', 'bg-text-accent/5');
+          b.classList.add('border-border-light', 'text-text-primary');
+        });
+        btn.classList.remove('border-border-light', 'text-text-primary');
+        btn.classList.add('border-text-accent', 'text-text-accent', 'bg-text-accent/5');
+
+        // Render matched cards
+        const container = document.getElementById('archetype-cards')!;
+        const cards = archetypes[key];
+        container.innerHTML = cards.map((c) => `
+          <div class="p-8 bg-white border-l-[3px] border-text-accent">
+            <p class="text-sm font-medium text-text-accent mb-1">${c.company}</p>
+            <p class="text-xs text-text-secondary/70 mb-3">${c.role}</p>
+            <p class="text-base font-medium text-text-primary mb-2">${c.metric}</p>
+            <p class="text-sm leading-relaxed text-text-secondary">${c.context}</p>
+          </div>
+        `).join('');
+
+        // Show results
+        const results = document.getElementById('archetype-results')!;
+        results.classList.remove('hidden');
+      });
+    });
+
+    // Fit Finder (simplified, Phase 1 only)
+    const fitText = document.getElementById('fit-text') as HTMLTextAreaElement;
+    const fitBtn = document.getElementById('fit-analyse-btn') as HTMLButtonElement;
+    const fitCharHint = document.getElementById('fit-char-hint')!;
+    const fitInputArea = document.getElementById('fit-input-area')!;
+    const fitLoading = document.getElementById('fit-loading')!;
+    const fitError = document.getElementById('fit-error')!;
+    const fitResults = document.getElementById('fit-results')!;
+    const fitProgressBar = document.getElementById('fit-progress-bar')!;
+
+    fitText.addEventListener('input', () => {
+      const len = fitText.value.trim().length;
+      fitBtn.disabled = len < 100;
+      if (len === 0) {
+        fitCharHint.textContent = 'Minimum 100 characters';
+      } else if (len < 100) {
+        fitCharHint.textContent = `${100 - len} more characters needed`;
+      } else {
+        fitCharHint.textContent = `${len} characters`;
+      }
+    });
+
+    // Turnstile for Fit Finder
+    let turnstileToken = '';
+    let turnstileWidgetId: string | null = null;
+
+    function loadTurnstile() {
+      if (document.querySelector('script[src*="turnstile"]')) return;
+      const script = document.createElement('script');
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad';
+      script.async = true;
+      document.head.appendChild(script);
+    }
+
+    (window as any).onTurnstileLoad = () => {
+      const container = document.createElement('div');
+      container.id = 'turnstile-widget';
+      container.style.display = 'none';
+      fitInputArea.appendChild(container);
+      turnstileWidgetId = (window as any).turnstile.render('#turnstile-widget', {
+        sitekey: '0x4AAAAAACpeOHmo95tCwiiA',
+        callback: (token: string) => { turnstileToken = token; },
+        'refresh-expired': 'auto',
+        size: 'invisible',
+      });
+    };
+
+    // Load Turnstile when user starts typing
+    fitText.addEventListener('focus', loadTurnstile, { once: true });
+
+    async function analyseFit() {
+      const text = fitText.value.trim();
+      if (text.length < 100) return;
+
+      fitInputArea.classList.add('hidden');
+      fitError.classList.add('hidden');
+      fitResults.classList.add('hidden');
+      fitLoading.classList.remove('hidden');
+
+      // Animate progress bar
+      let progress = 0;
+      const progressInterval = setInterval(() => {
+        progress = Math.min(progress + Math.random() * 8, 90);
+        fitProgressBar.style.width = `${progress}%`;
+      }, 300);
+
+      // Wait for Turnstile token (max 10s)
+      const tokenStart = Date.now();
+      while (!turnstileToken && Date.now() - tokenStart < 10000) {
+        await new Promise((r) => setTimeout(r, 200));
+      }
+
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 60000);
+
+        const res = await fetch('/api/fit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Turnstile-Token': turnstileToken,
+          },
+          body: JSON.stringify({ text }),
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ error: 'Analysis failed' }));
+          throw new Error(err.error || `Error ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        clearInterval(progressInterval);
+        fitProgressBar.style.width = '100%';
+        await new Promise((r) => setTimeout(r, 300));
+
+        // Render results
+        const titleEl = document.getElementById('fit-role-title')!;
+        const summaryEl = document.getElementById('fit-summary-text')!;
+        const matchesEl = document.getElementById('fit-top-matches')!;
+
+        titleEl.textContent = data.roleTitle || 'Role fit assessment';
+        summaryEl.textContent = data.summary;
+
+        const topMatches = data.topMatches || {};
+        matchesEl.innerHTML = Object.entries(topMatches).map(([key, match]: [string, any]) => `
+          <div class="p-6 bg-bg-card border-l-[3px] border-text-accent">
+            <p class="text-xs font-medium text-text-accent uppercase tracking-wide mb-1">${key === 'skillset' ? 'Strongest skill match' : 'Strongest mindset match'}</p>
+            <p class="text-base font-medium text-text-primary mb-2">${match.headline || match.skillArea || ''}</p>
+            <p class="text-sm leading-relaxed text-text-secondary">${match.matchReason || ''}</p>
+          </div>
+        `).join('');
+
+        fitLoading.classList.add('hidden');
+        fitResults.classList.remove('hidden');
+
+      } catch (e: any) {
+        clearInterval(progressInterval);
+        fitLoading.classList.add('hidden');
+        fitError.classList.remove('hidden');
+        document.getElementById('fit-error-msg')!.textContent = e.message || 'Something went wrong. Please try again.';
+      }
+
+      // Reset Turnstile for next attempt
+      turnstileToken = '';
+      if (turnstileWidgetId && (window as any).turnstile) {
+        (window as any).turnstile.reset(turnstileWidgetId);
+      }
+    }
+
+    fitBtn.addEventListener('click', analyseFit);
+
+    document.getElementById('fit-retry-btn')?.addEventListener('click', () => {
+      fitError.classList.add('hidden');
+      fitInputArea.classList.remove('hidden');
+    });
+
+    // Contact form: send a note
+    const contactName = document.getElementById('contact-name') as HTMLInputElement;
+    const contactEmail = document.getElementById('contact-email') as HTMLInputElement;
+    const contactSendBtn = document.getElementById('contact-send-btn') as HTMLButtonElement;
+    const contactStatus = document.getElementById('contact-status')!;
+
+    function validateContact() {
+      const name = contactName.value.trim();
+      const email = contactEmail.value.trim();
+      contactSendBtn.disabled = !(name.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+    }
+
+    contactName.addEventListener('input', validateContact);
+    contactEmail.addEventListener('input', validateContact);
+
+    contactSendBtn.addEventListener('click', async () => {
+      const name = contactName.value.trim();
+      const email = contactEmail.value.trim();
+      if (!name || !email) return;
+
+      contactSendBtn.disabled = true;
+      contactSendBtn.textContent = 'Sending...';
+
+      try {
+        const res = await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email }),
+        });
+
+        if (!res.ok) throw new Error('Failed to send');
+
+        contactStatus.textContent = 'Sent. I will be in touch within 24 hours.';
+        contactStatus.className = 'text-xs mt-2 text-text-accent';
+        contactStatus.classList.remove('hidden');
+        contactSendBtn.textContent = 'Sent';
+        contactName.disabled = true;
+        contactEmail.disabled = true;
+      } catch {
+        contactStatus.textContent = 'Could not send. Please try LinkedIn or WhatsApp instead.';
+        contactStatus.className = 'text-xs mt-2 text-red-600';
+        contactStatus.classList.remove('hidden');
+        contactSendBtn.textContent = 'Send';
+        contactSendBtn.disabled = false;
+      }
+    });
+  </script>
 
   <!-- Person JSON-LD -->
   <script type="application/ld+json" set:html={JSON.stringify({

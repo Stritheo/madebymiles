@@ -2,6 +2,7 @@ import type { Env } from './types';
 import { handleAnalyse } from './handlers/analyse';
 import { handleDetail } from './handlers/detail';
 import { handleVerify } from './handlers/verify';
+import { handleContact } from './handlers/contact';
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -25,6 +26,11 @@ export default {
     // Shared URL verification
     if (url.pathname === '/api/fit/verify' && request.method === 'GET') {
       return handleVerify(request, env);
+    }
+
+    // Contact form submission
+    if (url.pathname === '/api/contact' && request.method === 'POST') {
+      return handleContact(request, env, ctx);
     }
 
     if (url.pathname === '/api/health' && (request.method === 'GET' || request.method === 'HEAD')) {

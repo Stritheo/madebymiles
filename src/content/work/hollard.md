@@ -1,14 +1,14 @@
 ---
-title: "Effective transition of a well-governed portfolio"
+title: "Post-acquisition governance across a combined group"
 company: "Hollard Insurance"
 role: "Chief Revenue Officer"
 order: 3
-summary: "Transitional role following CBA Insurance acquisition that doubled Hollard's business. Engaged the Board and executive on joint strategy, risk profile and integration. Confirmed the portfolio was well governed with minor underwriting changes to 1% of policies. Led the Cyclone Reinsurance Pool entry for the combined group."
+summary: "Appointed following the CBA Insurance acquisition that doubled Hollard's business. Assessed the combined portfolio at board level, led the ASIC Pricing Promise Review across both entities, and steered entry into the Australian Government's Cyclone Reinsurance Pool for the entire group. Built enduring board relationships that continued beyond the role."
 ---
 
 ## Context
 
-Hollard acquired the CBA general insurance portfolio, creating a 15-year strategic alliance to serve one million customers. The acquisition doubled the size of Hollard's business. There was an incumbent CEO. My role was transitional: engage the Board and executive on the joint strategy, risk profile, and integration into CBA.
+Hollard acquired the CBA general insurance portfolio, creating a 15-year strategic alliance to serve one million customers. The acquisition doubled the size of Hollard's business. My role was to engage the Board and executive on the joint strategy, assess the risk profile of the combined portfolio, and lead critical regulatory and reinsurance workstreams for the entire group.
 
 ## What I did
 
@@ -26,8 +26,7 @@ Hollard acquired the CBA general insurance portfolio, creating a 15-year strateg
 
 ## Results
 
-- Effective transition of a well-governed and run portfolio
-- Minor underwriting changes to 1% of the portfolio to fit target risk appetite
+- Combined portfolio assessed and confirmed as well governed with targeted underwriting changes to 1% of policies
 - ASIC Pricing Promise Review signed on time (single review spanning both CBA and Hollard), no regulatory action
 - Cyclone Reinsurance Pool entry led for the entire combined CBA and Hollard group
 - Enduring board relationships maintained
