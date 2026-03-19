@@ -6,6 +6,8 @@ import { postAlert } from '../lib/discord';
 import { postToDatabricks } from '../lib/databricks';
 import { corsHeaders } from '../index';
 
+const MAX_DETAIL_PER_SESSION = 3;
+
 export async function handleDetail(
   request: Request,
   env: Env,
@@ -15,6 +17,14 @@ export async function handleDetail(
   if (!body.sessionId) {
     return json({ error: 'Missing sessionId' }, 400);
   }
+
+  // Rate-limit detail requests per session to prevent abuse
+  const detailKey = `detail-count:${body.sessionId}`;
+  const detailCount = parseInt((await env.RATE_LIMIT_KV.get(detailKey)) ?? '0');
+  if (detailCount >= MAX_DETAIL_PER_SESSION) {
+    return json({ error: 'Detail request limit reached for this session.' }, 429);
+  }
+  await env.RATE_LIMIT_KV.put(detailKey, String(detailCount + 1), { expirationTtl: 3600 });
 
   // Retrieve stored role text and summary from Phase 1
   const raw = await env.RATE_LIMIT_KV.get(`session:${body.sessionId}`);
@@ -26,7 +36,7 @@ export async function handleDetail(
   try {
     sessionData = JSON.parse(raw);
   } catch {
-    return json({ error: 'Invalid session data. Please run the analysis again.' }, 500);
+    return json({ error: 'Invalid session data. Please run the analysis again.' }, 410);
   }
 
   // Phase 2: Full skill matrix + case studies (thorough, ~1800 tokens)
