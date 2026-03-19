@@ -6,13 +6,13 @@ interface Props {
   external?: boolean;
 }
 
-const { href, variant = 'primary', size = 'md', external = true } = Astro.props;
+const { href, variant = 'primary', size = 'md', external = false } = Astro.props;
 
 const baseClasses = 'inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250';
 const sizeClasses = size === 'sm' ? 'px-5 py-2.5 text-sm' : 'px-10 py-4.5 text-base';
 const variantClasses = variant === 'primary'
-  ? 'bg-bg-dark text-white border-[1.5px] border-bg-dark hover:bg-[#151A26] hover:border-[#151A26] hover:-translate-y-px'
-  : 'bg-transparent text-text-primary border-[1.5px] border-border-light hover:border-[#D4D4D4] hover:bg-bg-card';
+  ? 'bg-bg-dark text-white border-[1.5px] border-bg-dark hover:bg-bg-dark-hover hover:border-bg-dark-hover hover:-translate-y-px'
+  : 'bg-transparent text-text-primary border-[1.5px] border-border-light hover:border-border-light-hover hover:bg-bg-card';
 
 const externalAttrs = external ? { target: '_blank', rel: 'noopener noreferrer' } : {};
 ---

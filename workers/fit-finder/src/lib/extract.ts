@@ -42,7 +42,8 @@ async function extractFromFile(request: Request): Promise<string> {
     throw new Error('Could not extract enough text from the PDF. Try pasting the text instead.');
   }
 
-  return sanitised;
+  // Truncate to same limit used for text input to prevent API cost blowout
+  return sanitised.length > MAX_TEXT_LENGTH ? sanitised.slice(0, MAX_TEXT_LENGTH) : sanitised;
 }
 
 async function extractFromJson(request: Request): Promise<string> {

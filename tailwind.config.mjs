@@ -8,14 +8,17 @@ export default {
           primary: '#FAFAF9',
           card: '#FFFFFF',
           dark: '#1A1F2E',
+          'dark-hover': '#151A26',
         },
         text: {
           primary: '#1A1A1A',
           secondary: '#525252',
           accent: '#C87D5C',
+          'accent-hover': '#B36F4F',
         },
         border: {
           light: '#E5E5E5',
+          'light-hover': '#D4D4D4',
         },
       },
       fontSize: {

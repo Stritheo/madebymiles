@@ -121,20 +121,31 @@ jobs:
               f"Errors: {report['errors']} ({report['error_rate']}%). "
               f"Estimated API cost: ${report['estimated_cost']}."
           )
-          msg_escaped = message.replace("'", "''")
-          metadata = json.dumps(report).replace("'", "''")
-
-          sql = f"INSERT INTO madebymiles.observability.alert_events (source, severity, title, message, metadata, created_at) VALUES ('fit-finder-report', 'info', 'Monthly Fit Finder Report', '{msg_escaped}', '{metadata}', '{now}')"
+          metadata = json.dumps(report)
 
           host = os.environ["DATABRICKS_HOST"]
           token = os.environ["DATABRICKS_TOKEN"]
           wid = os.environ.get("DATABRICKS_WAREHOUSE_ID", "")
 
+          sql = (
+              "INSERT INTO madebymiles.observability.alert_events "
+              "(source, severity, title, message, metadata, created_at) "
+              "VALUES (:source, :severity, :title, :message, :metadata, :created_at)"
+          )
+          params = [
+              {"name": "source", "value": "fit-finder-report", "type": "STRING"},
+              {"name": "severity", "value": "info", "type": "STRING"},
+              {"name": "title", "value": "Monthly Fit Finder Report", "type": "STRING"},
+              {"name": "message", "value": message, "type": "STRING"},
+              {"name": "metadata", "value": metadata, "type": "STRING"},
+              {"name": "created_at", "value": now, "type": "STRING"},
+          ]
+
           try:
               requests.post(
                   f"{host}/api/2.0/sql/statements",
                   headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
-                  json={"statement": sql, "warehouse_id": wid, "wait_timeout": "10s"},
+                  json={"statement": sql, "parameters": params, "warehouse_id": wid, "wait_timeout": "10s"},
                   timeout=15,
               )
               print("Fit Finder report posted to Databricks")

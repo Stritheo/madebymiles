@@ -1,11 +1,12 @@
 ---
 import Base from '@/layouts/Base.astro';
 import CTA from '@/components/CTA.astro';
+import { SITE } from '@/site.config';
 ---
 
 <Base
   title="Contact | Miles Sowden"
-  description="Contact with Miles Sowden via LinkedIn or WhatsApp. Open to executive roles, board positions and advisory work."
+  description="Connect with Miles Sowden via LinkedIn or WhatsApp for executive roles, board positions and advisory work."
 >
   <section class="pt-48 pb-32 max-md:pt-32 max-md:pb-20">
     <div class="max-w-[1200px] mx-auto px-12 max-lg:px-8 max-md:px-6">
@@ -22,7 +23,7 @@ import CTA from '@/components/CTA.astro';
           <h2 class="font-display text-2xl text-text-primary mb-3">LinkedIn</h2>
           <p class="text-base text-text-secondary mb-6">For professional introductions and conversations about roles, advisory or board opportunities.</p>
           <div class="mt-auto">
-            <CTA href="https://www.linkedin.com/in/milessowden" size="sm">
+            <CTA href={SITE.linkedIn} size="sm" external>
               Connect on LinkedIn
             </CTA>
           </div>
@@ -33,7 +34,7 @@ import CTA from '@/components/CTA.astro';
           <h2 class="font-display text-2xl text-text-primary mb-3">WhatsApp</h2>
           <p class="text-base text-text-secondary mb-6">For a quicker, more direct conversation.</p>
           <div class="mt-auto">
-            <CTA href="https://wa.me/61414185721?text=Hi%20Miles%2C%20I%20found%20your%20site%20and%20would%20like%20to%20connect." size="sm">
+            <CTA href={SITE.whatsApp.link('Hi Miles, I found your site and would like to connect.')} size="sm" external>
               Open WhatsApp
             </CTA>
           </div>

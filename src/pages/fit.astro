@@ -56,7 +56,7 @@ import Base from '@/layouts/Base.astro';
         <button
           id="analyse-btn"
           disabled
-          class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-10 py-4.5 text-base bg-bg-dark text-white border-[1.5px] border-bg-dark hover:bg-[#151A26] hover:border-[#151A26] hover:-translate-y-px disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 mb-6"
+          class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-10 py-4.5 max-md:px-6 max-md:py-3 text-base bg-bg-dark text-white border-[1.5px] border-bg-dark hover:bg-bg-dark-hover hover:border-bg-dark-hover hover:-translate-y-px disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 mb-6"
         >
           Analyse fit
         </button>
@@ -107,7 +107,7 @@ import Base from '@/layouts/Base.astro';
           <p id="error-message" class="text-base text-text-secondary mb-6"></p>
           <button
             id="retry-btn"
-            class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-5 py-2.5 text-sm bg-bg-dark text-white border-[1.5px] border-bg-dark hover:bg-[#151A26]"
+            class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-5 py-2.5 text-sm bg-bg-dark text-white border-[1.5px] border-bg-dark hover:bg-bg-dark-hover"
           >
             Try again
           </button>
@@ -137,10 +137,10 @@ import Base from '@/layouts/Base.astro';
             <p class="text-lg text-text-primary leading-relaxed mb-2 max-w-[560px] text-center">
               The full evaluation and matched case studies are shared in conversation. The depth is there. It belongs in a discussion, not on a screen.
             </p>
-            <div id="unlock-buttons" class="flex flex-wrap gap-4 mt-6 justify-center">
+            <div id="unlock-buttons" class="flex flex-wrap gap-4 mt-6 justify-center max-md:flex-col max-md:w-full max-md:px-4">
               <button
                 id="linkedin-unlock-btn"
-                class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-8 py-3.5 text-base bg-bg-dark text-white border-[1.5px] border-bg-dark hover:bg-[#151A26] hover:border-[#151A26] hover:-translate-y-px"
+                class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-8 py-3.5 max-md:px-4 max-md:py-3 text-base bg-bg-dark text-white border-[1.5px] border-bg-dark hover:bg-bg-dark-hover hover:border-bg-dark-hover hover:-translate-y-px"
               >
                 Connect on LinkedIn
               </button>
@@ -149,7 +149,7 @@ import Base from '@/layouts/Base.astro';
                 href="https://wa.me/61414185721?text=I%20ran%20the%20Fit%20Finder%20and%20would%20welcome%20a%20conversation."
                 target="_blank"
                 rel="noopener"
-                class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-8 py-3.5 text-base bg-transparent text-text-primary border-[1.5px] border-border-light hover:border-[#D4D4D4] hover:bg-bg-card"
+                class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-8 py-3.5 max-md:px-4 max-md:py-3 text-base bg-transparent text-text-primary border-[1.5px] border-border-light hover:border-border-light-hover hover:bg-bg-card"
               >
                 Open WhatsApp
               </a>
@@ -157,16 +157,16 @@ import Base from '@/layouts/Base.astro';
             <!-- Post-connect section choices -->
             <div id="unlock-choice" class="hidden mt-6 w-full max-w-[560px]">
               <p class="text-base text-text-secondary mb-4 text-center">I've connected. Show me:</p>
-              <div class="flex flex-wrap gap-4 justify-center">
+              <div class="flex flex-wrap gap-4 justify-center max-md:flex-col max-md:w-full max-md:px-4">
                 <button
                   id="show-matrix-btn"
-                  class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-6 py-3 text-base bg-bg-dark text-white border-[1.5px] border-bg-dark hover:bg-[#151A26]"
+                  class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-6 py-3 max-md:px-4 text-base bg-bg-dark text-white border-[1.5px] border-bg-dark hover:bg-bg-dark-hover"
                 >
                   The full skill evaluation
                 </button>
                 <button
                   id="show-cases-btn"
-                  class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-6 py-3 text-base bg-transparent text-text-primary border-[1.5px] border-border-light hover:border-[#D4D4D4] hover:bg-bg-card"
+                  class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-6 py-3 max-md:px-4 text-base bg-transparent text-text-primary border-[1.5px] border-border-light hover:border-border-light-hover hover:bg-bg-card"
                 >
                   The matched case studies
                 </button>
@@ -241,7 +241,7 @@ import Base from '@/layouts/Base.astro';
               href="https://www.linkedin.com/in/milessowden"
               target="_blank"
               rel="noopener"
-              class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-8 py-3.5 text-base bg-bg-dark text-white border-[1.5px] border-bg-dark hover:bg-[#151A26] hover:border-[#151A26] hover:-translate-y-px"
+              class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-8 py-3.5 text-base bg-bg-dark text-white border-[1.5px] border-bg-dark hover:bg-bg-dark-hover hover:border-bg-dark-hover hover:-translate-y-px"
             >
               Connect on LinkedIn
             </a>
@@ -249,7 +249,7 @@ import Base from '@/layouts/Base.astro';
               href="https://wa.me/61414185721?text=Hi%20Miles%2C%20I%20used%20Fit%20Finder%20and%20would%20like%20to%20connect."
               target="_blank"
               rel="noopener"
-              class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-8 py-3.5 text-base bg-transparent text-text-primary border-[1.5px] border-border-light hover:border-[#D4D4D4] hover:bg-bg-card"
+              class="inline-flex items-center justify-center font-medium no-underline rounded-lg transition-all duration-250 px-8 py-3.5 text-base bg-transparent text-text-primary border-[1.5px] border-border-light hover:border-border-light-hover hover:bg-bg-card"
             >
               Open WhatsApp
             </a>
@@ -318,10 +318,15 @@ import Base from '@/layouts/Base.astro';
   }
 
   // Poll for Turnstile API readiness (loaded via HTML script tag)
+  // Interval is cleared once Turnstile loads, or after 30s to prevent leaks
+  let tsReadyAttempts = 0;
   const tsReadyCheck = setInterval(() => {
+    tsReadyAttempts++;
     if (typeof (window as any).turnstile !== 'undefined') {
       clearInterval(tsReadyCheck);
       renderTurnstileWidget();
+    } else if (tsReadyAttempts > 300) {
+      clearInterval(tsReadyCheck);
     }
   }, 100);
 
@@ -644,6 +649,7 @@ import Base from '@/layouts/Base.astro';
           method: 'POST',
           headers: { 'X-Turnstile-Token': tsToken },
           body: formData,
+          signal: AbortSignal.timeout(60_000),
         });
       } else {
         response = await fetch(API_BASE, {
@@ -653,6 +659,7 @@ import Base from '@/layouts/Base.astro';
             'X-Turnstile-Token': tsToken,
           },
           body: JSON.stringify({ text: textInput.value.trim() }),
+          signal: AbortSignal.timeout(60_000),
         });
       }
 
@@ -729,6 +736,7 @@ import Base from '@/layouts/Base.astro';
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId }),
+        signal: AbortSignal.timeout(150_000),
       });
 
       if (!response.ok) {
@@ -835,8 +843,8 @@ import Base from '@/layouts/Base.astro';
     // Show error with retry button
     const errDiv = document.createElement('div');
     errDiv.className = 'detail-error-msg mt-4 text-center';
-    errDiv.innerHTML = `<p class="text-sm text-red-500 mb-3">${message}</p>
-      <button class="text-sm text-text-accent underline hover:text-[#B36F4F]" id="detail-retry-btn">Try again</button>`;
+    errDiv.innerHTML = `<p class="text-sm text-red-500 mb-3">${esc(message)}</p>
+      <button class="text-sm text-text-accent underline hover:text-text-accent-hover" id="detail-retry-btn">Try again</button>`;
     unlockChoice.appendChild(errDiv);
 
     // Reset prefetch state so retry triggers a fresh fetch
@@ -965,18 +973,18 @@ import Base from '@/layouts/Base.astro';
     return `
       <div class="p-8 bg-bg-card border-t-[3px] border-text-accent">
         <div class="flex items-center justify-between mb-4">
-          <span class="text-sm text-text-secondary uppercase tracking-wider">${entry.aicdDomain}</span>
-          <span class="text-xs font-medium px-3 py-1 rounded ${confidenceClass(entry.confidence)}">${entry.confidence}</span>
+          <span class="text-sm text-text-secondary uppercase tracking-wider">${esc(entry.aicdDomain)}</span>
+          <span class="text-xs font-medium px-3 py-1 rounded ${confidenceClass(entry.confidence)}">${esc(entry.confidence)}</span>
         </div>
-        <p class="text-xs text-text-accent uppercase tracking-wider font-medium mb-1">${categoryLabel} match</p>
-        <h3 class="font-display text-xl text-text-primary mb-4">${entry.skillArea}</h3>
+        <p class="text-xs text-text-accent uppercase tracking-wider font-medium mb-1">${esc(categoryLabel)} match</p>
+        <h3 class="font-display text-xl text-text-primary mb-4">${esc(entry.skillArea)}</h3>
         <div class="mb-4">
           <p class="text-sm font-medium text-text-primary mb-1">Why this matches</p>
-          <p class="text-base text-text-secondary">${entry.matchReason}</p>
+          <p class="text-base text-text-secondary">${esc(entry.matchReason)}</p>
         </div>
         <div>
           <p class="text-sm font-medium text-text-primary mb-1">Evidence</p>
-          <p class="text-base text-text-secondary">${entry.evidenceQualitative}</p>
+          <p class="text-base text-text-secondary">${esc(entry.evidenceQualitative)}</p>
         </div>
       </div>
     `;
@@ -986,18 +994,18 @@ import Base from '@/layouts/Base.astro';
     return `
       <div class="p-8 bg-bg-card border-t-[3px] border-text-accent">
         <div class="flex items-center justify-between mb-4">
-          <span class="text-sm text-text-secondary uppercase tracking-wider">${entry.aicdDomain}</span>
-          <span class="text-xs font-medium px-3 py-1 rounded ${confidenceClass(entry.confidence)}">${entry.confidence}</span>
+          <span class="text-sm text-text-secondary uppercase tracking-wider">${esc(entry.aicdDomain)}</span>
+          <span class="text-xs font-medium px-3 py-1 rounded ${confidenceClass(entry.confidence)}">${esc(entry.confidence)}</span>
         </div>
-        <p class="text-xs text-text-accent uppercase tracking-wider font-medium mb-1">${categoryLabel} match</p>
-        <h3 class="font-display text-xl text-text-primary mb-4">${entry.skillArea}</h3>
+        <p class="text-xs text-text-accent uppercase tracking-wider font-medium mb-1">${esc(categoryLabel)} match</p>
+        <h3 class="font-display text-xl text-text-primary mb-4">${esc(entry.skillArea)}</h3>
         <div class="mb-4">
           <p class="text-sm font-medium text-text-primary mb-1">Why this matches</p>
-          <p class="text-base text-text-secondary">${entry.matchReason}</p>
+          <p class="text-base text-text-secondary">${esc(entry.matchReason)}</p>
         </div>
         <div>
           <p class="text-sm font-medium text-text-primary mb-1">Evidence</p>
-          <p class="text-base text-text-secondary">${entry.evidenceQualitative}</p>
+          <p class="text-base text-text-secondary">${esc(entry.evidenceQualitative)}</p>
         </div>
       </div>
     `;
@@ -1019,7 +1027,7 @@ import Base from '@/layouts/Base.astro';
 
       html += `<div class="mb-4">`;
       html += `<div class="mb-6">`;
-      html += `<h3 class="font-display text-2xl text-text-primary mb-1">${domain}</h3>`;
+      html += `<h3 class="font-display text-2xl text-text-primary mb-1">${esc(domain)}</h3>`;
       html += `<p class="text-sm text-text-secondary">${primaryCount} primary, ${supportingCount} supporting, ${entries.length - primaryCount - supportingCount} noted</p>`;
       html += `</div>`;
       html += `<div class="grid grid-cols-1 gap-8">`;
@@ -1044,22 +1052,22 @@ import Base from '@/layouts/Base.astro';
     const relevanceLabel = entry.relevance.toUpperCase();
 
     return `
-      <div class="p-8 bg-bg-card border-t-[3px] ${borderColor}">
+      <div class="p-8 max-md:p-6 bg-bg-card border-t-[3px] ${borderColor}">
         <div class="flex items-center justify-between mb-4">
-          <span class="text-sm text-text-secondary uppercase tracking-wider">${entry.aicdDomain}</span>
+          <span class="text-sm text-text-secondary uppercase tracking-wider">${esc(entry.aicdDomain)}</span>
           <div class="flex items-center gap-3">
-            <span class="text-xs font-medium px-3 py-1 rounded ${confidenceClass(entry.confidence)}">${entry.confidence}</span>
-            <span class="text-xs text-text-secondary uppercase tracking-wider">${relevanceLabel}</span>
+            <span class="text-xs font-medium px-3 py-1 rounded ${confidenceClass(entry.confidence)}">${esc(entry.confidence)}</span>
+            <span class="text-xs text-text-secondary uppercase tracking-wider">${esc(relevanceLabel)}</span>
           </div>
         </div>
-        <h4 class="font-display text-xl text-text-primary mb-4">${entry.skillArea}</h4>
+        <h4 class="font-display text-xl text-text-primary mb-4">${esc(entry.skillArea)}</h4>
         <div class="mb-4">
           <p class="text-sm font-medium text-text-primary mb-1">Why this matches</p>
-          <p class="text-base text-text-secondary leading-relaxed">${entry.matchReason}</p>
+          <p class="text-base text-text-secondary leading-relaxed">${esc(entry.matchReason)}</p>
         </div>
         <div>
           <p class="text-sm font-medium text-text-primary mb-1">Evidence</p>
-          <p class="text-base text-text-secondary leading-relaxed">${entry.evidenceQualitative}</p>
+          <p class="text-base text-text-secondary leading-relaxed">${esc(entry.evidenceQualitative)}</p>
         </div>
       </div>
     `;
@@ -1073,15 +1081,15 @@ import Base from '@/layouts/Base.astro';
 
   function renderCaseStudyCard(cs: CaseStudyMatch): string {
     return `
-      <div class="p-8 bg-bg-card border-t-[3px] border-text-accent">
-        <p class="text-sm text-text-secondary uppercase tracking-wider mb-2">${cs.company}</p>
-        <h3 class="font-display text-xl text-text-primary mb-2">${cs.role}</h3>
-        <p class="text-base text-text-secondary mb-4">${cs.descriptor}</p>
+      <div class="p-8 max-md:p-6 bg-bg-card border-t-[3px] border-text-accent">
+        <p class="text-sm text-text-secondary uppercase tracking-wider mb-2">${esc(cs.company)}</p>
+        <h3 class="font-display text-xl text-text-primary mb-2">${esc(cs.role)}</h3>
+        <p class="text-base text-text-secondary mb-4">${esc(cs.descriptor)}</p>
         <div class="mb-4">
           <p class="text-sm font-medium text-text-accent mb-1">Relevance to this role</p>
-          <p class="text-base text-text-secondary">${cs.relevanceReason}</p>
+          <p class="text-base text-text-secondary">${esc(cs.relevanceReason)}</p>
         </div>
-        <div class="text-base text-text-secondary leading-relaxed whitespace-pre-line">${cs.fullContent}</div>
+        <div class="text-base text-text-secondary leading-relaxed whitespace-pre-line">${esc(cs.fullContent)}</div>
       </div>
     `;
   }
@@ -1120,24 +1128,30 @@ import Base from '@/layouts/Base.astro';
     return `
       <div class="p-8 bg-bg-card border-t-[3px] border-text-accent">
         <div class="flex items-center justify-between mb-4">
-          <span class="text-sm text-text-secondary uppercase tracking-wider">${match.aicdDomain}</span>
-          <span class="text-xs font-medium px-3 py-1 rounded ${confidenceClass(match.confidence)}">${match.confidence}</span>
+          <span class="text-sm text-text-secondary uppercase tracking-wider">${esc(match.aicdDomain)}</span>
+          <span class="text-xs font-medium px-3 py-1 rounded ${confidenceClass(match.confidence)}">${esc(match.confidence)}</span>
         </div>
-        <p class="text-xs text-text-accent uppercase tracking-wider font-medium mb-1">${categoryLabel} match</p>
-        <h3 class="font-display text-xl text-text-primary mb-4">${match.skillArea}</h3>
+        <p class="text-xs text-text-accent uppercase tracking-wider font-medium mb-1">${esc(categoryLabel)} match</p>
+        <h3 class="font-display text-xl text-text-primary mb-4">${esc(match.skillArea)}</h3>
         <div class="mb-4">
           <p class="text-sm font-medium text-text-primary mb-1">Why this matches</p>
-          <p class="text-base text-text-secondary">${match.matchReason}</p>
+          <p class="text-base text-text-secondary">${esc(match.matchReason)}</p>
         </div>
         <div>
           <p class="text-sm font-medium text-text-primary mb-1">Evidence</p>
-          <p class="text-base text-text-secondary">${match.evidence}</p>
+          <p class="text-base text-text-secondary">${esc(match.evidence)}</p>
         </div>
       </div>
     `;
   }
 
   // --- Helpers ---
+
+  function esc(str: string): string {
+    const el = document.createElement('span');
+    el.textContent = str;
+    return el.innerHTML;
+  }
 
   function confidenceClass(level: string): string {
     return level === 'high'
@@ -1160,7 +1174,7 @@ import Base from '@/layouts/Base.astro';
   }
 
   function showGlobalLimitError() {
-    errorMessage.innerHTML = `Due to current interest the Fit Finder has reached its daily limit. Please connect with me directly on <a href="https://www.linkedin.com/in/milessowden" target="_blank" rel="noopener" class="underline text-text-accent hover:text-[#B36F4F]">LinkedIn</a> or <a href="https://wa.me/61414185721" target="_blank" rel="noopener" class="underline text-text-accent hover:text-[#B36F4F]">WhatsApp</a>, or try again tomorrow.`;
+    errorMessage.innerHTML = `Due to current interest the Fit Finder has reached its daily limit. Please connect with me directly on <a href="https://www.linkedin.com/in/milessowden" target="_blank" rel="noopener" class="underline text-text-accent hover:text-text-accent-hover">LinkedIn</a> or <a href="https://wa.me/61414185721" target="_blank" rel="noopener" class="underline text-text-accent hover:text-text-accent-hover">WhatsApp</a>, or try again tomorrow.`;
     showState('error');
   }
 </script>

@@ -24,15 +24,22 @@ export async function verify(
 
   const key = await importKey(secret);
 
-  // Verify signature using constant-time comparison via Web Crypto
+  // Verify signature using constant-time comparison
   const expectedSig = await crypto.subtle.sign(
     'HMAC',
     key,
     new TextEncoder().encode(encoded),
   );
-  const expectedB64 = btoa(String.fromCharCode(...new Uint8Array(expectedSig)));
+  const actualSig = Uint8Array.from(atob(sigB64), c => c.charCodeAt(0));
+  const expectedArr = new Uint8Array(expectedSig);
 
-  if (expectedB64 !== sigB64) return null;
+  if (actualSig.length !== expectedArr.length) return null;
+  // Constant-time comparison to prevent timing attacks
+  let diff = 0;
+  for (let i = 0; i < expectedArr.length; i++) {
+    diff |= expectedArr[i] ^ actualSig[i];
+  }
+  if (diff !== 0) return null;
 
   try {
     const json = decodeURIComponent(escape(atob(encoded)));
