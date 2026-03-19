@@ -1,4 +1,5 @@
 ---
+import { SITE } from '@/site.config';
 const currentYear = new Date().getFullYear();
 ---
 
@@ -10,10 +11,10 @@ const currentYear = new Date().getFullYear();
         <p class="text-white/70 text-base">Growth and Transformation. GAICD. GDipAppFin.</p>
       </div>
       <div class="flex flex-col gap-3 text-base">
-        <a href="https://www.linkedin.com/in/milessowden" target="_blank" rel="noopener noreferrer" class="text-white/70 hover:text-white transition-colors no-underline">
+        <a href={SITE.linkedIn} target="_blank" rel="noopener noreferrer" class="text-white/70 hover:text-white transition-colors no-underline">
           LinkedIn
         </a>
-        <a href="https://wa.me/61414185721" target="_blank" rel="noopener noreferrer" class="text-white/70 hover:text-white transition-colors no-underline">
+        <a href={`https://wa.me/${SITE.whatsApp.number}`} target="_blank" rel="noopener noreferrer" class="text-white/70 hover:text-white transition-colors no-underline">
           WhatsApp
         </a>
         <a href="/privacy" class="text-white/70 hover:text-white transition-colors no-underline">
