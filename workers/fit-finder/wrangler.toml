@@ -12,13 +12,17 @@ routes = [
   { pattern = "milessowden.au/api/*", zone_name = "milessowden.au" }
 ]
 
+[[send_email]]
+name = "SEND_EMAIL"
+destination_address = "miles.sowden@outlook.com"
+
 [vars]
 ENVIRONMENT = "production"
 
 # Secrets (set via wrangler secret put):
 # ANTHROPIC_API_KEY
 # JWT_SECRET
-# DISCORD_WEBHOOK_ALERTS       (critical errors only)
+# DISCORD_WEBHOOK_ALERTS
 # TURNSTILE_SECRET_KEY
 # DATABRICKS_HOST               (e.g. https://dbc-0caa5555-b747.cloud.databricks.com)
 # DATABRICKS_TOKEN              (Databricks personal access token)

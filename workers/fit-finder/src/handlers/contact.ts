@@ -1,5 +1,7 @@
 import type { Env } from '../types';
 import { corsHeaders } from '../index';
+import { EmailMessage } from 'cloudflare:email';
+import { createMimeMessage } from 'mimetext';
 
 interface ContactPayload {
   name: string;
@@ -119,27 +121,35 @@ async function sendEmailNotification(
   timestamp: string,
 ): Promise<void> {
   try {
-    // MailChannels API (free for Cloudflare Workers)
-    await fetch('https://api.mailchannels.net/tx/v1/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        personalizations: [{
-          to: [{ email: 'miles.sowden@outlook.com', name: 'Miles Sowden' }],
-        }],
-        from: {
-          email: 'contact@milessowden.au',
-          name: 'milessowden.au',
-        },
-        subject: `Contact from ${escapeHtml(name)}`,
-        content: [{
-          type: 'text/plain',
-          value: `New contact submission from milessowden.au\n\nName: ${name}\nEmail: ${email}\nTime: ${timestamp}\n\nReply directly to this person at ${email}`,
-        }],
-      }),
+    const msg = createMimeMessage();
+    msg.setSender('contact@milessowden.au');
+    msg.setRecipient('miles.sowden@outlook.com');
+    msg.setHeader('Reply-To', email);
+    msg.setSubject(`Contact from ${escapeHtml(name)}`);
+    msg.addMessage({
+      contentType: 'text/plain',
+      data: `New contact submission from milessowden.au\n\nName: ${name}\nEmail: ${email}\nTime: ${timestamp}\n\nReply directly to this person at ${email}`,
     });
-  } catch {
-    // Non-critical: Discord notification is the primary channel
+
+    const message = new EmailMessage(
+      'contact@milessowden.au',
+      'miles.sowden@outlook.com',
+      msg.asRaw(),
+    );
+    await env.SEND_EMAIL.send(message);
+  } catch (err) {
+    // Surface email failures in Discord so they don't go unnoticed
+    try {
+      await fetch(env.DISCORD_WEBHOOK_ALERTS, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: `Email send failed: ${err instanceof Error ? err.message : String(err)}`,
+        }),
+      });
+    } catch {
+      // Both channels failed; Discord notification was already sent for the contact
+    }
   }
 }
 
