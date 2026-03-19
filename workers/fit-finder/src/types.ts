@@ -48,6 +48,7 @@ export interface Env {
   ANTHROPIC_API_KEY: string;
   JWT_SECRET: string;
   DISCORD_WEBHOOK_ALERTS: string;
+  SEND_EMAIL: SendEmail;
   TURNSTILE_SECRET_KEY: string;
   DATABRICKS_HOST: string;
   DATABRICKS_TOKEN: string;
