@@ -117,6 +117,17 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
+  notify-worker-failure:
+    needs: [deploy-worker]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Discord (worker deploy failed)
+        run: |
+          curl -s -H "Content-Type: application/json" \
+            -d "{\"embeds\":[{\"title\":\"Worker Deploy FAILED\",\"description\":\"**Repo:** madebymiles\n**Commit:** \`${GITHUB_SHA::7}\`\n**By:** ${GITHUB_ACTOR}\n**Details:** ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}\",\"color\":15158332}]}" \
+            "${{ secrets.DISCORD_WEBHOOK_ALERTS }}"
+
   notify-failure:
     needs: [build, deploy]
     if: failure()
