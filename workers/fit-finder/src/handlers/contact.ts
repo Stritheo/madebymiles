@@ -1,7 +1,8 @@
 import type { Env } from '../types';
 import { corsHeaders } from '../index';
 import { EmailMessage } from 'cloudflare:email';
-import { createMimeMessage } from 'mimetext';
+import { postAlert } from '../lib/discord';
+import { postToDatabricks } from '../lib/databricks';
 
 interface ContactPayload {
   name: string;
@@ -15,14 +16,6 @@ async function checkContactRateLimit(ip: string, kv: KVNamespace): Promise<boole
   if (current >= 5) return false;
   await kv.put(key, String(current + 1), { expirationTtl: 3600 });
   return true;
-}
-
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
 }
 
 export async function handleContact(
@@ -72,14 +65,22 @@ export async function handleContact(
 
   const timestamp = new Date().toISOString();
 
-  // Send Discord notification (reliable, proven channel)
+  // Discord notification (reliable, proven channel)
   ctx.waitUntil(sendDiscordNotification(env, name, email, timestamp));
 
-  // Send email notification via MailChannels (Cloudflare Workers integration)
+  // Email notification via Cloudflare Email Routing
   ctx.waitUntil(sendEmailNotification(env, name, email, timestamp));
 
   // Log to Databricks (non-critical)
-  ctx.waitUntil(logContact(env, name, email, ip, timestamp));
+  ctx.waitUntil(
+    postToDatabricks(env.DATABRICKS_HOST, env.DATABRICKS_TOKEN, env.DATABRICKS_WAREHOUSE_ID, {
+      source: 'contact-form',
+      severity: 'info',
+      title: `Contact from ${name}`,
+      message: `New contact submission`,
+      metadata: { email, ip: ip.substring(0, 3) + 'xxx' },
+    }),
+  );
 
   return new Response(
     JSON.stringify({ status: 'sent' }),
@@ -100,7 +101,7 @@ async function sendDiscordNotification(
       body: JSON.stringify({
         embeds: [{
           title: 'New contact from milessowden.au',
-          color: 0xC87D5C, // accent colour
+          color: 0xC87D5C,
           fields: [
             { name: 'Name', value: name, inline: true },
             { name: 'Email', value: email, inline: true },
@@ -114,72 +115,46 @@ async function sendDiscordNotification(
   }
 }
 
+/** Build a minimal RFC 5322 MIME message without external dependencies. */
+function buildMimeMessage(from: string, to: string, subject: string, body: string): string {
+  // Base64-encode subject for UTF-8 safety (RFC 2047)
+  const encodedSubject = `=?utf-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`;
+  return [
+    `From: <${from}>`,
+    `To: <${to}>`,
+    `Subject: ${encodedSubject}`,
+    'MIME-Version: 1.0',
+    'Content-Type: text/plain; charset=UTF-8',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    body,
+  ].join('\r\n');
+}
+
 async function sendEmailNotification(
   env: Env,
   name: string,
   email: string,
   timestamp: string,
 ): Promise<void> {
-  try {
-    const msg = createMimeMessage();
-    msg.setSender('contact@milessowden.au');
-    msg.setRecipient('miles.sowden@outlook.com');
-    msg.setSubject(`Contact from ${escapeHtml(name)} (${email})`);
-    msg.addMessage({
-      contentType: 'text/plain',
-      data: `New contact submission from milessowden.au\n\nName: ${name}\nEmail: ${email}\nTime: ${timestamp}\n\nReply to: ${email}`,
-    });
+  const from = 'contact@milessowden.au';
+  const to = 'miles.sowden@outlook.com';
 
-    const message = new EmailMessage(
-      'contact@milessowden.au',
-      'miles.sowden@outlook.com',
-      msg.asRaw(),
+  try {
+    const raw = buildMimeMessage(
+      from,
+      to,
+      `Contact from ${name} (${email})`,
+      `New contact submission from milessowden.au\n\nName: ${name}\nEmail: ${email}\nTime: ${timestamp}\n\nReply to: ${email}`,
     );
+
+    const message = new EmailMessage(from, to, raw);
     await env.SEND_EMAIL.send(message);
   } catch (err) {
     // Surface email failures in Discord so they don't go unnoticed
-    try {
-      await fetch(env.DISCORD_WEBHOOK_ALERTS, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: `Email send failed: ${err instanceof Error ? err.message : String(err)}`,
-        }),
-      });
-    } catch {
-      // Both channels failed; Discord notification was already sent for the contact
-    }
-  }
-}
-
-async function logContact(
-  env: Env,
-  name: string,
-  email: string,
-  ip: string,
-  timestamp: string,
-): Promise<void> {
-  if (!env.DATABRICKS_HOST || !env.DATABRICKS_TOKEN || !env.DATABRICKS_WAREHOUSE_ID) return;
-  try {
-    await fetch(`${env.DATABRICKS_HOST}/api/2.0/sql/statements`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${env.DATABRICKS_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        warehouse_id: env.DATABRICKS_WAREHOUSE_ID,
-        statement: 'INSERT INTO default.site_events (source, severity, title, metadata, created_at) VALUES (?, ?, ?, ?, ?)',
-        parameters: [
-          { value: 'contact-form' },
-          { value: 'info' },
-          { value: `Contact from ${name}` },
-          { value: JSON.stringify({ email, ip: ip.substring(0, 3) + 'xxx' }) },
-          { value: timestamp },
-        ],
-      }),
-    });
-  } catch {
-    // Non-critical logging
+    await postAlert(
+      env.DISCORD_WEBHOOK_ALERTS,
+      `Email send failed: ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
 }
