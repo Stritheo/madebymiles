@@ -87,6 +87,11 @@ import { SITE } from '@/site.config';
           <p class="text-lg leading-relaxed text-text-secondary">Good leadership compounds. Operating models, people development, and ways of working that grow stronger over time. At CBA, the 10-person executive team stayed in place after divestment. Staff engagement rose from 50% to 70% during the Royal Commission.</p>
         </div>
       </div>
+      <div data-reveal class="mt-12">
+        <CTA href="/experience" variant="secondary" size="sm">
+          Full AICD skill matrix and career history
+        </CTA>
+      </div>
     </div>
   </section>
 
@@ -130,6 +135,11 @@ import { SITE } from '@/site.config';
           <p class="text-sm text-text-secondary/70 mb-4">CEO, CXO, and NED appointments</p>
           <p class="text-base leading-relaxed text-text-secondary">Compressed margins, regulatory intensity, and a technology inflection are reshaping Australian general insurance. I'm pursuing leadership roles where the mandate is to compete better through all three: allocate capital to what earns the right to grow, earn trust through how the business operates, and create lasting value by building capability that compounds.</p>
         </div>
+      </div>
+      <div data-reveal class="mt-12">
+        <CTA href="/experience" variant="secondary" size="sm">
+          Full career detail and credentials
+        </CTA>
       </div>
     </div>
   </section>
@@ -232,20 +242,6 @@ import { SITE } from '@/site.config';
             </a>
           </div>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Closing -->
-  <section class="py-32 max-md:py-20 bg-bg-dark text-white">
-    <div class="max-w-[1200px] mx-auto px-12 max-lg:px-8 max-md:px-6">
-      <p data-reveal class="text-xl max-md:text-lg leading-relaxed text-white/90">
-        If your insurer needs a leader who builds from the frontline up, start here.
-      </p>
-      <div data-reveal data-delay="200" class="mt-12">
-        <CTA href="#contact">
-          Contact
-        </CTA>
       </div>
     </div>
   </section>
@@ -394,30 +390,50 @@ import { SITE } from '@/site.config';
     // Turnstile for Fit Finder
     let turnstileToken = '';
     let turnstileWidgetId: string | null = null;
+    const TURNSTILE_SITE_KEY = '0x4AAAAAACpeOHmo95tCwiiA';
 
     function loadTurnstile() {
       if (document.querySelector('script[src*="turnstile"]')) return;
       const script = document.createElement('script');
-      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad';
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
       script.async = true;
       document.head.appendChild(script);
     }
 
-    (window as any).onTurnstileLoad = () => {
+    function renderTurnstile() {
+      if (turnstileWidgetId !== null) return;
+      const ts = (window as any).turnstile;
+      if (!ts) return;
       const container = document.createElement('div');
       container.id = 'turnstile-widget';
       container.style.display = 'none';
       fitInputArea.appendChild(container);
-      turnstileWidgetId = (window as any).turnstile.render('#turnstile-widget', {
-        sitekey: '0x4AAAAAACpeOHmo95tCwiiA',
+      turnstileWidgetId = ts.render('#turnstile-widget', {
+        sitekey: TURNSTILE_SITE_KEY,
         callback: (token: string) => { turnstileToken = token; },
+        'expired-callback': () => { turnstileToken = ''; },
+        'error-callback': () => { turnstileToken = ''; },
         'refresh-expired': 'auto',
         size: 'invisible',
       });
-    };
+    }
 
-    // Load Turnstile when user starts typing
-    fitText.addEventListener('focus', loadTurnstile, { once: true });
+    // Poll for Turnstile readiness after script loads
+    function initTurnstile() {
+      loadTurnstile();
+      const poll = setInterval(() => {
+        if ((window as any).turnstile) {
+          clearInterval(poll);
+          renderTurnstile();
+        }
+      }, 200);
+      // Stop polling after 30s
+      setTimeout(() => clearInterval(poll), 30000);
+    }
+
+    // Load Turnstile early, also on focus as fallback
+    setTimeout(initTurnstile, 2000);
+    fitText.addEventListener('focus', initTurnstile, { once: true });
 
     async function analyseFit() {
       const text = fitText.value.trim();
@@ -439,6 +455,15 @@ import { SITE } from '@/site.config';
       const tokenStart = Date.now();
       while (!turnstileToken && Date.now() - tokenStart < 10000) {
         await new Promise((r) => setTimeout(r, 200));
+      }
+
+      if (!turnstileToken) {
+        clearInterval(progressInterval);
+        fitLoading.classList.add('hidden');
+        fitError.classList.remove('hidden');
+        document.getElementById('fit-error-msg')!.textContent =
+          'Security verification timed out. Please refresh the page and try again.';
+        return;
       }
 
       try {
