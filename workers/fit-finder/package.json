@@ -8,7 +8,6 @@
     "deploy": "wrangler deploy"
   },
   "dependencies": {
-    "mimetext": "^3.0.28",
     "unpdf": "^1.4.0"
   },
   "devDependencies": {
