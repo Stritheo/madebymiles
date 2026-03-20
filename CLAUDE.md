@@ -6,7 +6,7 @@ This file is auto-read by Claude Code on every session. It is the canonical sour
 
 Personal executive website for Miles Sowden at milessowden.au. Goal: win CEO, CXO, and NED roles in Australian insurance/financial services.
 
-- **Stack:** Astro 5 + TypeScript + Tailwind CSS, static output
+- **Stack:** Astro 6 + TypeScript + Tailwind CSS, static output
 - **Hosting:** GitHub Pages, Cloudflare DNS proxy
 - **CI/CD:** GitHub Actions, Discord notifications (#alerts, #reports)
 - **Repo:** Stritheo/madebymiles on GitHub
@@ -37,6 +37,12 @@ These rules prevent the class of error where CI checks are committed without ver
 
 5. **No silent failures.** Every CI job must either pass green or post to Discord #alerts. Never add a job that can fail silently.
 
+6. **Isolate deploy jobs from quality gates.** Lighthouse, bundle budgets, and other quality checks must never block worker deploys or site deploys. In the workflow, quality gates and deploys run as independent parallel jobs. A Lighthouse budget failure must not prevent a worker fix from shipping.
+
+7. **Verify deployment before iterating.** After pushing a fix, confirm it actually deployed to production before writing the next fix. Check the GitHub Actions run, not just the git push. Multiple rounds of "fixes" to the contact form were wasted because earlier fixes never deployed (blocked by an unrelated Lighthouse budget failure).
+
+8. **Start minimal with dependencies.** Do not add libraries for simple tasks. Raw MIME for email, URLSearchParams for form encoding, explicit Turnstile render with polling instead of fragile onload callbacks. Every dependency is a future debugging surface.
+
 ## Observability
 
 - **Dashboard:** Databricks Free Edition (AI/BI dashboards + Genie)
@@ -48,8 +54,11 @@ These rules prevent the class of error where CI checks are committed without ver
 
 - CSP requires `script-src 'self' 'unsafe-inline'` because Astro bundles scripts as inline modules
 - GitHub Pages ignores `_headers` files — use Cloudflare Transform Rules for HTTP headers
-- Content collections: skills (data/JSON in `src/content/skills/`), work (content/markdown in `src/content/work/`)
-- Astro content collection entry IDs include `.md` extension — use `.replace(/\.md$/, '')` for slugs
+- Content collections use Astro 6 Content Layer API with `glob` loaders from `astro/loaders` (not the old `type: 'data'`/`type: 'content'` syntax). Config file is at `src/content.config.ts`.
+- Skills collection: data/JSON in `src/content/skills/`. Work collection: content/markdown in `src/content/work/`.
+- Turnstile verification: use `?render=explicit` with polling for `window.turnstile`, not `?onload=` callbacks. Load early (2s after page load), poll until ready, null-check token before sending requests.
+- Contact channels: LinkedIn, WhatsApp, and Send a note form must appear consistently across homepage, /contact, and /fit pages. Footer has LinkedIn and WhatsApp only.
+- Cloudflare Email Routing rejects Reply-To headers. The contact worker uses raw MIME without mimetext.
 
 ## User preferences
 
