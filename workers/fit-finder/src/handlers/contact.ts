@@ -1,7 +1,7 @@
 import type { Env } from '../types';
 import { corsHeaders } from '../index';
 import { EmailMessage } from 'cloudflare:email';
-import { createMimeMessage } from 'mimetext';
+import { createMimeMessage, Mailbox } from 'mimetext';
 
 interface ContactPayload {
   name: string;
@@ -124,7 +124,7 @@ async function sendEmailNotification(
     const msg = createMimeMessage();
     msg.setSender('contact@milessowden.au');
     msg.setRecipient('miles.sowden@outlook.com');
-    msg.setHeader('Reply-To', email);
+    msg.setHeader('Reply-To', new Mailbox({ addr: email }));
     msg.setSubject(`Contact from ${escapeHtml(name)}`);
     msg.addMessage({
       contentType: 'text/plain',
